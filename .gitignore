@@ -1,0 +1,21 @@
+# Local Codex and agent state
+/.agents/
+/.codex/
+
+# Working files and generated previews
+/tmp/
+/output/
+/outputs/
+
+# Raw source material kept outside the published repository
+/assets/
+/midgas/
+/страхомахи/
+
+# Common local noise
+Thumbs.db
+.DS_Store
+*.log
+*.zip
+*.inspect.ndjson
+

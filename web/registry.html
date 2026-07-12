@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Полный реестр клиентов, аномалий и инцидентов THE MIDGAS." />
+    <title>Реестр — THE MIDGAS</title>
+    <link rel="stylesheet" href="styles.css?v=17" />
+  </head>
+  <body class="registry-page">
+    <div class="site-shell">
+      <header class="site-header">
+        <button class="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="main-navigation">
+          <span class="menu-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
+        <button class="header-back-button" type="button" aria-label="Вернуться назад" data-fallback="index.html#registry">←</button>
+        <a class="mobile-wordmark" href="index.html">THE MIDGAS</a>
+        <nav class="main-navigation" id="main-navigation" aria-label="Главная навигация">
+          <div class="nav-group nav-group-left">
+            <a href="registry.html?type=client">Клиенты</a>
+            <a href="registry.html?type=anomaly">Аномалии</a>
+            <a href="registry.html?type=incident">Инциденты</a>
+          </div>
+          <a class="wordmark" href="index.html">THE MIDGAS</a>
+          <div class="nav-group nav-group-right">
+            <a href="index.html#historical-archive">Архив</a>
+            <a href="index.html#glossary">Глоссарий</a>
+            <button class="other-menu-toggle" type="button" aria-expanded="false" aria-controls="other-menu">Другое</button>
+          </div>
+          <div class="nav-group nav-group-mobile-extra" aria-label="Другие разделы">
+            <button type="button">Журнал</button>
+            <button type="button">Компания</button>
+            <button type="button">Редактор</button>
+          </div>
+        </nav>
+        <div class="other-menu" id="other-menu" hidden>
+          <span>ДРУГИЕ РАЗДЕЛЫ / В РАЗРАБОТКЕ</span>
+          <button type="button">Журнал</button>
+          <button type="button">Компания</button>
+          <button type="button">Редактор</button>
+        </div>
+      </header>
+
+      <main id="catalog-top">
+        <div class="record-toolbar catalog-toolbar toolbar-status-only">
+          <span id="catalog-count">0000 ЗАПИСЕЙ</span>
+        </div>
+
+        <section class="catalog-hero">
+          <span class="section-index" id="catalog-code">DIRECTORY / 00</span>
+          <div>
+            <h1 id="catalog-title">РЕЕСТР</h1>
+            <p id="catalog-description"></p>
+          </div>
+        </section>
+
+        <section class="catalog-controls" id="catalog-controls" hidden>
+          <span class="section-index">ФИЛЬТР МАТЕРИАЛОВ</span>
+          <div class="filters" id="catalog-filters"></div>
+        </section>
+
+        <section class="catalog-results" aria-live="polite">
+          <div class="client-grid registry-grid" id="registry-grid"></div>
+          <div class="catalog-empty" id="catalog-empty" hidden>ЗАПИСИ ЭТОГО ТИПА ПОКА НЕ ВНЕСЕНЫ.</div>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <span>THE MIDGAS © 2026</span>
+        <span>RESEARCH DATA SYSTEM</span>
+        <a href="#catalog-top">НАВЕРХ ↑</a>
+      </footer>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="featured-data.js?v=8"></script>
+    <script src="client-updates.js?v=1"></script>
+    <script src="incident-updates.js?v=1"></script>
+    <script src="site-completion.js?v=1"></script>
+    <script src="krovolunanie-research.js?v=1"></script>
+    <script src="app.js?v=16"></script>
+    <script src="registry.js?v=8"></script>
+  </body>
+</html>

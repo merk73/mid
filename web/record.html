@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Детальная запись реестра THE MIDGAS." />
+    <title>Запись реестра — THE MIDGAS</title>
+    <link rel="stylesheet" href="styles.css?v=17" />
+  </head>
+  <body>
+    <div class="site-shell record-shell">
+      <header class="site-header">
+        <button class="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="main-navigation">
+          <span class="menu-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
+        <button class="header-back-button" type="button" aria-label="Вернуться назад" data-fallback="index.html">←</button>
+        <a class="mobile-wordmark" href="index.html">THE MIDGAS</a>
+        <nav class="main-navigation" id="main-navigation" aria-label="Главная навигация">
+          <div class="nav-group nav-group-left">
+            <a href="registry.html?type=client">Клиенты</a>
+            <a href="registry.html?type=anomaly">Аномалии</a>
+            <a href="registry.html?type=incident">Инциденты</a>
+          </div>
+          <a class="wordmark" href="index.html">THE MIDGAS</a>
+          <div class="nav-group nav-group-right">
+            <a href="index.html#historical-archive">Архив</a>
+            <a href="index.html#glossary">Глоссарий</a>
+            <button class="other-menu-toggle" type="button" aria-expanded="false" aria-controls="other-menu">Другое</button>
+          </div>
+          <div class="nav-group nav-group-mobile-extra" aria-label="Другие разделы">
+            <button type="button">Журнал</button>
+            <button type="button">Компания</button>
+            <button type="button">Редактор</button>
+          </div>
+        </nav>
+        <div class="other-menu" id="other-menu" hidden>
+          <span>ДРУГИЕ РАЗДЕЛЫ / В РАЗРАБОТКЕ</span>
+          <button type="button">Журнал</button>
+          <button type="button">Компания</button>
+          <button type="button">Редактор</button>
+        </div>
+      </header>
+
+      <main class="record-page" id="record-page">
+        <section class="record-identity" id="record-content" hidden>
+          <div class="record-heading">
+            <p class="record-code"><span id="record-id"></span> / <span id="record-kind"></span></p>
+            <h1 id="record-name"></h1>
+            <p class="record-alias" id="record-alias"></p>
+          </div>
+          <figure class="record-portrait">
+            <img id="record-image" src="" alt="" />
+            <figcaption><span id="record-image-id"></span> / DOCUMENTARY IMAGE</figcaption>
+          </figure>
+        </section>
+
+        <section class="record-overview" id="record-overview" hidden>
+          <div class="record-summary">
+            <span class="section-index">КРАТКОЕ ОПИСАНИЕ</span>
+            <p id="record-summary"></p>
+          </div>
+          <dl class="record-fields" id="record-fields"></dl>
+        </section>
+
+        <section class="record-lore" id="record-lore" hidden>
+          <div class="section-heading record-section-heading">
+            <span class="section-index">ПОЛНЫЙ ЛОР</span>
+          </div>
+          <div id="record-sections"></div>
+        </section>
+
+        <section class="record-empty" id="record-empty" hidden>
+          <p class="record-code">RECORD / NOT FOUND</p>
+          <h1>ЗАПИСЬ НЕ НАЙДЕНА</h1>
+          <p>Такого идентификатора пока нет в локальном реестре.</p>
+          <a class="text-link" href="index.html">Вернуться на главную <span>→</span></a>
+        </section>
+      </main>
+
+      <footer class="site-footer">
+        <span>THE MIDGAS © 2026</span>
+        <span>RESEARCH DATA SYSTEM</span>
+        <a href="#record-page">НАВЕРХ ↑</a>
+      </footer>
+    </div>
+
+    <script src="data.js"></script>
+    <script src="featured-data.js?v=8"></script>
+    <script src="client-updates.js?v=1"></script>
+    <script src="incident-updates.js?v=1"></script>
+    <script src="site-completion.js?v=1"></script>
+    <script src="krovolunanie-research.js?v=1"></script>
+    <script src="app.js?v=16"></script>
+    <script src="research-charts.js?v=6"></script>
+    <script src="record.js?v=8"></script>
+  </body>
+</html>
