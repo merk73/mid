@@ -6,6 +6,7 @@
 /tmp/
 /output/
 /outputs/
+/dist/
 
 # Raw source material kept outside the published repository
 /assets/
@@ -18,4 +19,3 @@ Thumbs.db
 *.log
 *.zip
 *.inspect.ndjson
-

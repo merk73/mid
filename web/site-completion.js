@@ -12,7 +12,7 @@
 
   const strakhomakha = archive.incident?.["MID-I-0001"];
   if (strakhomakha) {
-    const newCover = "assets/incidents/mid-i-0001/strakhomakha-new-cover.png";
+    const newCover = "assets/incidents/mid-i-0001/strakhomakha-new-cover.webp";
     strakhomakha.image = newCover;
     strakhomakha.cardImage = newCover;
     strakhomakha.imageFit = "cover";
@@ -323,8 +323,8 @@
   });
 
   const replacementPortraits = {
-    "MID-C-0012": "assets/clients/mid-c-0012-kiblyukha-new.png",
-    "MID-C-0018": "assets/clients/mid-c-0018-lucinda-new.png",
+    "MID-C-0012": "assets/clients/mid-c-0012-kiblyukha-new.webp",
+    "MID-C-0018": "assets/clients/mid-c-0018-lucinda-new.webp",
   };
   Object.entries(replacementPortraits).forEach(([id, image]) => {
     const record = archive.client?.[id];
