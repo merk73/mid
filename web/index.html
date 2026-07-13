@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="THE MIDGAS — исследовательский архив клиентов, аномалий и инцидентов." />
     <title>THE MIDGAS — Research Archive</title>
-    <link rel="stylesheet" href="styles.css?v=27" />
+    <link rel="stylesheet" href="styles.css?v=28" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -603,34 +603,21 @@
             </header>
             <div class="company-board-toolbar company-reveal" aria-label="Фильтр доски">
               <button class="is-active" type="button" data-board-filter="all">ВСЯ СХЕМА</button>
-              <button type="button" data-board-filter="anomaly">АНОМАЛИИ</button>
-              <button type="button" data-board-filter="incident">ИНЦИДЕНТЫ</button>
               <button type="button" data-board-filter="client">КЛИЕНТЫ</button>
+              <button type="button" data-board-filter="incident">ИНЦИДЕНТЫ</button>
+              <button type="button" data-board-filter="anomaly">АНОМАЛИИ</button>
+              <button type="button" data-board-filter="place">МЕСТА</button>
+              <span class="company-board-count" data-board-count>52 УЗЛА / СХЕМА СОБИРАЕТСЯ</span>
+              <button class="company-board-reset" type="button" data-board-reset>К ЦЕНТРУ</button>
             </div>
+            <p class="company-board-hint company-reveal">Тяните карту мышью или одним пальцем. Нажмите на карточку: её прямые связи и натянутые нити станут красными.</p>
             <div class="company-board-workspace company-reveal">
-              <div class="company-board-canvas" id="company-board-canvas">
-                <svg class="company-board-lines" aria-hidden="true"></svg>
-                <span class="company-board-grid-label company-board-grid-label--x">X / 43.1167</span>
-                <span class="company-board-grid-label company-board-grid-label--y">Y / 131.9000</span>
-                <button class="company-board-node company-board-node--major is-active" type="button" data-board-node="anomaly:MID-A-0001" data-board-kind="anomaly" style="--node-x:49%; --node-y:48%;">
-                  <img src="assets/anomalies/mid-a-0001/andreevka-overview.webp" alt="" />
-                  <span>MID-A-0001</span><strong>АНДРЕЕВСКАЯ АНОМАЛИЯ</strong>
-                </button>
-                <button class="company-board-node" type="button" data-board-node="incident:MID-I-0001" data-board-kind="incident" style="--node-x:19%; --node-y:22%;">
-                  <span>MID-I-0001</span><strong>СТРАХОМАХА.EXE</strong>
-                </button>
-                <button class="company-board-node" type="button" data-board-node="incident:MID-I-0002" data-board-kind="incident" style="--node-x:79%; --node-y:24%;">
-                  <span>MID-I-0002</span><strong>КРОВОЛУНАНИЕ</strong>
-                </button>
-                <button class="company-board-node" type="button" data-board-node="client:MID-C-0012" data-board-kind="client" style="--node-x:16%; --node-y:75%;">
-                  <span>MID-C-0012</span><strong>КЛИЕНТ / УЗЕЛ 12</strong>
-                </button>
-                <button class="company-board-node" type="button" data-board-node="client:MID-C-0024" data-board-kind="client" style="--node-x:78%; --node-y:76%;">
-                  <span>MID-C-0024</span><strong>КЛИЕНТ / УЗЕЛ 24</strong>
-                </button>
-                <button class="company-board-node company-board-node--small" type="button" data-board-node="client:MID-C-0025" data-board-kind="client" style="--node-x:49%; --node-y:87%;">
-                  <span>MID-C-0025</span><strong>КЛИЕНТ / УЗЕЛ 25</strong>
-                </button>
+              <div class="company-board-canvas company-board-viewport" id="company-board-canvas" tabindex="0" aria-label="Перемещаемая карта расследования">
+                <div class="company-board-world" id="company-board-world">
+                  <svg class="company-board-lines" viewBox="0 0 2600 1700" aria-hidden="true"></svg>
+                  <span class="company-board-grid-label company-board-grid-label--x">X / 43.1167 / WORLD 2600</span>
+                  <span class="company-board-grid-label company-board-grid-label--y">Y / 131.9000 / WORLD 1700</span>
+                </div>
               </div>
               <aside class="company-board-inspector" aria-live="polite">
                 <span>ВЫБРАННЫЙ УЗЕЛ</span>
@@ -717,7 +704,8 @@
     <script src="incident-updates.js?v=1"></script>
     <script src="site-completion.js?v=1"></script>
     <script src="krovolunanie-research.js?v=1"></script>
-    <script src="company-hub.js?v=3"></script>
+    <script src="company-hub.js?v=4"></script>
+    <script src="investigation-board.js?v=1"></script>
     <script src="app.js?v=19"></script>
   </body>
 </html>

@@ -6973,3 +6973,188 @@ button {
   .company-process-shot img,
   .company-quotes-image img { will-change: auto; }
 }
+
+/* Investigation map v2: large pannable evidence world. */
+.company-board-hint {
+  margin: -4px 0 22px;
+  color: #aaa9a3;
+  font-size: 9px;
+  line-height: 1.55;
+  letter-spacing: 0.04em;
+}
+
+.company-board-toolbar {
+  align-items: center;
+  margin-bottom: 18px;
+}
+
+.company-board-count {
+  margin-left: auto;
+  padding: 0 18px;
+  color: #8e8d87;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.company-board-toolbar .company-board-reset {
+  margin-left: 0;
+  border-left: 1px solid #666;
+  border-right: 0;
+}
+
+.company-board-workspace {
+  grid-template-columns: minmax(0, 1fr) 320px;
+  min-height: 0;
+}
+
+.company-board-viewport {
+  position: relative;
+  min-height: clamp(720px, 80svh, 920px);
+  overflow: hidden;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  overscroll-behavior: contain;
+  background-color: #101010;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
+    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px);
+  background-size: 44px 44px, 44px 44px, 11px 11px, 11px 11px;
+}
+
+.company-board-viewport:focus-visible { outline: 2px solid var(--company-red); outline-offset: -2px; }
+.company-board-viewport.is-dragging { cursor: grabbing; }
+
+.company-board-world {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 2600px;
+  height: 1700px;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.company-board-world::before {
+  position: absolute;
+  z-index: 0;
+  top: 50%;
+  left: 50%;
+  width: 1120px;
+  height: 1120px;
+  border: 1px solid rgba(229, 49, 34, 0.22);
+  border-radius: 50%;
+  content: "";
+  transform: translate(-50%, -50%);
+  box-shadow:
+    0 0 0 210px rgba(255, 255, 255, 0.018),
+    0 0 0 420px rgba(255, 255, 255, 0.012);
+}
+
+.company-board-world .company-board-lines {
+  width: 2600px;
+  height: 1700px;
+}
+
+.company-board-thread {
+  opacity: 0.82;
+  transition: opacity 180ms ease;
+}
+
+.company-board-thread path {
+  fill: none;
+  vector-effect: non-scaling-stroke;
+  transition: stroke 190ms ease, stroke-width 190ms ease, opacity 190ms ease, filter 190ms ease;
+}
+
+.company-board-thread-shadow { stroke: rgba(0, 0, 0, 0.9); stroke-width: 5.5; }
+.company-board-thread-base { stroke: #6f6f6b; stroke-width: 2.2; }
+.company-board-thread-fiber { stroke: rgba(231, 230, 222, 0.62); stroke-width: 0.7; stroke-dasharray: 1.2 3.8; }
+.company-board-thread.is-dimmed { opacity: 0.2; }
+.company-board-thread.is-active { opacity: 1; }
+.company-board-thread.is-active .company-board-thread-shadow { stroke: rgba(72, 0, 0, 0.9); stroke-width: 7; }
+.company-board-thread.is-active .company-board-thread-base { stroke: var(--company-red); stroke-width: 3.5; filter: drop-shadow(0 0 5px rgba(229, 49, 34, 0.82)); }
+.company-board-thread.is-active .company-board-thread-fiber { stroke: #ffb1a8; stroke-width: 0.9; }
+
+.company-board-world .company-board-node {
+  width: 150px;
+  min-height: 82px;
+  padding: 10px;
+  border: 1px solid #797874;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.62);
+  transform: translate(-50%, -50%) rotate(var(--node-tilt, 0deg));
+  transition: opacity 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.company-board-world .company-board-node img {
+  width: calc(100% + 20px);
+  height: 86px;
+  margin: -10px -10px 9px;
+}
+
+.company-board-world .company-board-node--anomaly { width: 220px; min-height: 170px; }
+.company-board-world .company-board-node--anomaly img { height: 118px; }
+.company-board-world .company-board-node--incident { width: 186px; min-height: 108px; background: #d6d4ca; }
+.company-board-world .company-board-node--place {
+  width: 142px;
+  min-height: 62px;
+  justify-content: center;
+  color: var(--paper);
+  background: #171717;
+  border: 1px dashed #8b8a84;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.5);
+}
+.company-board-world .company-board-node--place span { color: #8e8d87; }
+
+.company-board-world .company-board-node.is-related {
+  z-index: 5;
+  border-color: #c2c0b8;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.18), 0 18px 40px rgba(0, 0, 0, 0.7);
+}
+
+.company-board-world .company-board-node.is-active {
+  z-index: 7;
+  border-color: var(--company-red);
+  box-shadow: 0 0 0 4px rgba(229, 49, 34, 0.38), 0 24px 56px rgba(0, 0, 0, 0.78);
+  transform: translate(-50%, -50%) rotate(0deg) scale(1.075);
+}
+
+.company-board-world .company-board-node.is-dimmed { opacity: 0.45; }
+.company-board-world .company-board-node:hover { opacity: 1; transform: translate(-50%, -50%) rotate(0deg) scale(1.055); }
+
+.company-board-world .company-board-grid-label { position: absolute; }
+.company-board-world .company-board-grid-label--x { top: 18px; left: 20px; }
+.company-board-world .company-board-grid-label--y { right: 20px; bottom: 18px; }
+
+.company-board-inspector { min-height: clamp(720px, 80svh, 920px); }
+.company-board-inspector > img[hidden],
+.company-board-inspector > a[hidden] { display: none; }
+
+@media (max-width: 1040px) {
+  .company-board-workspace { grid-template-columns: minmax(0, 1fr) 280px; }
+  .company-board-count { display: none; }
+}
+
+@media (max-width: 760px) {
+  .company-board-toolbar { flex-wrap: nowrap; margin-bottom: 14px; }
+  .company-board-toolbar .company-board-reset { margin-left: auto; }
+  .company-board-hint { margin-bottom: 16px; font-size: 8px; }
+  .company-board-workspace { display: block; }
+  .company-board-viewport { min-height: 68svh; border-bottom: 1px solid #656565; }
+  .company-board-inspector { min-height: 0; padding: 18px; border-top: 0; border-left: 0; }
+  .company-board-inspector > img { max-height: 240px; }
+  .company-board-inspector dl { margin-top: 0; }
+  .company-board-world .company-board-node { width: 142px; }
+  .company-board-world .company-board-node--anomaly { width: 205px; }
+  .company-board-world .company-board-node--incident { width: 178px; }
+  .company-board-world .company-board-node--place { width: 134px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .company-board-thread,
+  .company-board-thread path,
+  .company-board-world .company-board-node { transition: none; }
+}
