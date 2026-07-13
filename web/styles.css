@@ -7814,3 +7814,88 @@ button {
 @media (prefers-reduced-motion: reduce) {
   .company-method--flow .company-protocol--flow li { transition: none; }
 }
+
+/* Editor relation picker. */
+.company-editor-relations-picker {
+  overflow: hidden;
+  margin-top: 8px;
+  border: 1px solid #575757;
+}
+
+.company-editor-relations-picker > header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 22px;
+  align-items: center;
+  padding: 18px;
+}
+
+.company-editor-relations-picker > header > div { display: flex; flex-direction: column; gap: 6px; }
+.company-editor-relations-picker > header span { color: #8d8c86; font-size: 7px; letter-spacing: 0.09em; }
+.company-editor-relations-picker > header strong { color: var(--paper); font-family: var(--display); font-size: 20px; line-height: 1; }
+.company-editor-relations-picker > header p { max-width: 600px; margin: 0; color: #8d8c86; font-size: 8px; line-height: 1.55; }
+.company-editor-relations-picker > header button {
+  min-height: 44px;
+  padding: 0 16px;
+  color: var(--ink);
+  background: var(--paper);
+  border: 1px solid var(--paper);
+  cursor: pointer;
+  font-size: 8px;
+  letter-spacing: 0.06em;
+}
+.company-editor-relations-picker > header button:hover,
+.company-editor-relations-picker > header button.has-selection { color: var(--paper); background: var(--company-red); border-color: var(--company-red); }
+
+.company-editor-relations-panel { padding: 18px; background: #171717; border-top: 1px solid #575757; }
+.company-editor-relations-panel[hidden] { display: none; }
+.company-editor-form--live label.company-editor-relations-search { margin-bottom: 12px; }
+.company-editor-relations-summary { display: flex; min-height: 36px; align-items: center; justify-content: space-between; color: #8d8c86; font-size: 8px; }
+.company-editor-relations-summary button { padding: 7px 0; color: #aaa9a3; background: transparent; border: 0; cursor: pointer; font-size: 7px; }
+.company-editor-relations-summary button:hover { color: var(--company-red); }
+
+.company-editor-relations-list {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  max-height: 360px;
+  overflow: auto;
+  border-top: 1px solid #4d4d4d;
+  border-left: 1px solid #4d4d4d;
+  scrollbar-color: #777 #171717;
+  scrollbar-width: thin;
+}
+
+.company-editor-form--live label.company-editor-relation-option {
+  position: relative;
+  display: block;
+  gap: 0;
+  min-width: 0;
+  cursor: pointer;
+}
+.company-editor-relation-option[hidden] { display: none !important; }
+.company-editor-relation-option input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.company-editor-form--live .company-editor-relation-option > span {
+  display: flex;
+  min-height: 68px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 11px 14px;
+  color: var(--paper);
+  background: #111;
+  border-right: 1px solid #4d4d4d;
+  border-bottom: 1px solid #4d4d4d;
+  transition: color 150ms ease, background 150ms ease;
+}
+.company-editor-relation-option small { color: #777670; font-size: 6.5px; letter-spacing: 0.07em; }
+.company-editor-relation-option strong { overflow: hidden; font-family: var(--display); font-size: 13px; line-height: 1.05; text-overflow: ellipsis; }
+.company-editor-relation-option input:checked + span { color: var(--ink); background: var(--paper); }
+.company-editor-relation-option input:checked + span small { color: var(--company-red); }
+.company-editor-relation-option input:focus-visible + span { outline: 2px solid var(--company-red); outline-offset: -2px; }
+
+@media (max-width: 760px) {
+  .company-editor-relations-picker > header { grid-template-columns: 1fr; padding: 16px; }
+  .company-editor-relations-picker > header button { width: 100%; }
+  .company-editor-relations-panel { padding: 14px; }
+  .company-editor-relations-list { grid-template-columns: 1fr; max-height: 52svh; }
+}

@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="THE MIDGAS — исследовательский архив клиентов, аномалий и инцидентов." />
     <title>THE MIDGAS — Research Archive</title>
-    <link rel="stylesheet" href="styles.css?v=32" />
+    <link rel="stylesheet" href="styles.css?v=33" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -682,6 +682,17 @@
                   <label class="company-editor-field-wide"><span>МЕСТОПОЛОЖЕНИЕ *</span><input name="location" required maxlength="180" autocomplete="off" placeholder="Город, район, сектор или координаты" /></label>
                   <label class="company-editor-field-wide"><span>КРАТКОЕ РЕЗЮМЕ *</span><textarea name="summary" required maxlength="900" rows="4" placeholder="Короткое описание для карточки в реестре"></textarea></label>
                   <label class="company-editor-field-wide"><span>ПЕРВИЧНАЯ РЕГИСТРАЦИЯ *</span><textarea name="description" required maxlength="5000" rows="8" placeholder="Подробное документальное описание записи"></textarea></label>
+                  <section class="company-editor-relations-picker company-editor-field-wide" aria-labelledby="editor-relations-title">
+                    <header>
+                      <div><span>СВЯЗИ НА ДОСКЕ</span><strong id="editor-relations-title">СВЯЗАТЬ С ДРУГИМИ ДОСЬЕ</strong><p>Выбранные карточки будут соединены нитями на доске расследования и появятся в разделе связанных записей.</p></div>
+                      <button type="button" data-editor-relations-toggle aria-expanded="false">+ ДОБАВИТЬ СВЯЗИ</button>
+                    </header>
+                    <div class="company-editor-relations-panel" data-editor-relations-panel hidden>
+                      <label class="company-editor-relations-search"><span>ПОИСК ПО РЕЕСТРУ</span><input type="search" data-editor-relations-search autocomplete="off" placeholder="Имя, номер или тип карточки" /></label>
+                      <div class="company-editor-relations-summary"><span data-editor-relations-count>ВЫБРАНО: 0</span><button type="button" data-editor-relations-clear>СБРОСИТЬ</button></div>
+                      <div class="company-editor-relations-list" data-editor-relations-list></div>
+                    </div>
+                  </section>
                 </div>
 
                 <aside class="company-editor-upload">
@@ -744,9 +755,9 @@
     <script src="incident-updates.js?v=1"></script>
     <script src="site-completion.js?v=1"></script>
     <script src="krovolunanie-research.js?v=1"></script>
-    <script src="editor-storage.js?v=1"></script>
-    <script src="company-hub.js?v=6"></script>
-    <script src="investigation-board.js?v=4"></script>
+    <script src="editor-storage.js?v=2"></script>
+    <script src="company-hub.js?v=7"></script>
+    <script src="investigation-board.js?v=5"></script>
     <script src="app.js?v=19"></script>
   </body>
 </html>

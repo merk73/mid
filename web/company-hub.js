@@ -261,6 +261,12 @@
   const editorSubmit = document.querySelector("[data-editor-submit]");
   const editorResult = document.querySelector("[data-editor-result]");
   const editorError = document.querySelector("[data-editor-error]");
+  const editorRelationsToggle = document.querySelector("[data-editor-relations-toggle]");
+  const editorRelationsPanel = document.querySelector("[data-editor-relations-panel]");
+  const editorRelationsList = document.querySelector("[data-editor-relations-list]");
+  const editorRelationsSearch = document.querySelector("[data-editor-relations-search]");
+  const editorRelationsCount = document.querySelector("[data-editor-relations-count]");
+  const editorRelationsClear = document.querySelector("[data-editor-relations-clear]");
   let preparedImage = "";
   let preparedFile = "";
   let activeCardTypeDefault = "Клиент / наблюдаемый субъект";
@@ -270,6 +276,67 @@
     incident: "Инцидент / активный процесс",
     anomaly: "Аномалия / зона наблюдения",
   };
+
+  function updateRelationsCount() {
+    if (!editorRelationsCount || !editorRelationsList) return;
+    const selected = editorRelationsList.querySelectorAll('input[type="checkbox"]:checked').length;
+    editorRelationsCount.textContent = `ВЫБРАНО: ${selected}`;
+    editorRelationsToggle?.classList.toggle("has-selection", selected > 0);
+    if (selected > 0 && editorRelationsToggle) editorRelationsToggle.textContent = `СВЯЗИ: ${selected}`;
+    if (selected === 0 && editorRelationsToggle) editorRelationsToggle.textContent = "+ ДОБАВИТЬ СВЯЗИ";
+  }
+
+  function buildRelationsList() {
+    if (!editorRelationsList) return;
+    const relationRecords = registrySnapshot().records;
+    types.forEach((type) => {
+      relationRecords[type]
+        .slice()
+        .sort((left, right) => String(left.id).localeCompare(String(right.id), "ru"))
+        .forEach((record) => {
+          const label = document.createElement("label");
+          label.className = "company-editor-relation-option";
+          label.dataset.search = `${record.id} ${record.name || ""} ${record.alias || ""} ${typeNames[type][0]}`.toLocaleLowerCase("ru");
+          const input = document.createElement("input");
+          input.type = "checkbox";
+          input.dataset.relationType = type;
+          input.dataset.relationId = record.id;
+          input.dataset.relationLabel = record.name || record.alias || record.id;
+          const copy = document.createElement("span");
+          const meta = document.createElement("small");
+          const name = document.createElement("strong");
+          meta.textContent = `${typeNames[type][0]} / ${record.id}`;
+          name.textContent = record.name || record.alias || "БЕЗ НАЗВАНИЯ";
+          copy.append(meta, name);
+          label.append(input, copy);
+          editorRelationsList.append(label);
+        });
+    });
+    editorRelationsList.addEventListener("change", updateRelationsCount);
+    updateRelationsCount();
+  }
+
+  buildRelationsList();
+
+  editorRelationsToggle?.addEventListener("click", () => {
+    if (!editorRelationsPanel) return;
+    const opening = editorRelationsPanel.hidden;
+    editorRelationsPanel.hidden = !opening;
+    editorRelationsToggle.setAttribute("aria-expanded", String(opening));
+    if (opening) editorRelationsSearch?.focus({ preventScroll: true });
+  });
+
+  editorRelationsSearch?.addEventListener("input", () => {
+    const query = editorRelationsSearch.value.trim().toLocaleLowerCase("ru");
+    editorRelationsList?.querySelectorAll(".company-editor-relation-option").forEach((option) => {
+      option.hidden = Boolean(query) && !option.dataset.search.includes(query);
+    });
+  });
+
+  editorRelationsClear?.addEventListener("click", () => {
+    editorRelationsList?.querySelectorAll('input[type="checkbox"]:checked').forEach((input) => { input.checked = false; });
+    updateRelationsCount();
+  });
 
   function canvasBlob(canvas, mimeType, quality) {
     return new Promise((resolve) => canvas.toBlob(resolve, mimeType, quality));
@@ -395,6 +462,11 @@
     try {
       if (!preparedImage || preparedFile !== file.name) preparedImage = await prepareEditorImage(file);
       const formData = new FormData(editorForm);
+      const relations = [...(editorRelationsList?.querySelectorAll('input[type="checkbox"]:checked') || [])].map((input) => ({
+        type: input.dataset.relationType,
+        id: input.dataset.relationId,
+        label: input.dataset.relationLabel,
+      }));
       const created = window.MIDGAS_EDITOR_STORE?.create({
         type: formData.get("type"),
         name: formData.get("name"),
@@ -407,6 +479,7 @@
         summary: formData.get("summary"),
         description: formData.get("description"),
         image: preparedImage,
+        relations,
       });
       if (!created) throw new Error("Модуль локального сохранения недоступен.");
 
@@ -417,7 +490,7 @@
       const openLink = document.querySelector("[data-editor-open]");
       const registryLink = document.querySelector("[data-editor-registry]");
       if (createdId) createdId.textContent = created.record.id;
-      if (status) status.textContent = `«${created.record.name}» сохранена в этом браузере и добавлена в журнал текущей ревизии.`;
+      if (status) status.textContent = `«${created.record.name}» сохранена. Связей: ${relations.length}. Открываю новый узел на доске расследования…`;
       if (openLink) openLink.href = recordUrl;
       if (registryLink) registryLink.href = registryUrl;
       if (editorResult) {
@@ -425,6 +498,10 @@
         editorResult.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "nearest" });
       }
       if (editorSubmit) editorSubmit.textContent = "КАРТОЧКА СОЗДАНА";
+      window.setTimeout(() => {
+        window.location.hash = "company-board";
+        window.location.reload();
+      }, reducedMotion ? 450 : 1200);
     } catch (error) {
       showEditorError(error.message || "Не удалось создать карточку.");
       if (editorSubmit) editorSubmit.textContent = "СОЗДАТЬ КАРТОЧКУ";

@@ -107,6 +107,24 @@
     [clientId(26), clientId(9)],
   ];
   relationPairs.forEach(([source, target]) => addEdge(keyFromId(source), keyFromId(target), "record"));
+
+  recordNodes.forEach((node) => {
+    const sectionRelations = Array.isArray(node.record.sections)
+      ? node.record.sections.flatMap((section) => Array.isArray(section.relatedRecords) ? section.relatedRecords : [])
+      : [];
+    const storedRelations = Array.isArray(node.record.editorRelations) ? node.record.editorRelations : [];
+    const seen = new Set();
+    [...storedRelations, ...sectionRelations].forEach((relation) => {
+      const id = String(relation?.id || "");
+      const type = typeOrder.includes(relation?.type)
+        ? relation.type
+        : id.includes("-C-") ? "client" : id.includes("-A-") ? "anomaly" : id.includes("-I-") ? "incident" : "";
+      const target = type ? recordKey(type, id) : "";
+      if (!target || seen.has(target)) return;
+      seen.add(target);
+      addEdge(node.key, target, "record");
+    });
+  });
   const edges = [...edgeMap.values()];
 
   const recordColumns = 6;
@@ -199,7 +217,10 @@
     stage: document.querySelector("[data-board-stage]"),
     link: document.querySelector("[data-board-link]"),
   };
-  let activeKey = nodeMap.has("anomaly:MID-A-0001") ? "anomaly:MID-A-0001" : nodes[0]?.key;
+  const newestEditorNode = recordNodes
+    .filter((node) => node.record.editorCreatedAt)
+    .sort((left, right) => String(right.record.editorCreatedAt).localeCompare(String(left.record.editorCreatedAt)))[0];
+  let activeKey = newestEditorNode?.key || (nodeMap.has("anomaly:MID-A-0001") ? "anomaly:MID-A-0001" : nodes[0]?.key);
 
   function connectedKeys(key) {
     const result = new Set();

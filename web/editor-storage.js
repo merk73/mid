@@ -43,6 +43,20 @@
     };
   }
 
+  function normalizeRelations(value) {
+    if (!Array.isArray(value)) return [];
+    const seen = new Set();
+    return value.reduce((result, item) => {
+      const type = RECORD_TYPES.includes(item?.type) ? item.type : "";
+      const id = String(item?.id || "").trim();
+      const key = `${type}:${id}`;
+      if (!type || !id || seen.has(key)) return result;
+      seen.add(key);
+      result.push({ type, id, label: String(item?.label || id).trim() });
+      return result;
+    }, []);
+  }
+
   const initialEntries = readEntries();
   initialEntries.forEach((entry) => {
     const record = normalizeRecord(entry.type, entry.record);
@@ -73,10 +87,20 @@
     const access = String(payload.access || "D1 / открытый").trim();
     const summary = String(payload.summary || "").trim();
     const description = String(payload.description || summary).trim();
+    const relations = normalizeRelations(payload.relations);
 
     if (!name || !summary || !description || !payload.image) {
       throw new Error("Заполните обязательные поля и загрузите изображение.");
     }
+
+    const fields = [
+      ["Тип", cardType],
+      ["Статус", status],
+      ["Уровень угрозы", threat],
+      ["Уровень доступа", access],
+      ["Местоположение", location],
+    ];
+    if (relations.length) fields.push(["Связанные записи", relations.map((item) => item.id).join(", ")]);
 
     const record = normalizeRecord(type, {
       id,
@@ -88,17 +112,13 @@
       image: payload.image,
       summary,
       editorCreatedAt: createdAt,
-      fields: [
-        ["Тип", cardType],
-        ["Статус", status],
-        ["Уровень угрозы", threat],
-        ["Уровень доступа", access],
-        ["Местоположение", location],
-      ],
+      editorRelations: relations,
+      fields,
       sections: [
         {
           title: "ПЕРВИЧНАЯ РЕГИСТРАЦИЯ",
           paragraphs: [description],
+          relatedRecords: relations,
         },
       ],
     });
