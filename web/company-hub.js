@@ -114,29 +114,56 @@
   const quoteText = document.querySelector("[data-quote-text]");
   const quoteSource = document.querySelector("[data-quote-source]");
   const quoteCounter = document.querySelector("[data-quote-index]");
+  const quoteFrame = quoteText?.closest("blockquote");
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  let quoteAnimation = null;
 
-  function showQuote(nextIndex) {
-    quoteIndex = (nextIndex + quotes.length) % quotes.length;
-    const update = () => {
-      if (quoteText) quoteText.textContent = quotes[quoteIndex][0];
-      if (quoteSource) quoteSource.textContent = quotes[quoteIndex][1];
-      if (quoteCounter) quoteCounter.textContent = `${String(quoteIndex + 1).padStart(2, "0")} / ${String(quotes.length).padStart(2, "0")}`;
-    };
-    if (!reducedMotion && quoteText?.animate) {
-      const animation = quoteText.animate(
-        [{ opacity: 1, transform: "translateY(0)" }, { opacity: 0, transform: "translateY(-12px)" }],
-        { duration: 150, easing: "ease-in", fill: "forwards" },
-      );
-      animation.finished.then(() => {
-        update();
-        quoteText.animate(
-          [{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "translateY(0)" }],
-          { duration: 280, easing: "cubic-bezier(.2,.8,.2,1)" },
-        );
-      }).catch(update);
-    } else {
-      update();
+  function renderQuote(index) {
+    if (quoteText) quoteText.textContent = quotes[index][0];
+    if (quoteSource) quoteSource.textContent = quotes[index][1];
+    if (quoteCounter) quoteCounter.textContent = `${String(index + 1).padStart(2, "0")} / ${String(quotes.length).padStart(2, "0")}`;
+  }
+
+  async function showQuote(nextIndex) {
+    const targetIndex = (nextIndex + quotes.length) % quotes.length;
+    quoteIndex = targetIndex;
+    quoteAnimation?.cancel();
+
+    if (reducedMotion || !quoteFrame?.animate) {
+      renderQuote(targetIndex);
+      quoteAnimation = null;
+      return;
+    }
+
+    const outgoing = quoteFrame.animate(
+      [{ opacity: 1, transform: "translateY(0)" }, { opacity: 0, transform: "translateY(-12px)" }],
+      { duration: 140, easing: "ease-in", fill: "forwards" },
+    );
+    quoteAnimation = outgoing;
+
+    try {
+      await outgoing.finished;
+    } catch {
+      return;
+    }
+    if (quoteAnimation !== outgoing) return;
+
+    renderQuote(targetIndex);
+    const incoming = quoteFrame.animate(
+      [{ opacity: 0, transform: "translateY(12px)" }, { opacity: 1, transform: "translateY(0)" }],
+      { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)", fill: "both" },
+    );
+    quoteAnimation = incoming;
+    outgoing.cancel();
+
+    try {
+      await incoming.finished;
+    } catch {
+      return;
+    }
+    if (quoteAnimation === incoming) {
+      incoming.cancel();
+      quoteAnimation = null;
     }
   }
 
