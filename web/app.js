@@ -151,8 +151,6 @@ const glossaryFilterButtons = [...document.querySelectorAll("[data-glossary-filt
 const glossaryEntries = [...document.querySelectorAll("[data-glossary-entry]")];
 const glossaryGroups = [...document.querySelectorAll("[data-glossary-group]")];
 const glossaryEmpty = document.querySelector("#glossary-empty");
-const glossaryFinePointer = window.matchMedia("(hover: hover) and (pointer: fine)");
-const glossaryPanels = new Map();
 let activeGlossaryFilter = "all";
 let activeGlossaryEntry = null;
 
@@ -163,114 +161,67 @@ function normalizeGlossaryText(value) {
 function closeGlossaryEntry() {
   if (!activeGlossaryEntry) return;
 
+  const trigger = activeGlossaryEntry.querySelector(".glossary-entry-trigger");
+  const body = activeGlossaryEntry.querySelector(".glossary-entry-body");
   activeGlossaryEntry.classList.remove("is-open");
-  activeGlossaryEntry.setAttribute("aria-expanded", "false");
-  const group = activeGlossaryEntry.closest(".glossary-group");
-  const panel = glossaryPanels.get(group);
-  panel?.classList.remove("is-open");
-  panel?.setAttribute("aria-hidden", "true");
+  trigger?.setAttribute("aria-expanded", "false");
+  body?.setAttribute("aria-hidden", "true");
   activeGlossaryEntry = null;
 }
 
-function openGlossaryEntry(entry) {
+function toggleGlossaryEntry(entry) {
   if (!entry || entry.hidden) return;
-  if (activeGlossaryEntry && activeGlossaryEntry !== entry) closeGlossaryEntry();
-
-  const group = entry.closest(".glossary-group");
-  const panel = glossaryPanels.get(group);
-  const panelInner = panel?.querySelector(".glossary-definition-inner");
-  if (!panel || !panelInner) return;
-
-  const sourceMeta = entry.querySelector(":scope > div");
-  const sourceDescription = entry.querySelector(":scope > p");
-  const sourceLink = entry.querySelector(":scope > a");
-  const code = sourceMeta?.querySelector(":scope > span")?.textContent?.trim() || "";
-  const title = sourceMeta?.querySelector("h4")?.textContent?.trim() || "";
-  const category = sourceMeta?.querySelector("em")?.textContent?.trim() || "";
-
-  const heading = document.createElement("div");
-  heading.className = "glossary-definition-heading";
-  const headingCode = document.createElement("span");
-  headingCode.textContent = code;
-  const headingTitle = document.createElement("h4");
-  headingTitle.textContent = title;
-  const headingCategory = document.createElement("em");
-  headingCategory.textContent = category;
-  heading.append(headingCode, headingTitle, headingCategory);
-
-  const body = document.createElement("div");
-  body.className = "glossary-definition-copy";
-  if (sourceDescription) body.append(sourceDescription.cloneNode(true));
-  if (sourceLink) {
-    const link = sourceLink.cloneNode(true);
-    link.removeAttribute("tabindex");
-    body.append(link);
+  if (activeGlossaryEntry === entry) {
+    closeGlossaryEntry();
+    return;
   }
 
-  panelInner.replaceChildren(heading, body);
+  closeGlossaryEntry();
+  const trigger = entry.querySelector(".glossary-entry-trigger");
+  const body = entry.querySelector(".glossary-entry-body");
   entry.classList.add("is-open");
-  entry.setAttribute("aria-expanded", "true");
-  panel.classList.add("is-open");
-  panel.setAttribute("aria-hidden", "false");
+  trigger?.setAttribute("aria-expanded", "true");
+  body?.setAttribute("aria-hidden", "false");
   activeGlossaryEntry = entry;
 }
 
-function initializeGlossaryPanels() {
-  glossaryGroups.forEach((group, index) => {
-    const panel = document.createElement("div");
-    panel.className = "glossary-definition-panel";
-    panel.id = `glossary-definition-${index + 1}`;
-    panel.setAttribute("role", "region");
-    panel.setAttribute("aria-live", "polite");
-    panel.setAttribute("aria-hidden", "true");
+function initializeGlossaryAccordions() {
+  glossaryEntries.forEach((entry, index) => {
+    const sourceMeta = entry.querySelector(":scope > div");
+    const code = sourceMeta?.querySelector(":scope > span");
+    const title = sourceMeta?.querySelector("h4");
+    const category = sourceMeta?.querySelector("em");
+    const description = entry.querySelector(":scope > p");
+    const link = entry.querySelector(":scope > a");
+    if (!sourceMeta || !code || !title || !category || !description) return;
 
-    const panelInner = document.createElement("div");
-    panelInner.className = "glossary-definition-inner";
-    panel.append(panelInner);
-    group.append(panel);
-    glossaryPanels.set(group, panel);
+    const trigger = document.createElement("button");
+    const body = document.createElement("div");
+    const bodyInner = document.createElement("div");
+    const indicator = document.createElement("span");
+    const bodyId = `glossary-entry-body-${index + 1}`;
 
-    group.addEventListener("mouseleave", () => {
-      if (glossaryFinePointer.matches && !group.contains(document.activeElement)) closeGlossaryEntry();
-    });
+    trigger.type = "button";
+    trigger.className = "glossary-entry-trigger";
+    trigger.setAttribute("aria-label", title.textContent.trim());
+    trigger.setAttribute("aria-expanded", "false");
+    trigger.setAttribute("aria-controls", bodyId);
+    indicator.className = "glossary-entry-indicator";
+    indicator.setAttribute("aria-hidden", "true");
 
-    group.addEventListener("focusout", () => {
-      window.requestAnimationFrame(() => {
-        if (glossaryFinePointer.matches && !group.contains(document.activeElement) && !group.matches(":hover")) {
-          closeGlossaryEntry();
-        }
-      });
-    });
-  });
+    body.className = "glossary-entry-body";
+    body.id = bodyId;
+    body.setAttribute("aria-hidden", "true");
+    bodyInner.className = "glossary-entry-body-inner";
 
-  glossaryEntries.forEach((entry) => {
-    const group = entry.closest(".glossary-group");
-    const panel = glossaryPanels.get(group);
-    entry.tabIndex = 0;
-    entry.setAttribute("role", "button");
-    entry.setAttribute("aria-expanded", "false");
-    if (panel) entry.setAttribute("aria-controls", panel.id);
+    trigger.append(code, title, indicator);
+    bodyInner.append(category, description);
+    if (link) bodyInner.append(link);
+    body.append(bodyInner);
+    sourceMeta.replaceWith(trigger);
+    entry.append(body);
 
-    entry.addEventListener("mouseenter", () => {
-      if (glossaryFinePointer.matches) openGlossaryEntry(entry);
-    });
-
-    entry.addEventListener("focus", () => openGlossaryEntry(entry));
-    entry.addEventListener("click", () => {
-      if (glossaryFinePointer.matches) {
-        openGlossaryEntry(entry);
-        return;
-      }
-      if (activeGlossaryEntry === entry) closeGlossaryEntry();
-      else openGlossaryEntry(entry);
-    });
-
-    entry.addEventListener("keydown", (event) => {
-      if (event.key !== "Enter" && event.key !== " ") return;
-      event.preventDefault();
-      if (activeGlossaryEntry === entry) closeGlossaryEntry();
-      else openGlossaryEntry(entry);
-    });
+    trigger.addEventListener("click", () => toggleGlossaryEntry(entry));
   });
 }
 
@@ -293,7 +244,7 @@ function updateGlossary() {
   if (glossaryEmpty) glossaryEmpty.hidden = visibleCount > 0;
 }
 
-initializeGlossaryPanels();
+initializeGlossaryAccordions();
 
 glossaryFilterButtons.forEach((button) => {
   button.addEventListener("click", () => {
