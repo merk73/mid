@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="THE MIDGAS — исследовательский архив клиентов, аномалий и инцидентов." />
     <title>THE MIDGAS — Research Archive</title>
-    <link rel="stylesheet" href="styles.css?v=33" />
+    <link rel="stylesheet" href="styles.css?v=34" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -451,7 +451,7 @@
             </div>
           </header>
 
-          <section class="company-method company-method--flow" id="company-method" aria-labelledby="company-method-title">
+          <section class="company-method company-method--simple" id="company-method" aria-labelledby="company-method-title">
             <div class="company-section-label company-reveal">
               <span>01</span>
               <p>КАК УСТРОЕНА РАБОТА</p>
@@ -461,40 +461,32 @@
               <h3 id="company-method-title">ОТ СЫРОГО ФАЙЛА<br />ДО ОТКРЫТОЙ КАРТОЧКИ.</h3>
               <p>Ни один материал не попадает в реестр напрямую. Он проходит четыре понятных этапа: получает номер, проверяется, связывается с уже известными данными и только после этого публикуется с историей изменений.</p>
             </div>
-            <ol class="company-protocol company-protocol--flow company-reveal">
-              <li data-protocol-stage="capture">
-                <header><span>01</span><em>РЕГИСТРАЦИЯ</em></header>
-                <span class="company-protocol-mark" aria-hidden="true"><i></i></span>
-                <strong>ПРИНИМАЕМ МАТЕРИАЛ</strong>
-                <p>Фотография, свидетельство, запись прибора или фрагмент переписки сохраняется без трактовки и получает контрольную копию.</p>
-                <dl><div><dt>ПОЛУЧАЕМ</dt><dd>Исходный файл</dd></div><div><dt>СОЗДАЁМ</dt><dd>Номер MID–RAW</dd></div></dl>
+            <ol class="company-protocol company-protocol--simple company-reveal">
+              <li>
+                <span>01</span>
+                <div><em>РЕГИСТРАЦИЯ</em><strong>ПРИНИМАЕМ МАТЕРИАЛ</strong></div>
+                <p>Сохраняем исходный файл без трактовки и создаём контрольную копию.</p>
+                <dl><div><dt>ВХОД</dt><dd>Фото, запись или свидетельство</dd></div><div><dt>РЕЗУЛЬТАТ</dt><dd>Номер MID–RAW</dd></div></dl>
               </li>
-              <li data-protocol-stage="verify">
-                <header><span>02</span><em>ПРОВЕРКА</em></header>
-                <span class="company-protocol-mark" aria-hidden="true"><i></i></span>
-                <strong>СВЕРЯЕМ ФАКТЫ</strong>
-                <p>Проверяем время, место, происхождение файла, последовательность событий и совпадения в независимых источниках.</p>
-                <dl><div><dt>ПОЛУЧАЕМ</dt><dd>MID–RAW</dd></div><div><dt>СОЗДАЁМ</dt><dd>Протокол сверки</dd></div></dl>
+              <li>
+                <span>02</span>
+                <div><em>ПРОВЕРКА</em><strong>СВЕРЯЕМ ФАКТЫ</strong></div>
+                <p>Проверяем время, место, происхождение файла и независимые совпадения.</p>
+                <dl><div><dt>ВХОД</dt><dd>MID–RAW</dd></div><div><dt>РЕЗУЛЬТАТ</dt><dd>Протокол сверки</dd></div></dl>
               </li>
-              <li data-protocol-stage="connect">
-                <header><span>03</span><em>СОПОСТАВЛЕНИЕ</em></header>
-                <span class="company-protocol-mark" aria-hidden="true"><i></i></span>
-                <strong>СТРОИМ СВЯЗИ</strong>
-                <p>Сопоставляем материал с клиентами, инцидентами, местами и аномалиями. Каждая подтверждённая связь входит в общую карту.</p>
-                <dl><div><dt>ПОЛУЧАЕМ</dt><dd>Проверенный факт</dd></div><div><dt>СОЗДАЁМ</dt><dd>Узел расследования</dd></div></dl>
+              <li>
+                <span>03</span>
+                <div><em>СОПОСТАВЛЕНИЕ</em><strong>СТРОИМ СВЯЗИ</strong></div>
+                <p>Соединяем факт с клиентами, инцидентами, местами и аномалиями.</p>
+                <dl><div><dt>ВХОД</dt><dd>Проверенный факт</dd></div><div><dt>РЕЗУЛЬТАТ</dt><dd>Узел расследования</dd></div></dl>
               </li>
-              <li data-protocol-stage="publish">
-                <header><span>04</span><em>ОТКРЫТЫЙ РЕЕСТР</em></header>
-                <span class="company-protocol-mark" aria-hidden="true"><i></i></span>
-                <strong>ПУБЛИКУЕМ ДОСЬЕ</strong>
-                <p>Готовая карточка входит в реестр. Её номер остаётся постоянным, а каждое последующее изменение фиксируется в журнале.</p>
-                <dl><div><dt>ПОЛУЧАЕМ</dt><dd>Связное досье</dd></div><div><dt>СОЗДАЁМ</dt><dd>MID–C / A / I</dd></div></dl>
+              <li>
+                <span>04</span>
+                <div><em>ПУБЛИКАЦИЯ</em><strong>ОТКРЫВАЕМ ДОСЬЕ</strong></div>
+                <p>Добавляем карточку в реестр и фиксируем каждую правку в журнале.</p>
+                <dl><div><dt>ВХОД</dt><dd>Связное досье</dd></div><div><dt>РЕЗУЛЬТАТ</dt><dd>MID–C / A / I</dd></div></dl>
               </li>
             </ol>
-            <div class="company-protocol-route company-reveal" aria-label="Маршрут одной записи">
-              <span>МАРШРУТ ОДНОЙ ЗАПИСИ</span>
-              <div><strong>СЫРОЙ МАТЕРИАЛ</strong><i>→</i><strong>ПРОВЕРЕННЫЙ ФАКТ</strong><i>→</i><strong>УЗЕЛ СВЯЗЕЙ</strong><i>→</i><strong>ОТКРЫТОЕ ДОСЬЕ</strong></div>
-            </div>
             <div class="company-metrics company-reveal" aria-label="Текущее состояние архива">
               <div><strong data-company-record-count>29</strong><span>КАРТОЧЕК В ТЕКУЩЕЙ РЕВИЗИИ</span></div>
               <div><strong data-company-field-count>04</strong><span>ОБЯЗАТЕЛЬНЫХ ЭТАПА</span></div>

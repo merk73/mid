@@ -7899,3 +7899,84 @@ button {
   .company-editor-relations-panel { padding: 14px; }
   .company-editor-relations-list { grid-template-columns: 1fr; max-height: 52svh; }
 }
+
+/* Method v3: restrained typographic workflow. */
+.company-method--simple { background: #e1e0da; }
+.company-method--simple .company-method-intro { padding-bottom: 38px; border-bottom: 1px solid var(--ink); }
+
+.company-method--simple .company-protocol--simple {
+  grid-column: 2;
+  display: block;
+  margin: 24px 0 0;
+  border-top: 0;
+}
+
+.company-method--simple .company-protocol--simple li,
+.company-method--simple .company-protocol--simple li + li {
+  display: grid;
+  grid-template-columns: 54px minmax(180px, 0.32fr) minmax(220px, 1fr) minmax(250px, 0.46fr);
+  gap: clamp(18px, 3vw, 50px);
+  min-height: 150px;
+  align-items: center;
+  padding: 24px 0;
+  color: var(--ink);
+  background: transparent;
+  border-top: 1px solid var(--ink);
+  border-right: 0;
+  transition: color 180ms ease, background 180ms ease, padding 180ms ease;
+}
+.company-method--simple .company-protocol--simple li:last-child { border-bottom: 1px solid var(--ink); }
+.company-method--simple .company-protocol--simple li:hover { padding-right: 18px; padding-left: 18px; color: var(--paper); background: var(--ink); }
+
+.company-method--simple .company-protocol--simple li > span {
+  width: auto;
+  float: none;
+  margin: 0;
+  color: #74736d;
+  font-family: var(--display);
+  font-size: 36px;
+  line-height: 0.8;
+  letter-spacing: -0.06em;
+}
+.company-method--simple .company-protocol--simple li:hover > span { color: var(--company-red); }
+.company-protocol--simple li > div { display: flex; min-width: 0; flex-direction: column; gap: 7px; }
+.company-protocol--simple em { color: #74736d; font-size: 7px; font-style: normal; letter-spacing: 0.09em; }
+.company-method--simple .company-protocol--simple strong { margin: 0; font-size: clamp(19px, 1.7vw, 27px); line-height: 0.95; }
+.company-method--simple .company-protocol--simple p { margin: 0; font-size: 11px; line-height: 1.65; }
+
+.company-protocol--simple dl { margin: 0; border-top: 1px solid currentColor; }
+.company-protocol--simple dl > div { display: grid; grid-template-columns: 68px minmax(0, 1fr); gap: 10px; padding: 9px 0; border-bottom: 1px solid rgba(0, 0, 0, 0.24); font-size: 7px; line-height: 1.4; }
+.company-protocol--simple li:hover dl > div { border-color: rgba(255, 255, 255, 0.25); }
+.company-protocol--simple dt { color: #74736d; }
+.company-protocol--simple dd { margin: 0; text-align: right; }
+.company-method--simple .company-metrics { margin-top: 28px; }
+
+@media (max-width: 1040px) {
+  .company-method--simple .company-protocol--simple li,
+  .company-method--simple .company-protocol--simple li + li {
+    grid-template-columns: 46px minmax(160px, 0.4fr) minmax(0, 1fr);
+  }
+  .company-protocol--simple dl { grid-column: 2 / -1; }
+}
+
+@media (max-width: 760px) {
+  .company-method--simple .company-method-intro { padding-bottom: 30px; }
+  .company-method--simple .company-protocol--simple { grid-column: auto; margin-top: 14px; }
+  .company-method--simple .company-protocol--simple li,
+  .company-method--simple .company-protocol--simple li + li {
+    grid-template-columns: 38px minmax(0, 1fr);
+    gap: 12px 14px;
+    min-height: 0;
+    padding: 22px 0;
+  }
+  .company-method--simple .company-protocol--simple li:hover { padding-right: 12px; padding-left: 12px; }
+  .company-method--simple .company-protocol--simple li > span { grid-row: 1 / span 3; font-size: 28px; }
+  .company-method--simple .company-protocol--simple strong,
+  .company-method--simple .company-protocol--simple p { margin-left: 0; }
+  .company-method--simple .company-protocol--simple p,
+  .company-protocol--simple dl { grid-column: 2; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .company-method--simple .company-protocol--simple li { transition: none; }
+}
