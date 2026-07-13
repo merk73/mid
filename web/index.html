@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="THE MIDGAS — исследовательский архив клиентов, аномалий и инцидентов." />
     <title>THE MIDGAS — Research Archive</title>
-    <link rel="stylesheet" href="styles.css?v=30" />
+    <link rel="stylesheet" href="styles.css?v=31" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -601,12 +601,7 @@
               <div><span>ИНТЕРАКТИВНЫЙ ГРАФ / LIVE</span><h3 id="company-board-title">ДОСКА<br />РАССЛЕДОВАНИЯ</h3></div>
               <p>Выберите узел, чтобы открыть его карточку и увидеть активные связи. Линии показывают редакционные маршруты между территорией, инцидентом и наблюдаемым субъектом.</p>
             </header>
-            <div class="company-board-toolbar company-reveal" aria-label="Фильтр доски">
-              <button class="is-active" type="button" data-board-filter="all">ВСЯ СХЕМА</button>
-              <button type="button" data-board-filter="client">КЛИЕНТЫ</button>
-              <button type="button" data-board-filter="incident">ИНЦИДЕНТЫ</button>
-              <button type="button" data-board-filter="anomaly">АНОМАЛИИ</button>
-              <button type="button" data-board-filter="place">МЕСТА</button>
+            <div class="company-board-toolbar company-board-toolbar--simple company-reveal" aria-label="Управление доской">
               <span class="company-board-count" data-board-count>52 УЗЛА / СХЕМА СОБИРАЕТСЯ</span>
               <button class="company-board-reset" type="button" data-board-reset>К ЦЕНТРУ</button>
             </div>
@@ -614,9 +609,7 @@
             <div class="company-board-workspace company-reveal">
               <div class="company-board-canvas company-board-viewport" id="company-board-canvas" tabindex="0" aria-label="Перемещаемая карта расследования">
                 <div class="company-board-world" id="company-board-world">
-                  <svg class="company-board-lines" viewBox="0 0 2600 1700" aria-hidden="true"></svg>
-                  <span class="company-board-grid-label company-board-grid-label--x">X / 43.1167 / WORLD 2600</span>
-                  <span class="company-board-grid-label company-board-grid-label--y">Y / 131.9000 / WORLD 1700</span>
+                  <svg class="company-board-lines" viewBox="0 0 3600 2400" aria-hidden="true"></svg>
                 </div>
               </div>
               <aside class="company-board-inspector" aria-live="polite">
@@ -725,7 +718,7 @@
     <script src="krovolunanie-research.js?v=1"></script>
     <script src="editor-storage.js?v=1"></script>
     <script src="company-hub.js?v=5"></script>
-    <script src="investigation-board.js?v=1"></script>
+    <script src="investigation-board.js?v=2"></script>
     <script src="app.js?v=19"></script>
   </body>
 </html>

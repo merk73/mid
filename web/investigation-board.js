@@ -5,8 +5,8 @@
   if (!viewport || !world || !svg) return;
 
   const registry = window.MIDGAS_RECORDS || { client: {}, anomaly: {}, incident: {} };
-  const width = 2600;
-  const height = 1700;
+  const width = 3600;
+  const height = 2400;
   const typeOrder = ["client", "anomaly", "incident"];
   const typeLabels = { client: "КЛИЕНТ", anomaly: "АНОМАЛИЯ", incident: "ИНЦИДЕНТ", place: "МЕСТО" };
   const recordKey = (type, id) => `${type}:${id}`;
@@ -63,7 +63,6 @@
   ];
 
   const placeNodes = placeDefinitions.map(([title], index) => {
-    const ring = index % 2 === 0 ? 1 : 0.72;
     const angle = (Math.PI * 2 * index) / placeDefinitions.length - Math.PI / 2;
     return {
       key: `place:${String(index + 1).padStart(2, "0")}`,
@@ -74,8 +73,8 @@
       stage: "КАРТА",
       image: "",
       fixed: true,
-      x: width / 2 + Math.cos(angle) * 1010 * ring,
-      y: height / 2 + Math.sin(angle) * 640 * ring,
+      x: width / 2 + Math.cos(angle) * 1620,
+      y: height / 2 + Math.sin(angle) * 1050,
     };
   });
 
@@ -110,66 +109,21 @@
   relationPairs.forEach(([source, target]) => addEdge(keyFromId(source), keyFromId(target), "record"));
   const edges = [...edgeMap.values()];
 
-  const placeLinksByRecord = new Map();
-  edges.filter((edge) => edge.kind === "place").forEach((edge) => {
-    const place = nodeMap.get(edge.source)?.kind === "place" ? nodeMap.get(edge.source) : nodeMap.get(edge.target);
-    const record = nodeMap.get(edge.source)?.kind === "place" ? nodeMap.get(edge.target) : nodeMap.get(edge.source);
-    if (!place || !record) return;
-    if (!placeLinksByRecord.has(record.key)) placeLinksByRecord.set(record.key, []);
-    placeLinksByRecord.get(record.key).push(place);
-  });
+  const recordColumns = 6;
+  const recordSpacingX = 470;
+  const recordSpacingY = 350;
+  const recordRows = Math.ceil(recordNodes.length / recordColumns);
+  const recordStartX = (width - (recordColumns - 1) * recordSpacingX) / 2;
+  const recordStartY = (height - (recordRows - 1) * recordSpacingY) / 2;
 
-  recordNodes.forEach((node) => {
-    const linkedPlaces = placeLinksByRecord.get(node.key) || [];
+  recordNodes.forEach((node, index) => {
     const seed = hash(node.key);
-    if (linkedPlaces.length) {
-      node.x = linkedPlaces.reduce((sum, place) => sum + place.x, 0) / linkedPlaces.length + ((seed % 281) - 140);
-      node.y = linkedPlaces.reduce((sum, place) => sum + place.y, 0) / linkedPlaces.length + (((seed >>> 8) % 221) - 110);
-    } else {
-      node.x = width / 2 + ((seed % 1201) - 600);
-      node.y = height / 2 + (((seed >>> 9) % 801) - 400);
-    }
+    const row = Math.floor(index / recordColumns);
+    const column = index % recordColumns;
+    const rowOffset = row % 2 ? recordSpacingX * 0.18 : 0;
+    node.x = recordStartX + column * recordSpacingX + rowOffset + ((seed % 31) - 15);
+    node.y = recordStartY + row * recordSpacingY + (((seed >>> 8) % 25) - 12);
   });
-
-  for (let iteration = 0; iteration < 150; iteration += 1) {
-    const forces = new Map(nodes.map((node) => [node.key, { x: 0, y: 0 }]));
-    for (let leftIndex = 0; leftIndex < nodes.length; leftIndex += 1) {
-      for (let rightIndex = leftIndex + 1; rightIndex < nodes.length; rightIndex += 1) {
-        const left = nodes[leftIndex];
-        const right = nodes[rightIndex];
-        let dx = right.x - left.x;
-        let dy = right.y - left.y;
-        let distance = Math.hypot(dx, dy) || 1;
-        const minimum = left.kind === "place" || right.kind === "place" ? 155 : 178;
-        if (distance >= minimum) continue;
-        const force = (minimum - distance) * 0.12;
-        dx /= distance;
-        dy /= distance;
-        if (!left.fixed) { forces.get(left.key).x -= dx * force; forces.get(left.key).y -= dy * force; }
-        if (!right.fixed) { forces.get(right.key).x += dx * force; forces.get(right.key).y += dy * force; }
-      }
-    }
-    edges.forEach((edge) => {
-      const source = nodeMap.get(edge.source);
-      const target = nodeMap.get(edge.target);
-      let dx = target.x - source.x;
-      let dy = target.y - source.y;
-      const distance = Math.hypot(dx, dy) || 1;
-      const ideal = edge.kind === "place" ? 210 : 265;
-      const force = (distance - ideal) * (edge.kind === "place" ? 0.018 : 0.012);
-      dx /= distance;
-      dy /= distance;
-      if (!source.fixed) { forces.get(source.key).x += dx * force; forces.get(source.key).y += dy * force; }
-      if (!target.fixed) { forces.get(target.key).x -= dx * force; forces.get(target.key).y -= dy * force; }
-    });
-    recordNodes.forEach((node) => {
-      const force = forces.get(node.key);
-      force.x += (width / 2 - node.x) * 0.0008;
-      force.y += (height / 2 - node.y) * 0.0008;
-      node.x = Math.max(120, Math.min(width - 120, node.x + Math.max(-22, Math.min(22, force.x))));
-      node.y = Math.max(100, Math.min(height - 100, node.y + Math.max(-22, Math.min(22, force.y))));
-    });
-  }
 
   function makeThread(edge) {
     const source = nodeMap.get(edge.source);
@@ -189,7 +143,7 @@
     group.classList.add("company-board-thread");
     group.dataset.source = edge.source;
     group.dataset.target = edge.target;
-    ["shadow", "base", "fiber"].forEach((layer) => {
+    ["shadow", "base"].forEach((layer) => {
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       path.setAttribute("d", pathData);
       path.setAttribute("pathLength", "100");
@@ -229,6 +183,11 @@
     button.append(code, title);
     world.append(button);
     nodeElements.set(node.key, button);
+    button.addEventListener("pointerdown", (event) => event.stopPropagation());
+    button.addEventListener("click", (event) => {
+      event.stopPropagation();
+      selectNode(node.key);
+    });
   });
 
   const inspector = {
@@ -292,9 +251,17 @@
   let panY = 0;
   let drag = null;
   let suppressClick = false;
+  let panFrame = 0;
 
   function applyPan() {
-    world.style.transform = `translate3d(${panX.toFixed(1)}px, ${panY.toFixed(1)}px, 0)`;
+    if (panFrame) return;
+    panFrame = requestAnimationFrame(() => {
+      panFrame = 0;
+      const margin = 90;
+      panX = Math.min(margin, Math.max(viewport.clientWidth - width - margin, panX));
+      panY = Math.min(margin, Math.max(viewport.clientHeight - height - margin, panY));
+      world.style.transform = `translate3d(${panX.toFixed(1)}px, ${panY.toFixed(1)}px, 0)`;
+    });
   }
 
   function centerOn(key = activeKey) {
@@ -305,7 +272,8 @@
   }
 
   viewport.addEventListener("pointerdown", (event) => {
-    if (event.button !== 0) return;
+    if (event.button !== 0 || !event.isPrimary || drag) return;
+    if (event.target.closest("[data-board-node]")) return;
     drag = { id: event.pointerId, x: event.clientX, y: event.clientY, panX, panY, moved: false };
     viewport.setPointerCapture(event.pointerId);
     viewport.classList.add("is-dragging");
@@ -353,30 +321,7 @@
   });
 
   document.querySelector("[data-board-reset]")?.addEventListener("click", () => centerOn());
-  document.querySelectorAll("[data-board-filter]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const filter = button.dataset.boardFilter || "all";
-      document.querySelectorAll("[data-board-filter]").forEach((item) => item.classList.toggle("is-active", item === button));
-      let visible = 0;
-      nodeElements.forEach((element, key) => {
-        const show = filter === "all" || nodeMap.get(key).kind === filter;
-        element.hidden = !show;
-        if (show) visible += 1;
-      });
-      threadGroups.forEach((group) => {
-        group.hidden = nodeElements.get(group.dataset.source)?.hidden || nodeElements.get(group.dataset.target)?.hidden;
-      });
-      const activeElement = nodeElements.get(activeKey);
-      if (!activeElement || activeElement.hidden) {
-        const next = nodes.find((node) => !nodeElements.get(node.key).hidden);
-        if (next) selectNode(next.key);
-      } else {
-        selectNode(activeKey);
-      }
-      const counter = document.querySelector("[data-board-count]");
-      if (counter) counter.textContent = `${visible} ИЗ ${nodes.length} УЗЛОВ`;
-    });
-  });
+  window.addEventListener("resize", () => applyPan(), { passive: true });
 
   const counter = document.querySelector("[data-board-count]");
   if (counter) counter.textContent = `${nodes.length} УЗЛА / ${edges.length} СВЯЗЕЙ`;

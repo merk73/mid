@@ -7034,8 +7034,8 @@ button {
   position: absolute;
   top: 0;
   left: 0;
-  width: 2600px;
-  height: 1700px;
+  width: 3600px;
+  height: 2400px;
   transform-origin: 0 0;
   will-change: transform;
 }
@@ -7057,8 +7057,8 @@ button {
 }
 
 .company-board-world .company-board-lines {
-  width: 2600px;
-  height: 1700px;
+  width: 3600px;
+  height: 2400px;
 }
 
 .company-board-thread {
@@ -7513,4 +7513,89 @@ button {
   .company-editor-form--live select,
   .company-editor-form--live textarea,
   .company-editor-submit button { transition: none; }
+}
+
+/* Investigation map v3: spacious, touch-first and visually quiet. */
+.company-board {
+  padding-right: clamp(12px, 2vw, 34px);
+  padding-left: clamp(12px, 2vw, 34px);
+}
+
+.company-board-toolbar--simple {
+  align-items: center;
+  justify-content: space-between;
+  overflow: visible;
+  margin-bottom: 18px;
+}
+
+.company-board-toolbar--simple .company-board-count {
+  margin-right: auto;
+  margin-left: 0;
+  padding: 0 18px 0 0;
+}
+
+.company-board-toolbar--simple .company-board-reset {
+  margin-left: auto;
+  border-right: 0;
+  border-left: 1px solid #666;
+}
+
+.company-board-workspace {
+  grid-template-columns: minmax(0, 1fr) 260px;
+}
+
+.company-board-viewport {
+  min-height: clamp(780px, 86svh, 1040px);
+  background-color: #0b0b0b;
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
+  background-size: 56px 56px;
+  contain: layout paint;
+}
+
+.company-board-canvas::before,
+.company-board-canvas::after,
+.company-board-world::before { content: none; }
+
+.company-board-world {
+  width: 3600px;
+  height: 2400px;
+  backface-visibility: hidden;
+}
+
+.company-board-world .company-board-lines {
+  width: 3600px;
+  height: 2400px;
+}
+
+.company-board-thread-shadow { stroke-width: 4.5; }
+.company-board-thread-base { stroke: #64645f; stroke-width: 1.8; }
+.company-board-thread.is-active .company-board-thread-shadow { stroke-width: 6; }
+.company-board-thread.is-active .company-board-thread-base { stroke-width: 3.2; }
+
+.company-board-world .company-board-node {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  backface-visibility: hidden;
+}
+
+.company-board-inspector { min-height: clamp(780px, 86svh, 1040px); }
+
+@media (max-width: 1040px) {
+  .company-board-workspace { grid-template-columns: minmax(0, 1fr) 250px; }
+}
+
+@media (max-width: 760px) {
+  .company-board { padding-right: 10px; padding-left: 10px; }
+  .company-board-toolbar--simple { display: flex; overflow: visible; }
+  .company-board-toolbar--simple .company-board-count { display: block; padding-left: 8px; font-size: 7px; }
+  .company-board-viewport { min-height: 76svh; background-size: 48px 48px; }
+  .company-board-inspector { min-height: 0; }
+}
+
+@media (hover: none) {
+  .company-board-world .company-board-node:hover:not(.is-active) {
+    transform: translate(-50%, -50%) rotate(var(--node-tilt, 0deg));
+  }
 }
