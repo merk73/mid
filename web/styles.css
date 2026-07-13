@@ -6802,6 +6802,8 @@ button {
   .company-process-shot,
   .company-process-shot--wide,
   .company-process-shot--tall {
+    grid-column: span 1;
+    min-width: 0;
     width: 100%;
     margin: 0;
     aspect-ratio: 3 / 4;
