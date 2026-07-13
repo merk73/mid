@@ -53,28 +53,91 @@
   updateRegistryMetadata();
 
   const journalList = document.querySelector("#company-journal-list");
-  const dateLabel = new Intl.DateTimeFormat("ru-RU", {
+  const journalDateFormatter = new Intl.DateTimeFormat("ru-RU", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
     timeZone: "Asia/Vladivostok",
-  }).format(new Date());
+  });
+  const journalKeyFormatter = new Intl.DateTimeFormat("en-GB", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    timeZone: "Asia/Vladivostok",
+  });
 
   function recordLink(type, record) {
     return `record.html?type=${encodeURIComponent(type)}&id=${encodeURIComponent(record.id)}`;
   }
 
-  function createJournalDay() {
-    const { records, counts } = registrySnapshot();
+  function journalDateKey(value) {
+    const [day, month, year] = journalKeyFormatter.format(new Date(value)).split("/");
+    return `${year}-${month}-${day}`;
+  }
+
+  function plural(value, forms) {
+    const number = Math.abs(value) % 100;
+    const last = number % 10;
+    if (number > 10 && number < 20) return forms[2];
+    if (last === 1) return forms[0];
+    if (last > 1 && last < 5) return forms[1];
+    return forms[2];
+  }
+
+  function journalTimeline() {
+    const { records } = registrySnapshot();
+    const builtIn = Object.fromEntries(types.map((type) => [
+      type,
+      records[type]
+        .filter((record) => !record.editorCreatedAt)
+        .sort((left, right) => String(left.id).localeCompare(String(right.id), "ru")),
+    ]));
+    const days = new Map();
+
+    function addDay(date, entries) {
+      if (!days.has(date)) days.set(date, { date, records: { client: [], anomaly: [], incident: [] } });
+      types.forEach((type) => days.get(date).records[type].push(...(entries[type] || [])));
+    }
+
+    addDay("2026-07-03", { client: builtIn.client.slice(0, 5) });
+    addDay("2026-07-05", { client: builtIn.client.slice(5, 11), anomaly: builtIn.anomaly.slice(0, 1) });
+    addDay("2026-07-08", { client: builtIn.client.slice(11, 16) });
+    addDay("2026-07-10", { client: builtIn.client.slice(16, 21), incident: builtIn.incident.slice(0, 1) });
+    addDay("2026-07-12", {
+      client: builtIn.client.slice(21),
+      anomaly: builtIn.anomaly.slice(1),
+      incident: builtIn.incident.slice(1),
+    });
+
+    types.forEach((type) => {
+      records[type].filter((record) => record.editorCreatedAt).forEach((record) => {
+        addDay(journalDateKey(record.editorCreatedAt), { [type]: [record] });
+      });
+    });
+
+    return [...days.values()]
+      .filter((day) => types.some((type) => day.records[type].length))
+      .sort((left, right) => right.date.localeCompare(left.date));
+  }
+
+  function createJournalDay(day, revisionNumber) {
+    const counts = Object.fromEntries(types.map((type) => [type, day.records[type].length]));
     const details = document.createElement("details");
     details.className = "company-journal-day";
 
     const summary = document.createElement("summary");
     const date = document.createElement("span");
     date.className = "company-journal-date";
-    date.innerHTML = `<strong>ОБНОВЛЕНИЕ РЕЕСТРА</strong><time datetime="${new Date().toISOString().slice(0, 10)}">${dateLabel}</time>`;
+    const dateValue = new Date(`${day.date}T12:00:00+10:00`);
+    date.innerHTML = `<strong>РЕВИЗИЯ ${String(revisionNumber).padStart(2, "0")}</strong><time datetime="${day.date}">${journalDateFormatter.format(dateValue)}</time>`;
     const title = document.createElement("h4");
-    title.textContent = `Сегодня: добавлено ${counts.client} клиентов, ${counts.incident} инцидента и ${counts.anomaly} аномалия.`;
+    const changes = [
+      counts.client ? `${counts.client} ${plural(counts.client, ["клиент", "клиента", "клиентов"])}` : "",
+      counts.incident ? `${counts.incident} ${plural(counts.incident, ["инцидент", "инцидента", "инцидентов"])}` : "",
+      counts.anomaly ? `${counts.anomaly} ${plural(counts.anomaly, ["аномалия", "аномалии", "аномалий"])}` : "",
+    ].filter(Boolean);
+    const todayPrefix = day.date === journalDateKey(new Date()) ? "Сегодня: " : "";
+    title.textContent = `${todayPrefix}Добавлено ${changes.join(", ")}.`;
     const action = document.createElement("span");
     action.className = "company-journal-action";
     action.innerHTML = `<span>ПОДРОБНЕЕ</span><i aria-hidden="true"></i>`;
@@ -83,11 +146,12 @@
     const content = document.createElement("div");
     content.className = "company-journal-details";
     types.forEach((type) => {
+      if (!day.records[type].length) return;
       const group = document.createElement("section");
       const heading = document.createElement("h5");
-      heading.textContent = `${typeNames[type][1]} / ${String(records[type].length).padStart(2, "0")}`;
+      heading.textContent = `${typeNames[type][1]} / ${String(day.records[type].length).padStart(2, "0")}`;
       const list = document.createElement("ul");
-      records[type]
+      day.records[type]
         .slice()
         .sort((left, right) => String(left.id).localeCompare(String(right.id), "ru"))
         .forEach((record) => {
@@ -115,7 +179,8 @@
 
   function renderJournal() {
     if (!journalList) return;
-    journalList.replaceChildren(createJournalDay());
+    const timeline = journalTimeline();
+    journalList.replaceChildren(...timeline.map((day, index) => createJournalDay(day, timeline.length - index)));
   }
 
   renderJournal();
