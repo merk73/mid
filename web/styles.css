@@ -699,6 +699,395 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
   }
 }
 
+/* Historical archive v1.0: expandable dossiers and layered scenes. */
+.archive-scene {
+  isolation: isolate;
+  min-height: 100svh;
+  overflow: clip;
+  opacity: 1;
+  transform: none;
+}
+
+.archive-motion-ready .archive-scene {
+  opacity: 0.18;
+  transform: translateY(54px);
+}
+
+.archive-motion-ready .archive-scene.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.archive-scene.timeline-entry-impact {
+  color: #f4f4f0;
+  background: #090909;
+}
+
+.archive-scene.timeline-entry-impact .timeline-class,
+.archive-scene.timeline-entry-impact .timeline-date {
+  color: #888;
+}
+
+.archive-scene.timeline-entry-impact .timeline-copy > p,
+.archive-scene.timeline-entry-impact .timeline-dossier-body p {
+  color: #d0d0ca;
+}
+
+.archive-scene-media,
+.archive-scene-vignette {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.archive-scene-media {
+  z-index: 0;
+  overflow: hidden;
+}
+
+.archive-scene-background {
+  position: absolute;
+  inset: -8%;
+  background:
+    radial-gradient(circle at 76% 34%, color-mix(in srgb, var(--scene-accent, #667080) 36%, transparent), transparent 24%),
+    linear-gradient(118deg, transparent 32%, rgba(255, 255, 255, 0.05) 32.2%, transparent 32.5%),
+    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 76px),
+    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 76px),
+    #0b0b0b;
+  filter: grayscale(1) contrast(1.15);
+  transform: translate3d(0, var(--parallax-y, 0), 0) scale(1.06);
+  will-change: transform;
+}
+
+.archive-scene-cutout {
+  position: absolute;
+  z-index: 1;
+  bottom: 4%;
+  display: grid;
+  width: min(34vw, 520px);
+  aspect-ratio: 0.72;
+  place-items: center;
+  opacity: 0.3;
+  border: 1px solid color-mix(in srgb, var(--scene-accent, #8b96aa) 66%, transparent);
+  background:
+    linear-gradient(145deg, color-mix(in srgb, var(--scene-accent, #8b96aa) 40%, transparent), transparent 58%),
+    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 20px);
+  box-shadow: 0 0 100px color-mix(in srgb, var(--scene-accent, #8b96aa) 24%, transparent);
+  clip-path: polygon(22% 0, 81% 3%, 100% 32%, 89% 100%, 10% 94%, 0 31%);
+  transform: translate3d(0, var(--parallax-y, 0), 0);
+  will-change: transform;
+}
+
+.archive-scene-cutout--right {
+  right: clamp(-110px, -4vw, -34px);
+}
+
+.archive-scene-cutout--left {
+  right: clamp(20px, 7vw, 140px);
+}
+
+.archive-scene-cutout span {
+  color: color-mix(in srgb, var(--scene-accent, #aab4c7) 78%, white);
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  writing-mode: vertical-rl;
+}
+
+.archive-scene-vignette {
+  z-index: 2;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.96) 0%, rgba(0, 0, 0, 0.84) 43%, rgba(0, 0, 0, 0.38) 76%, rgba(0, 0, 0, 0.64) 100%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.88), transparent 48%, rgba(0, 0, 0, 0.46));
+}
+
+.archive-scene > .timeline-marker,
+.archive-scene > .timeline-date,
+.archive-scene > .timeline-copy {
+  position: relative;
+  z-index: 3;
+}
+
+.archive-scene[data-scene="union"] { --scene-accent: #52627e; }
+.archive-scene[data-scene="discovery"] { --scene-accent: #345b62; }
+.archive-scene[data-scene="human"] { --scene-accent: #8c5548; }
+.archive-scene[data-scene="eden"] { --scene-accent: #7b6d45; }
+.archive-scene[data-scene="belts"] { --scene-accent: #5e527c; }
+.archive-scene[data-scene="hyperborea"] { --scene-accent: #6e8fa6; }
+.archive-scene[data-scene="interplanetary"] { --scene-accent: #736b90; }
+.archive-scene[data-scene="successors"] { --scene-accent: #755a48; }
+.archive-scene[data-scene="selbet-war"] { --scene-accent: #9b352d; }
+.archive-scene[data-scene="resettlement"] { --scene-accent: #587359; }
+.archive-scene[data-scene="tartaria"] { --scene-accent: #977941; }
+.archive-scene[data-scene="hidden-war"] { --scene-accent: #73503f; }
+.archive-scene[data-scene="compression"] { --scene-accent: #6f6a61; }
+.archive-scene[data-scene="war-1812"] { --scene-accent: #a52d27; }
+.archive-scene[data-scene="reset"] { --scene-accent: #68717b; }
+.archive-scene[data-scene="silence"] { --scene-accent: #4b5260; }
+
+.archive-scene {
+  scroll-margin-top: 72px;
+}
+
+.archive-scene .timeline-copy {
+  max-width: 1040px;
+}
+
+.timeline-lede {
+  max-width: 68ch !important;
+  margin-bottom: 0 !important;
+  color: #e0e0db !important;
+  font-size: clamp(15px, 1.3vw, 20px) !important;
+  line-height: 1.75 !important;
+}
+
+.timeline-dossier {
+  max-width: 940px;
+  margin-top: 38px;
+  border-top: 1px solid rgba(255, 255, 255, 0.42);
+}
+
+.timeline-dossier-toggle {
+  display: flex;
+  min-height: 68px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  cursor: pointer;
+  list-style: none;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  transition: color 160ms ease, padding 160ms ease;
+}
+
+.timeline-dossier-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.timeline-dossier-toggle:hover {
+  padding-right: 10px;
+  color: var(--scene-accent, #fff);
+}
+
+.timeline-dossier-toggle:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 5px;
+}
+
+.timeline-dossier-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50% !important;
+  transition: transform 220ms ease;
+}
+
+.timeline-dossier[open] .timeline-dossier-icon {
+  transform: rotate(180deg);
+}
+
+.timeline-dossier-body {
+  max-width: 76ch;
+  padding: 20px 0 70px;
+}
+
+.timeline-dossier-body section {
+  margin-top: 58px;
+}
+
+.timeline-dossier-body h3 {
+  margin: 0 0 22px;
+  font-family: var(--display);
+  font-size: clamp(28px, 3vw, 48px);
+  line-height: 0.96;
+  letter-spacing: -0.035em;
+}
+
+.timeline-dossier-body p {
+  margin: 0 0 26px;
+  color: #c4c4bf;
+  font-size: clamp(14px, 1.15vw, 17px);
+  line-height: 1.88;
+}
+
+.timeline-dossier-facts {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin: 10px 0 62px;
+  border-top: 1px solid rgba(255, 255, 255, 0.45);
+  border-left: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.timeline-dossier-facts > div {
+  min-height: 114px;
+  padding: 18px;
+  border-right: 1px solid rgba(255, 255, 255, 0.45);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.45);
+}
+
+.timeline-dossier-facts dt {
+  margin-bottom: 26px;
+  color: #8b8b86;
+  font-size: 9px;
+  letter-spacing: 0.08em;
+}
+
+.timeline-dossier-facts dd {
+  margin: 0;
+  font-size: clamp(12px, 1vw, 15px);
+  line-height: 1.55;
+}
+
+.timeline-genome dd {
+  font-family: var(--display);
+  font-size: clamp(34px, 4vw, 62px);
+  line-height: 0.9;
+}
+
+.timeline-progress {
+  position: relative;
+  height: 3px;
+  margin-top: 28px;
+  overflow: hidden;
+  background: #2f2f2f;
+}
+
+.timeline-progress span {
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  transform: scaleX(var(--progress, 0));
+  transform-origin: left center;
+  transition: transform 90ms linear;
+}
+
+.history-source-list .history-source-note {
+  display: grid;
+  grid-template-columns: 0.62fr 1.38fr;
+  gap: 30px;
+  align-items: center;
+  min-height: 104px;
+  padding: 18px 20px;
+  border-bottom: 1px solid #000;
+  background: #deded8;
+}
+
+.history-source-note span {
+  color: #666;
+  font-size: 10px;
+  letter-spacing: 0.04em;
+}
+
+.history-source-note strong {
+  font-size: clamp(13px, 1.2vw, 17px);
+  line-height: 1.5;
+}
+
+@media (max-width: 980px) {
+  .archive-scene {
+    scroll-margin-top: 116px;
+  }
+
+  .archive-scene-cutout {
+    width: min(44vw, 470px);
+    opacity: 0.24;
+  }
+
+  .timeline-rail {
+    top: 58px;
+  }
+
+  .timeline-rail .timeline-progress {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: block;
+    height: 2px;
+    margin: 0;
+  }
+}
+
+@media (max-width: 760px), (pointer: coarse) {
+  .archive-scene-background,
+  .archive-scene-cutout {
+    transform: none !important;
+    will-change: auto;
+  }
+
+  .archive-scene-vignette {
+    background:
+      linear-gradient(0deg, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.9) 68%, rgba(0, 0, 0, 0.58) 100%),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.2));
+  }
+
+  .archive-scene-cutout {
+    top: 5%;
+    right: -12vw;
+    bottom: auto;
+    width: 72vw;
+    max-height: 52svh;
+    opacity: 0.2;
+  }
+
+  .archive-scene-cutout--left {
+    right: auto;
+    left: -14vw;
+  }
+
+  .archive-scene .timeline-copy h2 {
+    hyphens: none;
+  }
+
+  .timeline-dossier {
+    margin-top: 30px;
+  }
+
+  .timeline-dossier-toggle {
+    min-height: 62px;
+  }
+
+  .timeline-dossier-body {
+    max-width: none;
+    padding-bottom: 38px;
+  }
+
+  .timeline-dossier-body section {
+    margin-top: 44px;
+  }
+
+  .timeline-dossier-facts {
+    grid-template-columns: 1fr;
+    margin-bottom: 48px;
+  }
+
+  .timeline-dossier-facts > div {
+    min-height: 96px;
+  }
+
+  .history-source-list .history-source-note {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .history-orbit {
+    animation: none !important;
+  }
+
+  .archive-scene,
+  .archive-scene-background,
+  .archive-scene-cutout,
+  .timeline-dossier-icon {
+    opacity: 1;
+    transform: none !important;
+    transition: none !important;
+  }
+}
+
 /* MID-A-0001 / radiation research */
 .record-research {
   background: var(--paper);
