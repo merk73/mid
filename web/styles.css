@@ -790,7 +790,7 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
   object-position: var(--bg-position, 50% 50%);
   opacity: 0.94;
   filter: contrast(1.08) brightness(0.9) blur(0);
-  transform: translate3d(0, var(--parallax-y, 0), 0) scale(1.08);
+  transform: translate3d(var(--parallax-x, 0), var(--parallax-y, 0), 0) scale(var(--parallax-scale, 1.12));
   transition: opacity 1200ms ease, filter 1400ms ease;
 }
 
@@ -811,7 +811,8 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
     drop-shadow(0 0 50px color-mix(in srgb, var(--scene-accent, #8b96aa) 24%, transparent));
   transform:
     translate3d(var(--parallax-x, 0), var(--parallax-y, 0), 0)
-    rotate(var(--parallax-rotate, 0deg));
+    rotate(var(--parallax-rotate, 0deg))
+    scale(var(--parallax-scale, 1));
   transition: opacity 1100ms ease 180ms, filter 1200ms ease;
 }
 

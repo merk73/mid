@@ -115,22 +115,32 @@ function updateParallax() {
     const rect = scene.getBoundingClientRect();
     const travel = (window.innerHeight - rect.top) / Math.max(window.innerHeight + rect.height, 1);
     const progress = Math.max(-1, Math.min(1, travel * 2 - 1));
+    const foregroundSide = scene.querySelector(".archive-scene-cutout--left") ? -1 : 1;
 
     scene.querySelectorAll("[data-parallax]").forEach((layer) => {
       const isCutout = layer.dataset.parallax === "cutout";
-      const range = isCutout ? (compactMotion ? 26 : 92) : compactMotion ? 12 : 42;
+      const range = isCutout ? (compactMotion ? 68 : 164) : compactMotion ? 32 : 82;
       const direction = isCutout ? -1 : 1;
       const y = parallaxEnabled ? progress * range * direction : 0;
       layer.style.setProperty("--parallax-y", `${y.toFixed(2)}px`);
 
       if (isCutout) {
         const side = layer.classList.contains("archive-scene-cutout--left") ? -1 : 1;
-        const xRange = compactMotion ? 4 : 15;
-        const rotateRange = compactMotion ? 0 : 1.05;
+        const xRange = compactMotion ? 14 : 38;
+        const rotateRange = compactMotion ? 0.75 : 2.4;
+        const scaleRange = compactMotion ? 0.018 : 0.042;
         const x = parallaxEnabled ? progress * xRange * side : 0;
         const rotation = parallaxEnabled ? progress * rotateRange * side : 0;
+        const scale = parallaxEnabled ? 1 + Math.abs(progress) * scaleRange : 1;
         layer.style.setProperty("--parallax-x", `${x.toFixed(2)}px`);
         layer.style.setProperty("--parallax-rotate", `${rotation.toFixed(3)}deg`);
+        layer.style.setProperty("--parallax-scale", scale.toFixed(4));
+      } else {
+        const xRange = compactMotion ? 8 : 24;
+        const x = parallaxEnabled ? progress * xRange * foregroundSide * -1 : 0;
+        const scale = parallaxEnabled ? 1.12 + Math.abs(progress) * (compactMotion ? 0.018 : 0.038) : 1.12;
+        layer.style.setProperty("--parallax-x", `${x.toFixed(2)}px`);
+        layer.style.setProperty("--parallax-scale", scale.toFixed(4));
       }
     });
   });
