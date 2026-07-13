@@ -74,7 +74,7 @@
       image: "",
       fixed: true,
       x: width / 2 + Math.cos(angle) * 1620,
-      y: height / 2 + Math.sin(angle) * 1050,
+      y: height / 2 + Math.sin(angle) * 1150,
     };
   });
 
