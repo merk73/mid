@@ -9,10 +9,6 @@
     anomaly: ["АНОМАЛИЯ", "АНОМАЛИИ"],
     incident: ["ИНЦИДЕНТ", "ИНЦИДЕНТЫ"],
   };
-  const records = Object.fromEntries(types.map((type) => [type, Object.values(registry[type] || {})]));
-  const counts = Object.fromEntries(types.map((type) => [type, records[type].length]));
-  const total = types.reduce((sum, type) => sum + counts[type], 0);
-
   function stableValue(value) {
     if (Array.isArray(value)) return value.map(stableValue);
     if (!value || typeof value !== "object") return value;
@@ -33,14 +29,28 @@
     return (hash >>> 0).toString(16).toUpperCase().padStart(8, "0");
   }
 
-  const signature = `REV-${fnv1a(JSON.stringify(stableValue(registry)))}`;
+  function registrySnapshot() {
+    const records = Object.fromEntries(types.map((type) => [type, Object.values(registry[type] || {})]));
+    const counts = Object.fromEntries(types.map((type) => [type, records[type].length]));
+    return {
+      records,
+      counts,
+      total: types.reduce((sum, type) => sum + counts[type], 0),
+      signature: `REV-${fnv1a(JSON.stringify(stableValue(registry)))}`,
+    };
+  }
 
-  document.querySelectorAll("[data-company-record-count]").forEach((element) => {
-    element.textContent = String(total).padStart(2, "0");
-  });
-  document.querySelectorAll("[data-company-revision], [data-footer-revision]").forEach((element) => {
-    element.textContent = signature;
-  });
+  function updateRegistryMetadata() {
+    const snapshot = registrySnapshot();
+    document.querySelectorAll("[data-company-record-count]").forEach((element) => {
+      element.textContent = String(snapshot.total).padStart(2, "0");
+    });
+    document.querySelectorAll("[data-company-revision], [data-footer-revision]").forEach((element) => {
+      element.textContent = snapshot.signature;
+    });
+  }
+
+  updateRegistryMetadata();
 
   const journalList = document.querySelector("#company-journal-list");
   const dateLabel = new Intl.DateTimeFormat("ru-RU", {
@@ -55,6 +65,7 @@
   }
 
   function createJournalDay() {
+    const { records, counts } = registrySnapshot();
     const details = document.createElement("details");
     details.className = "company-journal-day";
 
@@ -102,7 +113,12 @@
     return details;
   }
 
-  if (journalList) journalList.append(createJournalDay());
+  function renderJournal() {
+    if (!journalList) return;
+    journalList.replaceChildren(createJournalDay());
+  }
+
+  renderJournal();
 
   const quotes = [
     ["Архив начинается в тот момент, когда свидетельство перестаёт быть одиночным.", "РЕДАКЦИОННЫЙ ПРОТОКОЛ / ЗАПИСЬ 01"],
@@ -172,29 +188,189 @@
 
   // The full pannable investigation map is initialized by investigation-board.js.
 
-  const editorTabs = [...document.querySelectorAll("[data-editor-tab]")];
-  const editorPanels = [...document.querySelectorAll("[data-editor-panel]")];
-  editorTabs.forEach((tab) => {
-    tab.addEventListener("click", () => {
-      const target = tab.dataset.editorTab;
-      editorTabs.forEach((item) => {
-        const active = item === tab;
-        item.classList.toggle("is-active", active);
-        item.setAttribute("aria-selected", String(active));
-      });
-      editorPanels.forEach((panel) => {
-        const active = panel.dataset.editorPanel === target;
-        panel.classList.toggle("is-active", active);
-        panel.hidden = !active;
-      });
+  const editorForm = document.querySelector("#company-editor-form");
+  const editorFile = editorForm?.elements.namedItem("image");
+  const editorPreview = document.querySelector("[data-editor-preview]");
+  const editorUploadCopy = document.querySelector("[data-editor-upload-copy]");
+  const editorCardType = document.querySelector("[data-editor-card-type]");
+  const editorSubmit = document.querySelector("[data-editor-submit]");
+  const editorResult = document.querySelector("[data-editor-result]");
+  const editorError = document.querySelector("[data-editor-error]");
+  let preparedImage = "";
+  let preparedFile = "";
+  let activeCardTypeDefault = "Клиент / наблюдаемый субъект";
+
+  const cardTypeDefaults = {
+    client: "Клиент / наблюдаемый субъект",
+    incident: "Инцидент / активный процесс",
+    anomaly: "Аномалия / зона наблюдения",
+  };
+
+  function canvasBlob(canvas, mimeType, quality) {
+    return new Promise((resolve) => canvas.toBlob(resolve, mimeType, quality));
+  }
+
+  function blobDataUrl(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(new Error("Не удалось прочитать подготовленное изображение."));
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  function loadImage(url) {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.onload = () => resolve(image);
+      image.onerror = () => reject(new Error("Файл не удалось распознать как изображение."));
+      image.src = url;
+    });
+  }
+
+  async function prepareEditorImage(file) {
+    if (!file?.type?.startsWith("image/")) throw new Error("Выберите изображение JPG, PNG или WEBP.");
+    if (file.size > 15 * 1024 * 1024) throw new Error("Файл больше 15 МБ. Выберите изображение меньшего размера.");
+
+    const sourceUrl = URL.createObjectURL(file);
+    try {
+      const source = await loadImage(sourceUrl);
+      const maximumSide = 1200;
+      const scale = Math.min(1, maximumSide / Math.max(source.naturalWidth, source.naturalHeight));
+      let width = Math.max(1, Math.round(source.naturalWidth * scale));
+      let height = Math.max(1, Math.round(source.naturalHeight * scale));
+      let canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      canvas.getContext("2d", { alpha: false }).drawImage(source, 0, 0, width, height);
+
+      let quality = 0.82;
+      let blob = await canvasBlob(canvas, "image/webp", quality);
+      for (let attempt = 0; blob && blob.size > 620 * 1024 && attempt < 4; attempt += 1) {
+        quality = Math.max(0.52, quality - 0.09);
+        width = Math.max(480, Math.round(width * 0.86));
+        height = Math.max(320, Math.round(height * 0.86));
+        const resized = document.createElement("canvas");
+        resized.width = width;
+        resized.height = height;
+        resized.getContext("2d", { alpha: false }).drawImage(canvas, 0, 0, width, height);
+        canvas = resized;
+        blob = await canvasBlob(canvas, "image/webp", quality);
+      }
+      if (!blob) blob = await canvasBlob(canvas, "image/jpeg", 0.76);
+      if (!blob) throw new Error("Браузер не смог подготовить изображение.");
+      return blobDataUrl(blob);
+    } finally {
+      URL.revokeObjectURL(sourceUrl);
+    }
+  }
+
+  function showEditorError(message) {
+    if (!editorError) return;
+    editorError.textContent = message;
+    editorError.hidden = false;
+  }
+
+  function clearEditorError() {
+    if (!editorError) return;
+    editorError.textContent = "";
+    editorError.hidden = true;
+  }
+
+  editorForm?.querySelectorAll('input[name="type"]').forEach((input) => {
+    input.addEventListener("change", () => {
+      if (!input.checked || !editorCardType) return;
+      const nextDefault = cardTypeDefaults[input.value] || cardTypeDefaults.client;
+      if (!editorCardType.value.trim() || editorCardType.value === activeCardTypeDefault) editorCardType.value = nextDefault;
+      activeCardTypeDefault = nextDefault;
     });
   });
 
-  document.querySelector("[data-editor-action]")?.addEventListener("click", (event) => {
-    const status = document.querySelector("[data-editor-status]");
-    event.currentTarget.textContent = "РЕВИЗИЯ СОБРАНА";
-    event.currentTarget.classList.add("is-complete");
-    if (status) status.textContent = `${signature} подготовлена как редакционный черновик. Публикация заблокирована до полевой сверки.`;
+  editorFile?.addEventListener("change", async () => {
+    preparedImage = "";
+    preparedFile = "";
+    clearEditorError();
+    const file = editorFile.files?.[0];
+    if (!file) {
+      if (editorPreview) editorPreview.hidden = true;
+      if (editorUploadCopy) editorUploadCopy.hidden = false;
+      return;
+    }
+    if (editorSubmit) editorSubmit.disabled = true;
+    try {
+      preparedImage = await prepareEditorImage(file);
+      preparedFile = file.name;
+      if (editorPreview) {
+        editorPreview.src = preparedImage;
+        editorPreview.hidden = false;
+      }
+      if (editorUploadCopy) editorUploadCopy.hidden = true;
+    } catch (error) {
+      editorFile.value = "";
+      showEditorError(error.message || "Не удалось подготовить изображение.");
+    } finally {
+      if (editorSubmit) editorSubmit.disabled = false;
+    }
+  });
+
+  editorForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    clearEditorError();
+    if (!editorForm.reportValidity()) return;
+    const file = editorFile?.files?.[0];
+    if (!file) {
+      showEditorError("Загрузите обложку карточки.");
+      return;
+    }
+    if (editorSubmit) {
+      editorSubmit.disabled = true;
+      editorSubmit.textContent = "ПОДГОТОВКА…";
+    }
+
+    try {
+      if (!preparedImage || preparedFile !== file.name) preparedImage = await prepareEditorImage(file);
+      const formData = new FormData(editorForm);
+      const created = window.MIDGAS_EDITOR_STORE?.create({
+        type: formData.get("type"),
+        name: formData.get("name"),
+        alias: formData.get("alias"),
+        cardType: formData.get("cardType"),
+        status: formData.get("status"),
+        threat: formData.get("threat"),
+        access: formData.get("access"),
+        location: formData.get("location"),
+        summary: formData.get("summary"),
+        description: formData.get("description"),
+        image: preparedImage,
+      });
+      if (!created) throw new Error("Модуль локального сохранения недоступен.");
+
+      const recordUrl = `record.html?type=${encodeURIComponent(created.type)}&id=${encodeURIComponent(created.record.id)}`;
+      const registryUrl = `registry.html?type=${encodeURIComponent(created.type)}`;
+      const createdId = document.querySelector("[data-editor-created-id]");
+      const status = document.querySelector("[data-editor-status]");
+      const openLink = document.querySelector("[data-editor-open]");
+      const registryLink = document.querySelector("[data-editor-registry]");
+      if (createdId) createdId.textContent = created.record.id;
+      if (status) status.textContent = `«${created.record.name}» сохранена в этом браузере и добавлена в журнал текущей ревизии.`;
+      if (openLink) openLink.href = recordUrl;
+      if (registryLink) registryLink.href = registryUrl;
+      if (editorResult) {
+        editorResult.hidden = false;
+        editorResult.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "nearest" });
+      }
+      if (editorSubmit) editorSubmit.textContent = "КАРТОЧКА СОЗДАНА";
+    } catch (error) {
+      showEditorError(error.message || "Не удалось создать карточку.");
+      if (editorSubmit) editorSubmit.textContent = "СОЗДАТЬ КАРТОЧКУ";
+    } finally {
+      if (editorSubmit) editorSubmit.disabled = false;
+    }
+  });
+
+  window.addEventListener("midgas:record-created", () => {
+    updateRegistryMetadata();
+    renderJournal();
   });
 
   const revealElements = [...document.querySelectorAll(".company-reveal")];
