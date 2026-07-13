@@ -11,7 +11,6 @@ const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const coarsePointer = window.matchMedia("(pointer: coarse)");
 const narrowViewport = window.matchMedia("(max-width: 760px)");
 const saveData = navigator.connection?.saveData === true;
-const dossierStorageKey = "midgas:historical-archive:dossiers:v1";
 const visibleScenes = new Set();
 
 let frameRequested = false;
@@ -33,6 +32,7 @@ const entryObserver = new IntersectionObserver(
 const sceneObserver = new IntersectionObserver(
   (records) => {
     records.forEach(({ target, isIntersecting }) => {
+      target.classList.toggle("is-in-viewport", isIntersecting);
       if (isIntersecting) visibleScenes.add(target);
       else visibleScenes.delete(target);
     });
@@ -47,39 +47,8 @@ historyEntries.forEach((entry) => {
 });
 historyScenes.forEach((scene) => sceneObserver.observe(scene));
 
-function readDossierState() {
-  try {
-    return new Set(JSON.parse(sessionStorage.getItem(dossierStorageKey) || "[]"));
-  } catch {
-    return new Set();
-  }
-}
-
-const openDossiers = readDossierState();
-
-function syncDossierLabel(details) {
-  const label = details.querySelector(".timeline-dossier-label");
-  if (label) label.textContent = details.open ? "СВЕРНУТЬ ДОСЬЕ" : "ЧИТАТЬ ДАЛЕЕ";
-}
-
 historyDossiers.forEach((details) => {
-  const key = details.dataset.dossierKey;
-  details.open = openDossiers.has(key);
-  syncDossierLabel(details);
-
-  details.addEventListener("toggle", () => {
-    if (details.open) openDossiers.add(key);
-    else openDossiers.delete(key);
-
-    try {
-      sessionStorage.setItem(dossierStorageKey, JSON.stringify([...openDossiers]));
-    } catch {
-      // Session persistence is optional; interaction must continue without it.
-    }
-
-    syncDossierLabel(details);
-    scheduleArchiveFrame();
-  });
+  details.open = true;
 });
 
 function revealHashTarget() {
@@ -95,7 +64,6 @@ function revealHashTarget() {
   const parentDetails = target?.matches("details") ? target : target?.closest("details");
   if (parentDetails) {
     parentDetails.open = true;
-    syncDossierLabel(parentDetails);
   }
 }
 
@@ -140,20 +108,30 @@ function updateActiveEntry() {
 }
 
 function updateParallax() {
-  const parallaxEnabled =
-    !reduceMotion.matches &&
-    !coarsePointer.matches &&
-    !narrowViewport.matches &&
-    !saveData;
+  const parallaxEnabled = !reduceMotion.matches && !saveData;
+  const compactMotion = narrowViewport.matches || coarsePointer.matches;
 
   visibleScenes.forEach((scene) => {
     const rect = scene.getBoundingClientRect();
-    const distance = (window.innerHeight / 2 - (rect.top + rect.height / 2)) / window.innerHeight;
-    const progress = Math.max(-1, Math.min(1, distance));
+    const travel = (window.innerHeight - rect.top) / Math.max(window.innerHeight + rect.height, 1);
+    const progress = Math.max(-1, Math.min(1, travel * 2 - 1));
 
     scene.querySelectorAll("[data-parallax]").forEach((layer) => {
-      const range = layer.dataset.parallax === "cutout" ? 76 : 38;
-      layer.style.setProperty("--parallax-y", parallaxEnabled ? String(progress * range) + "px" : "0px");
+      const isCutout = layer.dataset.parallax === "cutout";
+      const range = isCutout ? (compactMotion ? 26 : 92) : compactMotion ? 12 : 42;
+      const direction = isCutout ? -1 : 1;
+      const y = parallaxEnabled ? progress * range * direction : 0;
+      layer.style.setProperty("--parallax-y", `${y.toFixed(2)}px`);
+
+      if (isCutout) {
+        const side = layer.classList.contains("archive-scene-cutout--left") ? -1 : 1;
+        const xRange = compactMotion ? 4 : 15;
+        const rotateRange = compactMotion ? 0 : 1.05;
+        const x = parallaxEnabled ? progress * xRange * side : 0;
+        const rotation = parallaxEnabled ? progress * rotateRange * side : 0;
+        layer.style.setProperty("--parallax-x", `${x.toFixed(2)}px`);
+        layer.style.setProperty("--parallax-rotate", `${rotation.toFixed(3)}deg`);
+      }
     });
   });
 }
@@ -177,7 +155,11 @@ scheduleArchiveFrame();
 window.addEventListener("hashchange", revealHashTarget);
 window.addEventListener("scroll", scheduleArchiveFrame, { passive: true });
 window.addEventListener("resize", scheduleArchiveFrame);
-reduceMotion.addEventListener?.("change", scheduleArchiveFrame);
+reduceMotion.addEventListener?.("change", ({ matches }) => {
+  document.documentElement.classList.toggle("archive-motion-ready", !matches && historyEntries.length > 0);
+  if (matches) historyEntries.forEach((entry) => entry.classList.add("is-visible"));
+  scheduleArchiveFrame();
+});
 narrowViewport.addEventListener?.("change", scheduleArchiveFrame);
 coarsePointer.addEventListener?.("change", scheduleArchiveFrame);
 

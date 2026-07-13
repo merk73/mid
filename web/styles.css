@@ -710,9 +710,14 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
 
 /* Historical archive v1.0: expandable dossiers and layered scenes. */
 .archive-scene {
+  --fg-bottom: -4%;
+  --fg-inline: clamp(8px, 3vw, 54px);
+  --fg-opacity: 0.86;
+  --fg-width: min(36vw, 580px);
   isolation: isolate;
   min-height: 100svh;
   overflow: clip;
+  background: #050505;
   opacity: 1;
   transform: none;
 }
@@ -751,62 +756,102 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
 
 .archive-scene-media {
   z-index: 0;
+  overflow: clip;
+}
+
+.archive-scene-stage {
+  position: sticky;
+  top: 0;
+  height: 100svh;
   overflow: hidden;
+}
+
+.archive-scene-stage::after {
+  position: absolute;
+  z-index: 2;
+  inset: 0;
+  opacity: 0.13;
+  background:
+    repeating-radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.14) 0 0.7px, transparent 0.8px 4px),
+    repeating-linear-gradient(0deg, transparent 0 3px, rgba(255, 255, 255, 0.035) 3px 4px);
+  mix-blend-mode: soft-light;
+  pointer-events: none;
+  content: "";
 }
 
 .archive-scene-background {
   position: absolute;
-  inset: -8%;
-  background:
-    radial-gradient(circle at 76% 34%, color-mix(in srgb, var(--scene-accent, #667080) 36%, transparent), transparent 24%),
-    linear-gradient(118deg, transparent 32%, rgba(255, 255, 255, 0.05) 32.2%, transparent 32.5%),
-    repeating-linear-gradient(90deg, rgba(255, 255, 255, 0.025) 0 1px, transparent 1px 76px),
-    repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 76px),
-    #0b0b0b;
-  filter: grayscale(1) contrast(1.15);
-  transform: translate3d(0, var(--parallax-y, 0), 0) scale(1.06);
-  will-change: transform;
+  z-index: 0;
+  inset: -10% -6%;
+  width: 112%;
+  height: 120%;
+  max-width: none;
+  object-fit: cover;
+  object-position: var(--bg-position, 50% 50%);
+  opacity: 0.94;
+  filter: contrast(1.08) brightness(0.9) blur(0);
+  transform: translate3d(0, var(--parallax-y, 0), 0) scale(1.08);
+  transition: opacity 1200ms ease, filter 1400ms ease;
 }
 
 .archive-scene-cutout {
   position: absolute;
   z-index: 1;
-  bottom: 4%;
-  display: grid;
-  width: min(34vw, 520px);
-  aspect-ratio: 0.72;
-  place-items: center;
-  opacity: 0.3;
-  border: 1px solid color-mix(in srgb, var(--scene-accent, #8b96aa) 66%, transparent);
-  background:
-    linear-gradient(145deg, color-mix(in srgb, var(--scene-accent, #8b96aa) 40%, transparent), transparent 58%),
-    repeating-linear-gradient(-45deg, rgba(255, 255, 255, 0.08) 0 1px, transparent 1px 20px);
-  box-shadow: 0 0 100px color-mix(in srgb, var(--scene-accent, #8b96aa) 24%, transparent);
-  clip-path: polygon(22% 0, 81% 3%, 100% 32%, 89% 100%, 10% 94%, 0 31%);
-  transform: translate3d(0, var(--parallax-y, 0), 0);
-  will-change: transform;
+  bottom: var(--fg-bottom);
+  display: block;
+  width: var(--fg-width);
+  height: auto;
+  max-height: 82svh;
+  object-fit: contain;
+  opacity: var(--fg-opacity);
+  filter:
+    brightness(1.2)
+    contrast(1.1)
+    drop-shadow(0 22px 28px rgba(0, 0, 0, 0.72))
+    drop-shadow(0 0 50px color-mix(in srgb, var(--scene-accent, #8b96aa) 24%, transparent));
+  transform:
+    translate3d(var(--parallax-x, 0), var(--parallax-y, 0), 0)
+    rotate(var(--parallax-rotate, 0deg));
+  transition: opacity 1100ms ease 180ms, filter 1200ms ease;
 }
 
 .archive-scene-cutout--right {
-  right: clamp(-110px, -4vw, -34px);
+  right: var(--fg-inline);
 }
 
 .archive-scene-cutout--left {
-  right: clamp(20px, 7vw, 140px);
+  right: auto;
+  left: var(--fg-inline);
 }
 
-.archive-scene-cutout span {
-  color: color-mix(in srgb, var(--scene-accent, #aab4c7) 78%, white);
-  font-size: 10px;
-  letter-spacing: 0.16em;
-  writing-mode: vertical-rl;
+.archive-motion-ready .archive-scene:not(.is-visible) .archive-scene-background {
+  opacity: 0.18;
+  filter: contrast(1.05) brightness(0.46) blur(7px);
+}
+
+.archive-motion-ready .archive-scene:not(.is-visible) .archive-scene-cutout {
+  opacity: 0;
+  filter: blur(9px) drop-shadow(0 18px 24px rgba(0, 0, 0, 0.66));
+}
+
+.archive-scene.is-in-viewport .archive-scene-background,
+.archive-scene.is-in-viewport .archive-scene-cutout {
+  will-change: transform;
+}
+
+.archive-scene.is-in-viewport .archive-scene-background {
+  animation: archive-background-breathe 12s ease-in-out infinite alternate;
+}
+
+.archive-scene.is-in-viewport .archive-scene-cutout {
+  animation: archive-object-float 6.5s ease-in-out infinite alternate;
 }
 
 .archive-scene-vignette {
   z-index: 2;
   background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.96) 0%, rgba(0, 0, 0, 0.84) 43%, rgba(0, 0, 0, 0.38) 76%, rgba(0, 0, 0, 0.64) 100%),
-    linear-gradient(0deg, rgba(0, 0, 0, 0.88), transparent 48%, rgba(0, 0, 0, 0.46));
+    linear-gradient(90deg, rgba(0, 0, 0, 0.54) 0%, rgba(0, 0, 0, 0.38) 40%, rgba(0, 0, 0, 0.16) 74%, rgba(0, 0, 0, 0.3) 100%),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.68), transparent 46%, rgba(0, 0, 0, 0.26));
 }
 
 .archive-scene > .timeline-marker,
@@ -816,22 +861,53 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
   z-index: 3;
 }
 
-.archive-scene[data-scene="union"] { --scene-accent: #52627e; }
-.archive-scene[data-scene="discovery"] { --scene-accent: #345b62; }
-.archive-scene[data-scene="human"] { --scene-accent: #8c5548; }
-.archive-scene[data-scene="eden"] { --scene-accent: #7b6d45; }
-.archive-scene[data-scene="belts"] { --scene-accent: #5e527c; }
-.archive-scene[data-scene="hyperborea"] { --scene-accent: #6e8fa6; }
-.archive-scene[data-scene="interplanetary"] { --scene-accent: #736b90; }
-.archive-scene[data-scene="successors"] { --scene-accent: #755a48; }
-.archive-scene[data-scene="selbet-war"] { --scene-accent: #9b352d; }
-.archive-scene[data-scene="resettlement"] { --scene-accent: #587359; }
-.archive-scene[data-scene="tartaria"] { --scene-accent: #977941; }
-.archive-scene[data-scene="hidden-war"] { --scene-accent: #73503f; }
-.archive-scene[data-scene="compression"] { --scene-accent: #6f6a61; }
-.archive-scene[data-scene="war-1812"] { --scene-accent: #a52d27; }
-.archive-scene[data-scene="reset"] { --scene-accent: #68717b; }
-.archive-scene[data-scene="silence"] { --scene-accent: #4b5260; }
+.archive-scene[data-scene="union"] { --scene-accent: #52627e; --fg-width: min(38vw, 610px); --fg-bottom: -7%; --bg-position: 52% 50%; }
+.archive-scene[data-scene="discovery"] { --scene-accent: #345b62; --fg-width: min(31vw, 500px); --fg-bottom: -9%; --fg-inline: clamp(16px, 5vw, 84px); --bg-position: 52% 50%; }
+.archive-scene[data-scene="human"] { --scene-accent: #8c5548; --fg-width: min(35vw, 555px); --fg-bottom: -5%; --fg-opacity: 0.76; --bg-position: 46% 50%; }
+.archive-scene[data-scene="eden"] { --scene-accent: #7b6d45; --fg-width: min(33vw, 530px); --fg-bottom: -10%; --bg-position: 52% 50%; }
+.archive-scene[data-scene="belts"] { --scene-accent: #5e527c; --fg-width: min(38vw, 610px); --fg-bottom: -7%; --fg-opacity: 0.76; --bg-position: 48% 50%; }
+.archive-scene[data-scene="hyperborea"] { --scene-accent: #6e8fa6; --fg-width: min(35vw, 560px); --fg-bottom: -10%; --bg-position: 56% 50%; }
+.archive-scene[data-scene="interplanetary"] { --scene-accent: #736b90; --fg-width: min(43vw, 690px); --fg-bottom: -13%; --fg-opacity: 0.8; --bg-position: 50% 54%; }
+.archive-scene[data-scene="successors"] { --scene-accent: #755a48; --fg-width: min(35vw, 560px); --fg-bottom: -4%; --bg-position: 54% 50%; }
+.archive-scene[data-scene="selbet-war"] { --scene-accent: #9b352d; --fg-width: min(36vw, 580px); --fg-bottom: -5%; --bg-position: 51% 50%; }
+.archive-scene[data-scene="resettlement"] { --scene-accent: #587359; --fg-width: min(24vw, 380px); --fg-bottom: -3%; --fg-inline: clamp(32px, 8vw, 130px); --bg-position: 50% 50%; }
+.archive-scene[data-scene="tartaria"] { --scene-accent: #977941; --fg-width: min(40vw, 640px); --fg-bottom: -8%; --bg-position: 50% 50%; }
+.archive-scene[data-scene="hidden-war"] { --scene-accent: #73503f; --fg-width: min(24vw, 380px); --fg-bottom: -2%; --fg-inline: clamp(38px, 8vw, 130px); --bg-position: 54% 50%; }
+.archive-scene[data-scene="compression"] { --scene-accent: #6f6a61; --fg-width: min(42vw, 680px); --fg-bottom: -10%; --fg-opacity: 0.78; --bg-position: 48% 50%; }
+.archive-scene[data-scene="war-1812"] { --scene-accent: #a52d27; --fg-width: min(35vw, 560px); --fg-bottom: -4%; --bg-position: 56% 50%; }
+.archive-scene[data-scene="reset"] { --scene-accent: #68717b; --fg-width: min(41vw, 660px); --fg-bottom: -9%; --fg-opacity: 0.76; --bg-position: 50% 50%; }
+.archive-scene[data-scene="silence"] { --scene-accent: #4b5260; --fg-width: min(38vw, 610px); --fg-bottom: -10%; --bg-position: 54% 50%; }
+
+@keyframes archive-background-breathe {
+  from { scale: 1; }
+  to { scale: 1.018; }
+}
+
+@keyframes archive-object-float {
+  from { translate: 0 0; }
+  to { translate: 0 -8px; }
+}
+
+.archive-motion-ready .archive-scene .timeline-date,
+.archive-motion-ready .archive-scene .timeline-copy > h2,
+.archive-motion-ready .archive-scene .timeline-lede,
+.archive-motion-ready .archive-scene .timeline-dossier {
+  opacity: 0;
+  transform: translateY(22px);
+  transition: opacity 700ms ease, transform 850ms cubic-bezier(0.2, 0.75, 0.2, 1);
+}
+
+.archive-motion-ready .archive-scene.is-visible .timeline-date,
+.archive-motion-ready .archive-scene.is-visible .timeline-copy > h2,
+.archive-motion-ready .archive-scene.is-visible .timeline-lede,
+.archive-motion-ready .archive-scene.is-visible .timeline-dossier {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.archive-motion-ready .archive-scene.is-visible .timeline-copy > h2 { transition-delay: 90ms; }
+.archive-motion-ready .archive-scene.is-visible .timeline-lede { transition-delay: 180ms; }
+.archive-motion-ready .archive-scene.is-visible .timeline-dossier { transition-delay: 270ms; }
 
 .archive-scene {
   scroll-margin-top: 72px;
@@ -839,6 +915,7 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
 
 .archive-scene .timeline-copy {
   max-width: 1040px;
+  text-shadow: 0 2px 22px #000, 0 0 5px #000;
 }
 
 .timeline-lede {
@@ -856,7 +933,7 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
 }
 
 .timeline-dossier-toggle {
-  display: flex;
+  display: none;
   min-height: 68px;
   align-items: center;
   justify-content: space-between;
@@ -899,7 +976,7 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
 
 .timeline-dossier-body {
   max-width: 76ch;
-  padding: 20px 0 70px;
+  padding: 38px 0 70px;
 }
 
 .timeline-dossier-body section {
@@ -1001,7 +1078,7 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
 
   .archive-scene-cutout {
     width: min(44vw, 470px);
-    opacity: 0.24;
+    opacity: 0.6;
   }
 
   .timeline-rail {
@@ -1019,31 +1096,25 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
   }
 }
 
-@media (max-width: 760px), (pointer: coarse) {
-  .archive-scene-background,
-  .archive-scene-cutout {
-    transform: none !important;
-    will-change: auto;
-  }
-
+@media (max-width: 760px) {
   .archive-scene-vignette {
     background:
-      linear-gradient(0deg, rgba(0, 0, 0, 0.98) 0%, rgba(0, 0, 0, 0.9) 68%, rgba(0, 0, 0, 0.58) 100%),
-      linear-gradient(90deg, rgba(0, 0, 0, 0.65), rgba(0, 0, 0, 0.2));
+      linear-gradient(0deg, rgba(0, 0, 0, 0.7) 0%, rgba(0, 0, 0, 0.42) 64%, rgba(0, 0, 0, 0.24) 100%),
+      linear-gradient(90deg, rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.12));
   }
 
   .archive-scene-cutout {
-    top: 5%;
-    right: -12vw;
-    bottom: auto;
-    width: 72vw;
-    max-height: 52svh;
-    opacity: 0.2;
+    top: auto;
+    right: -18vw;
+    bottom: -6%;
+    width: 86vw;
+    max-height: 60svh;
+    opacity: 0.66;
   }
 
   .archive-scene-cutout--left {
     right: auto;
-    left: -14vw;
+    left: -18vw;
   }
 
   .archive-scene .timeline-copy h2 {
@@ -1094,12 +1165,26 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
   }
 
   .archive-scene,
-  .archive-scene-background,
-  .archive-scene-cutout,
   .timeline-dossier-icon {
     opacity: 1;
     transform: none !important;
     transition: none !important;
+  }
+
+  .archive-scene-background,
+  .archive-scene-cutout {
+    transform: none !important;
+    transition: none !important;
+    animation: none !important;
+    will-change: auto !important;
+  }
+
+  .archive-scene-background {
+    opacity: 0.94;
+  }
+
+  .archive-scene-cutout {
+    opacity: var(--fg-opacity);
   }
 }
 
