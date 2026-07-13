@@ -15,7 +15,7 @@ const dossierStorageKey = "midgas:historical-archive:dossiers:v1";
 const visibleScenes = new Set();
 
 let frameRequested = false;
-let activePhase = "";
+let activeEntryId = "";
 
 if (!reduceMotion.matches && historyEntries.length) {
   document.documentElement.classList.add("archive-motion-ready");
@@ -112,25 +112,26 @@ function updateHistoryProgress() {
   historyProgressBar?.setAttribute("aria-valuenow", String(percentage));
 }
 
-function updateActivePhase() {
-  let nextPhase = historyEntries[0]?.dataset.phase || "";
+function updateActiveEntry() {
+  let nextEntry = historyEntries[0] || null;
 
   historyEntries.forEach((entry) => {
     if (entry.getBoundingClientRect().top <= window.innerHeight * 0.43) {
-      nextPhase = entry.dataset.phase || nextPhase;
+      nextEntry = entry;
     }
   });
 
+  const nextEntryHash = nextEntry?.id ? `#${nextEntry.id}` : "";
+
   historyRailLinks.forEach((link) => {
-    const target = document.querySelector(link.hash);
-    const isActive = target?.dataset.phase === nextPhase;
+    const isActive = link.hash === nextEntryHash;
     link.classList.toggle("is-active", isActive);
     if (isActive) link.setAttribute("aria-current", "step");
     else link.removeAttribute("aria-current");
   });
 
-  if (nextPhase !== activePhase) {
-    activePhase = nextPhase;
+  if (nextEntryHash !== activeEntryId) {
+    activeEntryId = nextEntryHash;
     const activeLink = historyRailLinks.find((link) => link.getAttribute("aria-current") === "step");
     if (activeLink && window.innerWidth <= 980) {
       activeLink.scrollIntoView({ block: "nearest", inline: "center", behavior: reduceMotion.matches ? "auto" : "smooth" });
@@ -160,7 +161,7 @@ function updateParallax() {
 function renderArchiveFrame() {
   frameRequested = false;
   updateHistoryProgress();
-  updateActivePhase();
+  updateActiveEntry();
   updateParallax();
 }
 

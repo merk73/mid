@@ -321,6 +321,9 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
   height: calc(100svh - 58px);
   flex-direction: column;
   padding: 42px 30px 32px var(--side);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #383838 transparent;
   border-right: 1px solid #383838;
 }
 
@@ -329,10 +332,11 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
 }
 
 .timeline-rail a {
-  padding: 13px 0;
+  padding: clamp(5px, 0.85vh, 9px) 0;
   color: #888;
   border-top: 1px solid #252525;
-  font-size: 10px;
+  font-size: 9px;
+  line-height: 1.2;
   transition: color 160ms ease, padding-left 160ms ease;
 }
 
@@ -565,6 +569,7 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
     height: auto;
     padding: 0 var(--side);
     overflow-x: auto;
+    overflow-y: hidden;
     background: rgba(8, 8, 8, 0.96);
     border-right: 0;
     border-bottom: 1px solid #383838;
@@ -578,6 +583,7 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
   .timeline-rail a {
     min-width: max-content;
     padding: 16px 20px;
+    font-size: 10px;
     border-top: 0;
     border-right: 1px solid #252525;
   }
