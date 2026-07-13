@@ -7575,9 +7575,14 @@ button {
 .company-board-thread.is-active .company-board-thread-base { stroke-width: 3.2; }
 
 .company-board-world .company-board-node {
-  touch-action: manipulation;
+  touch-action: none;
   -webkit-tap-highlight-color: transparent;
   backface-visibility: hidden;
+}
+
+.company-board-world .company-board-node img {
+  pointer-events: none;
+  -webkit-user-drag: none;
 }
 
 .company-board-inspector { min-height: clamp(780px, 86svh, 1040px); }
@@ -7590,8 +7595,21 @@ button {
   .company-board { padding-right: 10px; padding-left: 10px; }
   .company-board-toolbar--simple { display: flex; overflow: visible; }
   .company-board-toolbar--simple .company-board-count { display: block; padding-left: 8px; font-size: 7px; }
-  .company-board-viewport { min-height: 76svh; background-size: 48px 48px; }
-  .company-board-inspector { min-height: 0; }
+  .company-board-workspace {
+    width: calc(100% + 20px);
+    margin-left: -10px;
+    border-right: 0;
+    border-left: 0;
+  }
+  .company-board-viewport {
+    width: 100%;
+    height: calc(100svh - 54px);
+    min-height: 560px;
+    border-right: 0;
+    border-left: 0;
+    background-size: 48px 48px;
+  }
+  .company-board-inspector { width: 100%; min-height: 0; }
 }
 
 @media (hover: none) {

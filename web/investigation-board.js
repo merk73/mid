@@ -200,11 +200,6 @@
     button.append(code, title);
     world.append(button);
     nodeElements.set(node.key, button);
-    button.addEventListener("pointerdown", (event) => event.stopPropagation());
-    button.addEventListener("click", (event) => {
-      event.stopPropagation();
-      selectNode(node.key);
-    });
   });
 
   const inspector = {
@@ -267,67 +262,190 @@
     if (focus) element.focus({ preventScroll: true });
   }
 
+  const MIN_SCALE = 0.45;
+  const MAX_SCALE = 1.35;
+  const mobileQuery = window.matchMedia("(max-width: 760px)");
+  const pointers = new Map();
+  let scale = mobileQuery.matches ? 0.58 : 1;
   let panX = 0;
   let panY = 0;
-  let drag = null;
-  let suppressClick = false;
+  let gesture = null;
+  let ignoreClickUntil = 0;
   let panFrame = 0;
+
+  function clampScale(value) {
+    return Math.min(MAX_SCALE, Math.max(MIN_SCALE, value));
+  }
+
+  function constrainPan() {
+    const margin = mobileQuery.matches ? 24 : 90;
+    const scaledWidth = width * scale;
+    const scaledHeight = height * scale;
+    panX = scaledWidth <= viewport.clientWidth
+      ? (viewport.clientWidth - scaledWidth) / 2
+      : Math.min(margin, Math.max(viewport.clientWidth - scaledWidth - margin, panX));
+    panY = scaledHeight <= viewport.clientHeight
+      ? (viewport.clientHeight - scaledHeight) / 2
+      : Math.min(margin, Math.max(viewport.clientHeight - scaledHeight - margin, panY));
+  }
 
   function applyPan() {
     if (panFrame) return;
     panFrame = requestAnimationFrame(() => {
       panFrame = 0;
-      const margin = 90;
-      panX = Math.min(margin, Math.max(viewport.clientWidth - width - margin, panX));
-      panY = Math.min(margin, Math.max(viewport.clientHeight - height - margin, panY));
-      world.style.transform = `translate3d(${panX.toFixed(1)}px, ${panY.toFixed(1)}px, 0)`;
+      constrainPan();
+      world.style.transform = `translate3d(${panX.toFixed(1)}px, ${panY.toFixed(1)}px, 0) scale(${scale.toFixed(4)})`;
     });
   }
 
-  function centerOn(key = activeKey) {
+  function centerOn(key = activeKey, resetScale = false) {
+    if (resetScale) scale = mobileQuery.matches ? 0.58 : 1;
     const node = nodeMap.get(key) || { x: width / 2, y: height / 2 };
-    panX = viewport.clientWidth / 2 - node.x;
-    panY = viewport.clientHeight / 2 - node.y;
+    panX = viewport.clientWidth / 2 - node.x * scale;
+    panY = viewport.clientHeight / 2 - node.y * scale;
     applyPan();
+  }
+
+  function localPoint(clientX, clientY) {
+    const rect = viewport.getBoundingClientRect();
+    return { x: clientX - rect.left, y: clientY - rect.top };
+  }
+
+  function pointerPair() {
+    return [...pointers.values()].slice(0, 2);
+  }
+
+  function startPinch() {
+    const [first, second] = pointerPair();
+    if (!first || !second) return;
+    const midpoint = localPoint((first.x + second.x) / 2, (first.y + second.y) / 2);
+    const distance = Math.max(1, Math.hypot(second.x - first.x, second.y - first.y));
+    gesture = {
+      mode: "pinch",
+      startDistance: distance,
+      startScale: scale,
+      anchorX: (midpoint.x - panX) / scale,
+      anchorY: (midpoint.y - panY) / scale,
+      moved: true,
+    };
+    viewport.classList.add("is-dragging");
   }
 
   viewport.addEventListener("pointerdown", (event) => {
-    if (event.button !== 0 || !event.isPrimary || drag) return;
-    if (event.target.closest("[data-board-node]")) return;
-    drag = { id: event.pointerId, x: event.clientX, y: event.clientY, panX, panY, moved: false };
-    viewport.setPointerCapture(event.pointerId);
-    viewport.classList.add("is-dragging");
+    if (event.pointerType === "mouse" && event.button !== 0) return;
+    const targetNode = event.target.closest("[data-board-node]");
+    pointers.set(event.pointerId, {
+      id: event.pointerId,
+      x: event.clientX,
+      y: event.clientY,
+      startX: event.clientX,
+      startY: event.clientY,
+      targetKey: targetNode?.dataset.boardNode || "",
+    });
+    try { viewport.setPointerCapture(event.pointerId); } catch { /* Pointer capture is best effort. */ }
+    if (pointers.size === 1) {
+      gesture = {
+        mode: "pending",
+        pointerId: event.pointerId,
+        startX: event.clientX,
+        startY: event.clientY,
+        startPanX: panX,
+        startPanY: panY,
+        moved: false,
+      };
+    } else if (pointers.size === 2) {
+      startPinch();
+    }
   });
 
   viewport.addEventListener("pointermove", (event) => {
-    if (!drag || drag.id !== event.pointerId) return;
-    const dx = event.clientX - drag.x;
-    const dy = event.clientY - drag.y;
-    if (Math.hypot(dx, dy) > 6) drag.moved = true;
-    panX = drag.panX + dx;
-    panY = drag.panY + dy;
-    applyPan();
-  });
-
-  function finishDrag(event) {
-    if (!drag || drag.id !== event.pointerId) return;
-    suppressClick = drag.moved;
-    viewport.classList.remove("is-dragging");
-    if (viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
-    drag = null;
-  }
-  viewport.addEventListener("pointerup", finishDrag);
-  viewport.addEventListener("pointercancel", finishDrag);
-
-  viewport.addEventListener("click", (event) => {
-    const nodeElement = event.target.closest("[data-board-node]");
-    if (suppressClick) {
-      suppressClick = false;
+    const pointer = pointers.get(event.pointerId);
+    if (!pointer) return;
+    pointer.x = event.clientX;
+    pointer.y = event.clientY;
+    if (gesture?.mode === "pinch" && pointers.size >= 2) {
+      const [first, second] = pointerPair();
+      const midpoint = localPoint((first.x + second.x) / 2, (first.y + second.y) / 2);
+      const distance = Math.max(1, Math.hypot(second.x - first.x, second.y - first.y));
+      scale = clampScale(gesture.startScale * distance / gesture.startDistance);
+      panX = midpoint.x - gesture.anchorX * scale;
+      panY = midpoint.y - gesture.anchorY * scale;
+      applyPan();
       event.preventDefault();
       return;
     }
+    if (!gesture || gesture.pointerId !== event.pointerId) return;
+    const dx = event.clientX - gesture.startX;
+    const dy = event.clientY - gesture.startY;
+    if (!gesture.moved && Math.hypot(dx, dy) > 8) {
+      gesture.moved = true;
+      gesture.mode = "pan";
+      viewport.classList.add("is-dragging");
+    }
+    if (gesture.mode === "pan") {
+      panX = gesture.startPanX + dx;
+      panY = gesture.startPanY + dy;
+      applyPan();
+      event.preventDefault();
+    }
+  });
+
+  function finishPointer(event) {
+    const pointer = pointers.get(event.pointerId);
+    const wasMoving = Boolean(gesture?.moved || gesture?.mode === "pinch");
+    const tappedKey = !wasMoving && pointers.size === 1 ? pointer?.targetKey || "" : "";
+    pointers.delete(event.pointerId);
+    try {
+      if (viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId);
+    } catch { /* Pointer capture is best effort. */ }
+    if (wasMoving || tappedKey) ignoreClickUntil = performance.now() + 260;
+    if (tappedKey) selectNode(tappedKey);
+    if (pointers.size === 1) {
+      const remaining = [...pointers.values()][0];
+      gesture = {
+        mode: "pan",
+        pointerId: remaining.id,
+        startX: remaining.x,
+        startY: remaining.y,
+        startPanX: panX,
+        startPanY: panY,
+        moved: wasMoving,
+      };
+    } else if (pointers.size === 0) {
+      gesture = null;
+      viewport.classList.remove("is-dragging");
+    } else {
+      startPinch();
+    }
+  }
+
+  viewport.addEventListener("pointerup", finishPointer);
+  viewport.addEventListener("pointercancel", finishPointer);
+  viewport.addEventListener("lostpointercapture", (event) => {
+    if (pointers.has(event.pointerId)) finishPointer(event);
+  });
+
+  viewport.addEventListener("click", (event) => {
+    if (performance.now() < ignoreClickUntil) {
+      event.preventDefault();
+      event.stopPropagation();
+      return;
+    }
+    const nodeElement = event.target.closest("[data-board-node]");
     if (nodeElement) selectNode(nodeElement.dataset.boardNode);
   });
+
+  viewport.addEventListener("wheel", (event) => {
+    if (!event.ctrlKey) return;
+    event.preventDefault();
+    const point = localPoint(event.clientX, event.clientY);
+    const anchorX = (point.x - panX) / scale;
+    const anchorY = (point.y - panY) / scale;
+    scale = clampScale(scale * Math.exp(-event.deltaY * 0.002));
+    panX = point.x - anchorX * scale;
+    panY = point.y - anchorY * scale;
+    applyPan();
+  }, { passive: false });
 
   viewport.addEventListener("keydown", (event) => {
     const step = event.shiftKey ? 140 : 60;
@@ -340,7 +458,9 @@
     applyPan();
   });
 
-  document.querySelector("[data-board-reset]")?.addEventListener("click", () => centerOn());
+  document.querySelector("[data-board-reset]")?.addEventListener("click", () => centerOn(activeKey, true));
+  const resizeObserver = "ResizeObserver" in window ? new ResizeObserver(() => applyPan()) : null;
+  resizeObserver?.observe(viewport);
   window.addEventListener("resize", () => applyPan(), { passive: true });
 
   const counter = document.querySelector("[data-board-count]");
