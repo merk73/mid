@@ -5844,6 +5844,121 @@ button {
   text-decoration: none;
 }
 
+.company-journal-list {
+  border-top: 1px solid var(--ink);
+  border-bottom: 1px solid var(--ink);
+}
+
+.company-journal-day > summary {
+  display: grid;
+  grid-template-columns: minmax(130px, 0.25fr) minmax(0, 1fr) minmax(120px, 0.2fr);
+  gap: 28px;
+  align-items: center;
+  min-height: 160px;
+  padding: 26px 0;
+  cursor: pointer;
+  list-style: none;
+}
+
+.company-journal-day > summary::-webkit-details-marker { display: none; }
+
+.company-journal-date {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.company-journal-date strong { font-size: 11px; letter-spacing: 0.08em; }
+.company-journal-date time { color: #6a6964; font-size: 8px; letter-spacing: 0.08em; }
+
+.company-journal-day h4 {
+  max-width: 920px;
+  margin: 0;
+  font-family: var(--display);
+  font-size: clamp(28px, 3.4vw, 58px);
+  line-height: 0.96;
+  letter-spacing: -0.055em;
+}
+
+.company-journal-action {
+  display: flex;
+  gap: 18px;
+  align-items: center;
+  justify-content: flex-end;
+  font-size: 8px;
+  letter-spacing: 0.08em;
+}
+
+.company-journal-action i {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  border: 1px solid var(--ink);
+  border-radius: 50%;
+}
+
+.company-journal-action i::before,
+.company-journal-action i::after {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 12px;
+  height: 1px;
+  background: currentColor;
+  content: "";
+  transform: translate(-50%, -50%);
+  transition: transform 220ms ease;
+}
+
+.company-journal-action i::after { transform: translate(-50%, -50%) rotate(90deg); }
+.company-journal-day[open] .company-journal-action i::after { transform: translate(-50%, -50%) rotate(0deg); }
+.company-journal-day > summary:hover .company-journal-action i { color: var(--paper); background: var(--ink); }
+
+.company-journal-details {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr;
+  gap: 0;
+  padding: 0 0 34px;
+  border-top: 1px solid var(--ink);
+}
+
+.company-journal-details section {
+  min-width: 0;
+  padding: 26px;
+  border-right: 1px solid var(--ink);
+}
+
+.company-journal-details section:last-child { border-right: 0; }
+.company-journal-details h5 { margin: 0 0 20px; color: #686761; font-size: 8px; letter-spacing: 0.08em; }
+
+.company-journal-details ul {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.company-journal-details section:first-child ul {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 22px;
+}
+
+.company-journal-details li { border-top: 1px solid rgba(0, 0, 0, 0.24); }
+
+.company-journal-details a {
+  display: grid;
+  grid-template-columns: 88px minmax(0, 1fr);
+  gap: 10px;
+  padding: 11px 0;
+  text-decoration: none;
+}
+
+.company-journal-details a:hover strong { text-decoration: underline; text-underline-offset: 3px; }
+.company-journal-details a span { color: #77766f; font-size: 7px; }
+.company-journal-details a strong { font-size: 9px; line-height: 1.3; overflow-wrap: anywhere; }
+
 .company-quotes {
   position: relative;
   min-height: min(900px, 90svh);
@@ -6736,6 +6851,27 @@ button {
   .company-journal-entry h4 { font-size: 20px; }
   .company-journal-entry p { font-size: 10px; }
   .company-journal-entry > div:last-child { grid-column: 2; gap: 14px; }
+
+  .company-journal-day > summary {
+    grid-template-columns: 1fr auto;
+    gap: 16px;
+    min-height: 0;
+    padding: 22px 0;
+  }
+  .company-journal-date { grid-column: 1 / -1; }
+  .company-journal-day h4 { font-size: clamp(25px, 8vw, 38px); }
+  .company-journal-action > span { display: none; }
+  .company-journal-action i { width: 40px; height: 40px; }
+  .company-journal-details { grid-template-columns: 1fr; padding-bottom: 0; }
+  .company-journal-details section,
+  .company-journal-details section:last-child {
+    padding: 22px 0;
+    border-right: 0;
+    border-bottom: 1px solid var(--ink);
+  }
+  .company-journal-details section:last-child { border-bottom: 0; }
+  .company-journal-details section:first-child ul { grid-template-columns: 1fr; }
+  .company-journal-details a { grid-template-columns: 76px minmax(0, 1fr); }
 
   .company-quotes { min-height: 720px; }
   .company-quotes::after { background: linear-gradient(0deg, rgba(0, 0, 0, 0.92), rgba(0, 0, 0, 0.38)); }

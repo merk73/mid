@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="THE MIDGAS — исследовательский архив клиентов, аномалий и инцидентов." />
     <title>THE MIDGAS — Research Archive</title>
-    <link rel="stylesheet" href="styles.css?v=26" />
+    <link rel="stylesheet" href="styles.css?v=27" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -566,31 +566,12 @@
 
           <section class="company-journal" id="company-journal" aria-labelledby="company-journal-title">
             <header class="company-module-heading company-reveal">
-              <div class="company-section-label"><span>03</span><p>ЖИВОЙ ЖУРНАЛ</p></div>
+              <div class="company-section-label"><span>03</span><p>ХРОНОЛОГИЯ ОБНОВЛЕНИЙ</p></div>
               <div>
-                <span class="company-live"><i></i> СИНХРОНИЗИРОВАНО С РЕЕСТРОМ</span>
                 <h3 id="company-journal-title">ЖУРНАЛ<br />ИЗМЕНЕНИЙ</h3>
               </div>
-              <p>Сводка строится из итогового состояния реестра после загрузки всех редакционных слоёв. Контрольная подпись меняется вместе с содержанием карточек.</p>
+              <p>Только фактические изменения реестра: дата, краткая сводка и полный перечень добавленных карточек.</p>
             </header>
-            <div class="company-journal-dashboard company-reveal">
-              <div class="company-journal-summary">
-                <span>ТЕКУЩИЙ СНИМОК</span>
-                <strong data-company-journal-revision>REV-00000000</strong>
-                <p id="company-journal-delta">Создаётся контрольный снимок…</p>
-              </div>
-              <div class="company-journal-totals" aria-label="Состав реестра">
-                <div><strong data-journal-total="client">26</strong><span>КЛИЕНТЫ</span></div>
-                <div><strong data-journal-total="anomaly">01</strong><span>АНОМАЛИИ</span></div>
-                <div><strong data-journal-total="incident">02</strong><span>ИНЦИДЕНТЫ</span></div>
-              </div>
-            </div>
-            <div class="company-journal-controls company-reveal" aria-label="Фильтр журнала">
-              <button class="is-active" type="button" data-journal-filter="all">ВСЕ СОБЫТИЯ</button>
-              <button type="button" data-journal-filter="client">КЛИЕНТЫ</button>
-              <button type="button" data-journal-filter="anomaly">АНОМАЛИИ</button>
-              <button type="button" data-journal-filter="incident">ИНЦИДЕНТЫ</button>
-            </div>
             <div class="company-journal-list company-reveal" id="company-journal-list" aria-live="polite"></div>
           </section>
 
@@ -736,7 +717,7 @@
     <script src="incident-updates.js?v=1"></script>
     <script src="site-completion.js?v=1"></script>
     <script src="krovolunanie-research.js?v=1"></script>
-    <script src="company-hub.js?v=1"></script>
+    <script src="company-hub.js?v=2"></script>
     <script src="app.js?v=19"></script>
   </body>
 </html>

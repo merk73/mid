@@ -34,45 +34,13 @@
   }
 
   const signature = `REV-${fnv1a(JSON.stringify(stableValue(registry)))}`;
-  const snapshot = { signature, counts, total };
-  const snapshotKey = "midgas-registry-snapshot-v1";
-  let previousSnapshot = null;
-
-  try {
-    previousSnapshot = JSON.parse(window.localStorage.getItem(snapshotKey) || "null");
-    window.localStorage.setItem(snapshotKey, JSON.stringify(snapshot));
-  } catch {
-    previousSnapshot = null;
-  }
 
   document.querySelectorAll("[data-company-record-count]").forEach((element) => {
     element.textContent = String(total).padStart(2, "0");
   });
-  document.querySelectorAll("[data-company-revision], [data-company-journal-revision], [data-footer-revision]").forEach((element) => {
+  document.querySelectorAll("[data-company-revision], [data-footer-revision]").forEach((element) => {
     element.textContent = signature;
   });
-  types.forEach((type) => {
-    document.querySelectorAll(`[data-journal-total="${type}"]`).forEach((element) => {
-      element.textContent = String(counts[type]).padStart(2, "0");
-    });
-  });
-
-  const deltaElement = document.querySelector("#company-journal-delta");
-  if (deltaElement) {
-    if (!previousSnapshot?.signature) {
-      deltaElement.textContent = "Локальный контрольный снимок создан. Следующее изменение реестра будет отмечено автоматически.";
-    } else if (previousSnapshot.signature === signature) {
-      deltaElement.textContent = "Содержимое совпадает с предыдущим просмотром. Ревизия актуальна.";
-    } else {
-      const deltas = types
-        .map((type) => ({ type, value: counts[type] - Number(previousSnapshot.counts?.[type] || 0) }))
-        .filter(({ value }) => value !== 0)
-        .map(({ type, value }) => `${typeNames[type][1].toLowerCase()} ${value > 0 ? "+" : ""}${value}`);
-      deltaElement.textContent = deltas.length
-        ? `Структура реестра изменилась: ${deltas.join(", ")}. Создан новый контрольный снимок.`
-        : "Содержимое карточек изменено без смены количества записей. Создан новый контрольный снимок.";
-    }
-  }
 
   const journalList = document.querySelector("#company-journal-list");
   const dateLabel = new Intl.DateTimeFormat("ru-RU", {
@@ -82,88 +50,59 @@
     timeZone: "Asia/Vladivostok",
   }).format(new Date());
 
-  const journalEntries = [
-    {
-      kind: "all",
-      code: signature,
-      title: "СОБРАНА ТЕКУЩАЯ РЕВИЗИЯ",
-      text: `Контрольная сборка объединяет ${total} записей после применения всех редакционных обновлений. Подпись рассчитана из фактического содержимого реестра.`,
-      meta: `${dateLabel} / АВТОМАТИЧЕСКАЯ СВЕРКА`,
-      href: "#company-board",
-      link: "ОТКРЫТЬ СХЕМУ",
-    },
-    ...types.map((type) => {
-      const list = records[type];
-      const sectionCount = list.reduce((sum, record) => sum + (record.sections?.length || 0), 0);
-      const mediaCount = list.reduce((sum, record) => {
-        const sectionMedia = (record.sections || []).reduce((inner, section) => inner + (section.media?.length || 0), 0);
-        return sum + sectionMedia + (record.image ? 1 : 0);
-      }, 0);
-      return {
-        kind: type,
-        code: `REG-${type.toUpperCase()} / ${String(list.length).padStart(2, "0")}`,
-        title: `${typeNames[type][1]} / КОНТРОЛЬ МАССИВА`,
-        text: `В открытом контуре ${list.length} записей, ${sectionCount} исследовательских разделов и ${mediaCount} связанных визуальных материалов.`,
-        meta: `${dateLabel} / СВЕРЕНО С RUNTIME-РЕЕСТРОМ`,
-        href: `registry.html?type=${type}`,
-        link: `ОТКРЫТЬ ${typeNames[type][1]}`,
-      };
-    }),
-    {
-      kind: "all",
-      code: "DOC-ARCHIVE / 16",
-      title: "ИСТОРИЧЕСКИЙ АРХИВ СВЯЗАН С РЕЕСТРОМ",
-      text: "Временная линия, глоссарий и карточки используют общую систему перекрёстных ссылок. Навигация сохраняет маршрут между термином, событием и субъектом.",
-      meta: `${dateLabel} / СТРУКТУРНАЯ ПРОВЕРКА`,
-      href: "historical-archive.html",
-      link: "ПЕРЕЙТИ К АРХИВУ",
-    },
-  ];
+  function recordLink(type, record) {
+    return `record.html?type=${encodeURIComponent(type)}&id=${encodeURIComponent(record.id)}`;
+  }
 
-  function createJournalEntry(entry, index) {
-    const article = document.createElement("article");
-    article.className = "company-journal-entry";
-    article.dataset.journalKind = entry.kind;
+  function createJournalDay() {
+    const details = document.createElement("details");
+    details.className = "company-journal-day";
 
-    const number = document.createElement("span");
-    number.className = "company-journal-number";
-    number.textContent = String(index + 1).padStart(2, "0");
-
-    const body = document.createElement("div");
-    const code = document.createElement("span");
-    code.textContent = entry.code;
+    const summary = document.createElement("summary");
+    const date = document.createElement("span");
+    date.className = "company-journal-date";
+    date.innerHTML = `<strong>ОБНОВЛЕНИЕ РЕЕСТРА</strong><time datetime="${new Date().toISOString().slice(0, 10)}">${dateLabel}</time>`;
     const title = document.createElement("h4");
-    title.textContent = entry.title;
-    const text = document.createElement("p");
-    text.textContent = entry.text;
-    body.append(code, title, text);
+    title.textContent = `Сегодня: добавлено ${counts.client} клиентов, ${counts.incident} инцидента и ${counts.anomaly} аномалия.`;
+    const action = document.createElement("span");
+    action.className = "company-journal-action";
+    action.innerHTML = `<span>ПОДРОБНЕЕ</span><i aria-hidden="true"></i>`;
+    summary.append(date, title, action);
 
-    const aside = document.createElement("div");
-    const meta = document.createElement("span");
-    meta.textContent = entry.meta;
-    const link = document.createElement("a");
-    link.href = entry.href;
-    link.textContent = `${entry.link} →`;
-    aside.append(meta, link);
-
-    article.append(number, body, aside);
-    return article;
-  }
-
-  if (journalList) {
-    journalEntries.forEach((entry, index) => journalList.append(createJournalEntry(entry, index)));
-  }
-
-  document.querySelectorAll("[data-journal-filter]").forEach((button) => {
-    button.addEventListener("click", () => {
-      const filter = button.dataset.journalFilter;
-      document.querySelectorAll("[data-journal-filter]").forEach((item) => item.classList.toggle("is-active", item === button));
-      document.querySelectorAll("[data-journal-kind]").forEach((entry) => {
-        const visible = filter === "all" || entry.dataset.journalKind === filter;
-        entry.hidden = !visible;
-      });
+    const content = document.createElement("div");
+    content.className = "company-journal-details";
+    types.forEach((type) => {
+      const group = document.createElement("section");
+      const heading = document.createElement("h5");
+      heading.textContent = `${typeNames[type][1]} / ${String(records[type].length).padStart(2, "0")}`;
+      const list = document.createElement("ul");
+      records[type]
+        .slice()
+        .sort((left, right) => String(left.id).localeCompare(String(right.id), "ru"))
+        .forEach((record) => {
+          const item = document.createElement("li");
+          const link = document.createElement("a");
+          const code = document.createElement("span");
+          const name = document.createElement("strong");
+          link.href = recordLink(type, record);
+          code.textContent = record.id;
+          name.textContent = record.name || record.alias || "БЕЗ НАЗВАНИЯ";
+          link.append(code, name);
+          item.append(link);
+          list.append(item);
+        });
+      group.append(heading, list);
+      content.append(group);
     });
-  });
+
+    details.addEventListener("toggle", () => {
+      action.querySelector("span").textContent = details.open ? "СКРЫТЬ" : "ПОДРОБНЕЕ";
+    });
+    details.append(summary, content);
+    return details;
+  }
+
+  if (journalList) journalList.append(createJournalDay());
 
   const quotes = [
     ["Архив начинается в тот момент, когда свидетельство перестаёт быть одиночным.", "РЕДАКЦИОННЫЙ ПРОТОКОЛ / ЗАПИСЬ 01"],
