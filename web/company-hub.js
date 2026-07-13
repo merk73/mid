@@ -12,66 +12,115 @@
 
   const sessionApi = window.MIDGAS_EDITOR_SESSION;
   const accountForm = document.querySelector("#company-account-form");
-  const accountSession = document.querySelector("[data-account-session]");
+  const loginDialog = document.querySelector("#editor-login-dialog");
+  const loginOpen = document.querySelector("[data-editor-login-open]");
+  const loginClose = document.querySelector("[data-editor-login-close]");
+  const editorLocked = document.querySelector("[data-editor-locked]");
+  const editorHome = document.querySelector("[data-editor-home]");
   const accountEmail = document.querySelector("[data-account-email]");
   const accountStatus = document.querySelector("[data-account-status]");
   const accountIndicator = document.querySelector("[data-account-indicator]");
-  const accountProtected = [...document.querySelectorAll("[data-account-protected]")];
-  const accountOpenEditor = document.querySelector("[data-account-open-editor]");
   const accountLogout = document.querySelector("[data-account-logout]");
-  const restoreList = document.querySelector("[data-restore-list]");
-  const restoreEmpty = document.querySelector("[data-restore-empty]");
+  const createOpen = document.querySelector("[data-editor-create-open]");
+  const recoveryOpen = document.querySelector("[data-editor-recovery-open]");
+  const createPanel = document.querySelector("[data-editor-create-panel]");
+  const recoveryPanel = document.querySelector("[data-editor-recovery-panel]");
+  const deletedList = document.querySelector("[data-restore-deleted-list]");
+  const modifiedList = document.querySelector("[data-restore-modified-list]");
+  const deletedEmpty = document.querySelector("[data-restore-deleted-empty]");
+  const modifiedEmpty = document.querySelector("[data-restore-modified-empty]");
 
-  function renderRestoreList() {
-    if (!restoreList) return;
+  function closeLoginDialog() {
+    if (!loginDialog) return;
+    if (typeof loginDialog.close === "function") loginDialog.close();
+    else loginDialog.removeAttribute("open");
+  }
+
+  function openLoginDialog() {
+    if (!loginDialog) return;
+    if (typeof loginDialog.showModal === "function") loginDialog.showModal();
+    else loginDialog.setAttribute("open", "");
+    window.setTimeout(() => accountForm?.elements.namedItem("email")?.focus({ preventScroll: true }), 40);
+  }
+
+  function showEditorPanel(panel) {
+    if (!sessionApi?.isEditor?.()) {
+      openLoginDialog();
+      return;
+    }
+    [createPanel, recoveryPanel].forEach((candidate) => {
+      if (candidate) candidate.hidden = candidate !== panel;
+    });
+    if (panel === recoveryPanel) renderRecoveryLists();
+    panel?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+
+  function makeRecoveryEntry(entry, actionLabel, action) {
+    const article = document.createElement("article");
+    article.className = "company-restore-entry";
+    const meta = document.createElement("div");
+    const code = document.createElement("span");
+    const name = document.createElement("strong");
+    const date = document.createElement("time");
+    const timestamp = entry.deletedAt || entry.updatedAt || entry.createdAt;
+    code.textContent = `${typeNames[entry.type]?.[0] || entry.type} / ${entry.id}`;
+    name.textContent = entry.record?.name || entry.id;
+    date.dateTime = timestamp || "";
+    date.textContent = timestamp
+      ? new Intl.DateTimeFormat("ru-RU", { dateStyle: "medium", timeStyle: "short" }).format(new Date(timestamp))
+      : "ДАТА НЕ УКАЗАНА";
+    meta.append(code, name, date);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = actionLabel;
+    button.addEventListener("click", () => {
+      try {
+        action();
+        if (accountStatus) accountStatus.textContent = `${entry.id}: ОПЕРАЦИЯ ВЫПОЛНЕНА. ОБНОВЛЯЮ РЕЕСТР…`;
+        window.setTimeout(() => {
+          window.location.hash = "company-restore";
+          window.location.reload();
+        }, 280);
+      } catch (error) {
+        if (accountStatus) accountStatus.textContent = error.message || "НЕ УДАЛОСЬ ВОССТАНОВИТЬ ВЕРСИЮ.";
+      }
+    });
+    article.append(meta, button);
+    return article;
+  }
+
+  function renderRecoveryLists() {
     const deleted = window.MIDGAS_EDITOR_STORE?.listDeleted?.() || [];
-    restoreList.querySelectorAll(".company-restore-entry").forEach((entry) => entry.remove());
-    if (restoreEmpty) restoreEmpty.hidden = deleted.length > 0;
+    const modified = window.MIDGAS_EDITOR_STORE?.listModified?.() || [];
+    deletedList?.querySelectorAll(".company-restore-entry").forEach((entry) => entry.remove());
+    modifiedList?.querySelectorAll(".company-restore-entry").forEach((entry) => entry.remove());
+    if (deletedEmpty) deletedEmpty.hidden = deleted.length > 0;
+    if (modifiedEmpty) modifiedEmpty.hidden = modified.length > 0;
     deleted.forEach((entry) => {
-      const article = document.createElement("article");
-      article.className = "company-restore-entry";
-      const meta = document.createElement("div");
-      const code = document.createElement("span");
-      const name = document.createElement("strong");
-      const date = document.createElement("time");
-      code.textContent = `${typeNames[entry.type]?.[0] || entry.type} / ${entry.id}`;
-      name.textContent = entry.record?.name || entry.id;
-      date.dateTime = entry.deletedAt;
-      date.textContent = `СКРЫТА ${new Intl.DateTimeFormat("ru-RU", { dateStyle: "medium", timeStyle: "short" }).format(new Date(entry.deletedAt))}`;
-      meta.append(code, name, date);
-      const restore = document.createElement("button");
-      restore.type = "button";
-      restore.textContent = "ВОССТАНОВИТЬ";
-      restore.addEventListener("click", () => {
-        try {
-          window.MIDGAS_EDITOR_STORE.restore(entry.type, entry.id);
-          if (accountStatus) accountStatus.textContent = `${entry.id} ВОССТАНОВЛЕНА. ОБНОВЛЯЮ РЕЕСТР…`;
-          window.setTimeout(() => {
-            window.location.hash = "company-restore";
-            window.location.reload();
-          }, 320);
-        } catch (error) {
-          if (accountStatus) accountStatus.textContent = error.message || "НЕ УДАЛОСЬ ВОССТАНОВИТЬ КАРТОЧКУ.";
-        }
-      });
-      article.append(meta, restore);
-      restoreList.append(article);
+      deletedList?.append(makeRecoveryEntry(entry, "ВОССТАНОВИТЬ", () => {
+        window.MIDGAS_EDITOR_STORE.restore(entry.type, entry.id);
+      }));
+    });
+    modified.forEach((entry) => {
+      modifiedList?.append(makeRecoveryEntry(entry, "ВЕРНУТЬ ИСХОДНУЮ", () => {
+        window.MIDGAS_EDITOR_STORE.resetToPublished(entry.type, entry.id);
+      }));
     });
   }
 
   function renderAccount(session, message = "") {
     const isEditor = Boolean(session?.role === "editor");
-    if (accountForm) accountForm.hidden = isEditor;
-    if (accountSession) accountSession.hidden = !isEditor;
-    accountProtected.forEach((element) => { element.hidden = !isEditor; });
+    if (editorLocked) editorLocked.hidden = isEditor;
+    if (editorHome) editorHome.hidden = !isEditor;
+    if (!isEditor) [createPanel, recoveryPanel].forEach((panel) => { if (panel) panel.hidden = true; });
     if (accountEmail) accountEmail.textContent = session?.email || "";
-    if (accountIndicator) accountIndicator.textContent = isEditor ? "СЕАНС АКТИВЕН" : "СЕАНС ЗАКРЫТ";
+    if (accountIndicator) accountIndicator.textContent = isEditor ? "ДОСТУП ОТКРЫТ" : "ДОСТУП ЗАКРЫТ";
     if (accountStatus) {
       accountStatus.textContent = message || (isEditor
-        ? "ДЕМО-ДОСТУП ПОДТВЕРЖДЁН В ЭТОМ БРАУЗЕРЕ."
-        : "ДЛЯ ДОСТУПА К РЕДАКТОРУ ВЫПОЛНИТЕ ВХОД.");
+        ? "ВХОД ВЫПОЛНЕН. ВЫБЕРИТЕ НУЖНОЕ ДЕЙСТВИЕ."
+        : "У ВАС НЕТ ДОСТУПА К РЕДАКТОРУ.");
     }
-    if (isEditor) renderRestoreList();
+    if (isEditor) renderRecoveryLists();
   }
 
   renderAccount(sessionApi?.read?.() || null);
@@ -84,15 +133,27 @@
       const session = sessionApi?.signIn?.({ email: values.get("email") });
       if (!session) throw new Error("Модуль редакционного доступа недоступен.");
       accountForm.reset();
-      renderAccount(session, "ВХОД ВЫПОЛНЕН. РЕДАКТОР И ВОССТАНОВЛЕНИЕ ОТКРЫТЫ.");
-      document.querySelector("#company-editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      closeLoginDialog();
+      renderAccount(session, "ВХОД ВЫПОЛНЕН. РЕЖИМ РЕДАКТОРА РАЗБЛОКИРОВАН.");
     } catch (error) {
       if (accountStatus) accountStatus.textContent = error.message || "НЕ УДАЛОСЬ ОТКРЫТЬ РЕДАКЦИОННЫЙ СЕАНС.";
     }
   });
 
-  accountOpenEditor?.addEventListener("click", () => {
-    document.querySelector("#company-editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  loginOpen?.addEventListener("click", openLoginDialog);
+  loginClose?.addEventListener("click", closeLoginDialog);
+  loginDialog?.addEventListener("click", (event) => { if (event.target === loginDialog) closeLoginDialog(); });
+  createOpen?.addEventListener("click", () => {
+    resetCreateWizard();
+    showEditorPanel(createPanel);
+  });
+  recoveryOpen?.addEventListener("click", () => showEditorPanel(recoveryPanel));
+  document.querySelectorAll("[data-editor-panel-close]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const panel = button.closest("[data-editor-create-panel], [data-editor-recovery-panel]");
+      if (panel) panel.hidden = true;
+      document.querySelector("#company-account")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
   });
 
   accountLogout?.addEventListener("click", () => {
@@ -105,7 +166,7 @@
     renderAccount(event.detail?.session || null);
   });
 
-  window.addEventListener("midgas:record-mutated", renderRestoreList);
+  window.addEventListener("midgas:record-mutated", renderRecoveryLists);
 
   if (window.location.hash === "#company-editor" && !sessionApi?.isEditor?.()) {
     window.history.replaceState(null, "", "#company-account");
@@ -257,6 +318,7 @@
     if (eventCounts.update) statements.push(`обновлено ${eventCounts.update}`);
     if (eventCounts.delete) statements.push(`скрыто ${eventCounts.delete}`);
     if (eventCounts.restore) statements.push(`восстановлено ${eventCounts.restore}`);
+    if (eventCounts.reset) statements.push(`возвращено к исходной версии ${eventCounts.reset}`);
     const todayPrefix = day.date === journalDateKey(new Date()) ? "Сегодня: " : "";
     title.textContent = `${todayPrefix}${statements.join("; ")}.`;
     const action = document.createElement("span");
@@ -292,7 +354,7 @@
     });
 
     if (day.events?.length) {
-      const eventLabels = { update: "ОБНОВЛЕНО", delete: "СКРЫТО", restore: "ВОССТАНОВЛЕНО" };
+      const eventLabels = { update: "ОБНОВЛЕНО", delete: "СКРЫТО", restore: "ВОССТАНОВЛЕНО", reset: "ИСХОДНАЯ ВЕРСИЯ" };
       const group = document.createElement("section");
       group.className = "company-journal-events";
       const heading = document.createElement("h5");
@@ -412,15 +474,52 @@
   const editorRelationsSearch = document.querySelector("[data-editor-relations-search]");
   const editorRelationsCount = document.querySelector("[data-editor-relations-count]");
   const editorRelationsClear = document.querySelector("[data-editor-relations-clear]");
+  const editorFieldsSteps = [...document.querySelectorAll('[data-create-step="fields"]')];
+  const editorRelationsSteps = [...document.querySelectorAll('[data-create-step="relations"]')];
+  const editorCreateNext = document.querySelector("[data-create-next]");
   let preparedImage = "";
   let preparedFile = "";
-  let activeCardTypeDefault = "Клиент / наблюдаемый субъект";
+  let activeCardTypeDefault = "";
+  let imagePreparing = false;
 
   const cardTypeDefaults = {
     client: "Клиент / наблюдаемый субъект",
     incident: "Инцидент / активный процесс",
     anomaly: "Аномалия / зона наблюдения",
   };
+
+  function setCreateStage(stage) {
+    editorFieldsSteps.forEach((element) => { element.hidden = stage === "type"; });
+    editorRelationsSteps.forEach((element) => { element.hidden = stage !== "relations"; });
+  }
+
+  function resetCreateWizard() {
+    if (!editorForm) return;
+    editorForm.reset();
+    preparedImage = "";
+    preparedFile = "";
+    imagePreparing = false;
+    activeCardTypeDefault = "";
+    if (editorCardType) editorCardType.value = "";
+    if (editorPreview) {
+      editorPreview.src = "";
+      editorPreview.hidden = true;
+    }
+    if (editorUploadCopy) editorUploadCopy.hidden = false;
+    if (editorRelationsPanel) editorRelationsPanel.hidden = true;
+    editorRelationsToggle?.setAttribute("aria-expanded", "false");
+    editorRelationsList?.querySelectorAll('input[type="checkbox"]:checked').forEach((input) => { input.checked = false; });
+    if (editorRelationsSearch) editorRelationsSearch.value = "";
+    editorRelationsList?.querySelectorAll(".company-editor-relation-option").forEach((option) => { option.hidden = false; });
+    if (editorResult) editorResult.hidden = true;
+    if (editorSubmit) {
+      editorSubmit.disabled = false;
+      editorSubmit.textContent = "ОПУБЛИКОВАТЬ";
+    }
+    clearEditorError();
+    updateRelationsCount();
+    setCreateStage("type");
+  }
 
   function updateRelationsCount() {
     if (!editorRelationsCount || !editorRelationsList) return;
@@ -523,10 +622,10 @@
 
       let quality = 0.82;
       let blob = await canvasBlob(canvas, "image/webp", quality);
-      for (let attempt = 0; blob && blob.size > 620 * 1024 && attempt < 4; attempt += 1) {
+      for (let attempt = 0; blob && blob.size > 560 * 1024 && attempt < 6; attempt += 1) {
         quality = Math.max(0.52, quality - 0.09);
-        width = Math.max(480, Math.round(width * 0.86));
-        height = Math.max(320, Math.round(height * 0.86));
+        width = Math.max(420, Math.round(width * 0.86));
+        height = Math.max(280, Math.round(height * 0.86));
         const resized = document.createElement("canvas");
         resized.width = width;
         resized.height = height;
@@ -560,7 +659,27 @@
       const nextDefault = cardTypeDefaults[input.value] || cardTypeDefaults.client;
       if (!editorCardType.value.trim() || editorCardType.value === activeCardTypeDefault) editorCardType.value = nextDefault;
       activeCardTypeDefault = nextDefault;
+      setCreateStage("fields");
     });
+  });
+
+  editorCreateNext?.addEventListener("click", () => {
+    clearEditorError();
+    const required = editorFieldsSteps.flatMap((element) => [...element.querySelectorAll("input[required], select[required], textarea[required]")]);
+    const invalid = required.find((control) => !control.checkValidity());
+    if (invalid) {
+      invalid.reportValidity();
+      return;
+    }
+    if (imagePreparing) {
+      showEditorError("Дождитесь завершения оптимизации изображения.");
+      return;
+    }
+    if (!preparedImage) {
+      showEditorError("Загрузите обложку карточки.");
+      return;
+    }
+    setCreateStage("relations");
   });
 
   editorFile?.addEventListener("change", async () => {
@@ -573,6 +692,7 @@
       if (editorUploadCopy) editorUploadCopy.hidden = false;
       return;
     }
+    imagePreparing = true;
     if (editorSubmit) editorSubmit.disabled = true;
     try {
       preparedImage = await prepareEditorImage(file);
@@ -582,10 +702,12 @@
         editorPreview.hidden = false;
       }
       if (editorUploadCopy) editorUploadCopy.hidden = true;
+      if (accountStatus) accountStatus.textContent = `ОБЛОЖКА ОПТИМИЗИРОВАНА ДО ~${Math.round(preparedImage.length * 0.75 / 1024)} КБ.`;
     } catch (error) {
       editorFile.value = "";
       showEditorError(error.message || "Не удалось подготовить изображение.");
     } finally {
+      imagePreparing = false;
       if (editorSubmit) editorSubmit.disabled = false;
     }
   });
@@ -635,21 +757,17 @@
       const openLink = document.querySelector("[data-editor-open]");
       const registryLink = document.querySelector("[data-editor-registry]");
       if (createdId) createdId.textContent = created.record.id;
-      if (status) status.textContent = `«${created.record.name}» сохранена. Связей: ${relations.length}. Открываю новый узел на доске расследования…`;
+      if (status) status.textContent = `«${created.record.name}» опубликована. Связей: ${relations.length}.`;
       if (openLink) openLink.href = recordUrl;
       if (registryLink) registryLink.href = registryUrl;
       if (editorResult) {
         editorResult.hidden = false;
         editorResult.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "nearest" });
       }
-      if (editorSubmit) editorSubmit.textContent = "КАРТОЧКА СОЗДАНА";
-      window.setTimeout(() => {
-        window.location.hash = "company-board";
-        window.location.reload();
-      }, reducedMotion ? 450 : 1200);
+      if (editorSubmit) editorSubmit.textContent = "ОПУБЛИКОВАНО";
     } catch (error) {
       showEditorError(error.message || "Не удалось создать карточку.");
-      if (editorSubmit) editorSubmit.textContent = "СОЗДАТЬ КАРТОЧКУ";
+      if (editorSubmit) editorSubmit.textContent = "ОПУБЛИКОВАТЬ";
     } finally {
       if (editorSubmit) editorSubmit.disabled = false;
     }

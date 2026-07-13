@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="THE MIDGAS — исследовательский архив клиентов, аномалий и инцидентов." />
     <title>THE MIDGAS — Research Archive</title>
-    <link rel="stylesheet" href="styles.css?v=38" />
+    <link rel="stylesheet" href="styles.css?v=39" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -26,7 +26,7 @@
             <a href="#company-materials">Материалы</a>
             <a href="#company-journal">Журнал</a>
             <a href="#company-board">Доска</a>
-            <a href="#company-account">Аккаунт</a>
+            <a href="#company-account">Редактор</a>
           </div>
         </nav>
       </header>
@@ -645,117 +645,92 @@
             </div>
           </section>
 
-          <section class="company-account" id="company-account" aria-labelledby="company-account-title">
+          <section class="company-account company-editor-hub" id="company-account" aria-labelledby="company-account-title">
             <header class="company-module-heading company-reveal">
-              <div class="company-section-label"><span>06</span><p>ДОСТУП К РЕДАКЦИИ</p></div>
-              <div><span>EDITOR ACCOUNT / PROTOTYPE</span><h3 id="company-account-title">АККАУНТ<br />РЕДАКТОРА</h3></div>
-              <p>Редактор, удаление и восстановление досье доступны только после входа. Сейчас это демонстрационный контур: адрес и пароль не проверяются сервером и никуда не отправляются.</p>
+              <div class="company-section-label"><span>06</span><p>РЕДАКЦИОННЫЙ ДОСТУП</p></div>
+              <div><span>EDITOR MODE / PROTOTYPE</span><h3 id="company-account-title">РЕЖИМ<br />РЕДАКТОРА</h3></div>
+              <p>Создание, исправление, скрытие и восстановление досье собраны в одном рабочем контуре.</p>
             </header>
 
-            <div class="company-account-shell company-reveal">
-              <aside class="company-account-index" aria-hidden="true">
-                <span>ACCESS / D4</span>
-                <strong>06</strong>
-                <p>Один вход открывает создание, правку и восстановление записей в этом браузере.</p>
-              </aside>
-
-              <div class="company-account-console">
-                <div class="company-account-topline"><span>MIDGAS / AUTH</span><strong>РЕДАКЦИОННЫЙ КОНТУР</strong><i data-account-indicator>СЕАНС ЗАКРЫТ</i></div>
-                <form class="company-account-form" id="company-account-form" novalidate>
-                  <div class="company-account-copy">
-                    <span>01 / ИДЕНТИФИКАЦИЯ</span>
-                    <h4>ВОЙТИ В РЕДАКТОР</h4>
-                    <p>Для прототипа подойдёт любой корректный адрес и пароль от четырёх символов. Пароль не сохраняется.</p>
-                  </div>
-                  <label><span>ЭЛЕКТРОННАЯ ПОЧТА</span><input type="email" name="email" required autocomplete="email" placeholder="editor@midgas.archive" /></label>
-                  <label><span>ПАРОЛЬ</span><input type="password" name="password" required minlength="4" autocomplete="current-password" placeholder="••••••••" /></label>
-                  <button type="submit">ВОЙТИ В СИСТЕМУ</button>
-                  <p class="company-account-demo"><strong>DEMO ACCESS</strong> После подключения Supabase вход будет проверять подтверждённую учётную запись и выданную администратором роль редактора.</p>
-                </form>
-
-                <section class="company-account-session" data-account-session hidden aria-live="polite">
-                  <div>
-                    <span>СЕАНС РЕДАКТОРА АКТИВЕН</span>
-                    <strong data-account-email>editor@midgas.archive</strong>
-                    <p>Доступны создание, редактирование, мягкое удаление и восстановление записей.</p>
-                  </div>
-                  <nav>
-                    <button type="button" data-account-open-editor>ОТКРЫТЬ РЕДАКТОР</button>
-                    <button type="button" data-account-logout>ВЫЙТИ</button>
-                  </nav>
-                </section>
-                <p class="company-account-status" data-account-status role="status" aria-live="polite"></p>
-              </div>
+            <div class="editor-mode-card company-reveal">
+              <div class="editor-mode-topline"><span>MIDGAS / EDITOR</span><i data-account-indicator>ДОСТУП ЗАКРЫТ</i></div>
+              <section class="editor-mode-locked" data-editor-locked>
+                <span>РЕДАКЦИОННЫЙ КОНТУР D4</span>
+                <h4>У ВАС НЕТ ДОСТУПА К РЕДАКТОРУ</h4>
+                <p>Войдите в аккаунт модератора для разблокировки.</p>
+                <button type="button" data-editor-login-open>ВОЙТИ</button>
+              </section>
+              <section class="editor-mode-home" data-editor-home hidden aria-live="polite">
+                <div class="editor-mode-identity">
+                  <span>ВХОД ВЫПОЛНЕН</span>
+                  <strong data-account-email>editor@midgas.archive</strong>
+                  <p>Редакционные операции доступны в этом браузере.</p>
+                </div>
+                <nav class="editor-mode-actions">
+                  <button type="button" data-editor-create-open><span>01</span><strong>СОЗДАТЬ КАРТОЧКУ</strong><small>Клиент, аномалия или инцидент</small></button>
+                  <button type="button" data-editor-recovery-open><span>02</span><strong>ВОССТАНОВИТЬ КАРТОЧКУ</strong><small>Удалённые и изменённые версии</small></button>
+                </nav>
+                <button class="editor-mode-logout" type="button" data-account-logout>ВЫЙТИ ИЗ РЕЖИМА РЕДАКТОРА</button>
+              </section>
+              <p class="company-account-status" data-account-status role="status" aria-live="polite"></p>
             </div>
 
-            <section class="company-restore" id="company-restore" data-account-protected hidden aria-labelledby="company-restore-title">
-              <header>
-                <div><span>02 / УДАЛЁННЫЕ ЗАПИСИ</span><h4 id="company-restore-title">ВОССТАНОВЛЕНИЕ</h4></div>
-                <p>Скрытые карточки сохраняют исходный номер и могут быть возвращены в реестр без перенумерации.</p>
+            <section class="company-editor editor-work-panel" id="company-editor" data-editor-create-panel hidden aria-labelledby="company-editor-title">
+              <header class="editor-work-heading">
+                <div><span>СОЗДАНИЕ / НОВАЯ ЗАПИСЬ</span><h4 id="company-editor-title">НОВАЯ КАРТОЧКА</h4></div>
+                <button type="button" data-editor-panel-close aria-label="Закрыть создание карточки">×</button>
               </header>
-              <div class="company-restore-list" data-restore-list>
-                <p data-restore-empty>УДАЛЁННЫХ ЗАПИСЕЙ НЕТ.</p>
-              </div>
-            </section>
-          </section>
-
-          <section class="company-editor" id="company-editor" data-account-protected hidden aria-labelledby="company-editor-title">
-            <header class="company-editor-heading company-reveal">
-              <div class="company-section-label"><span>07</span><p>РЕДАКЦИОННЫЙ МОДУЛЬ</p></div>
-              <div><span>РАБОЧИЙ ПРОТОТИП / D4</span><h3 id="company-editor-title">РЕДАКТОР<br />ДОСЬЕ</h3></div>
-              <p>Соберите новую карточку клиента, инцидента или аномалии. После подтверждения запись сразу появится в реестре и журнале изменений этого браузера.</p>
-            </header>
-            <div class="company-editor-console company-reveal">
-              <div class="company-editor-topline"><span>MIDGAS / EDITOR</span><strong>СЕАНС D4–260713</strong><i>LOCAL MODE</i></div>
-              <div class="company-editor-notice">
-                <strong>ЛОКАЛЬНЫЙ РЕЖИМ</strong>
-                <p>Записи сохраняются только в этом браузере. Общая публикация для всех пользователей будет подключена после защищённого входа редактора.</p>
-              </div>
               <form class="company-editor-form company-editor-form--live" id="company-editor-form" novalidate>
                 <fieldset class="company-editor-types">
-                  <legend>01 / ЧТО ДОБАВИТЬ</legend>
-                  <label><input type="radio" name="type" value="client" checked /><span><b>КЛИЕНТ</b><small>Лицо или наблюдаемый субъект</small></span></label>
-                  <label><input type="radio" name="type" value="incident" /><span><b>ИНЦИДЕНТ</b><small>Событие или активный процесс</small></span></label>
-                  <label><input type="radio" name="type" value="anomaly" /><span><b>АНОМАЛИЯ</b><small>Место, зона или явление</small></span></label>
+                  <legend>01 / ВЫБЕРИТЕ ТИП КАРТОЧКИ</legend>
+                  <label><input type="radio" name="type" value="client" required /><span><b>КЛИЕНТ</b><small>Лицо или наблюдаемый субъект</small></span></label>
+                  <label><input type="radio" name="type" value="incident" required /><span><b>ИНЦИДЕНТ</b><small>Событие или активный процесс</small></span></label>
+                  <label><input type="radio" name="type" value="anomaly" required /><span><b>АНОМАЛИЯ</b><small>Место, зона или явление</small></span></label>
                 </fieldset>
 
-                <div class="company-editor-fields">
-                  <div class="company-editor-step"><span>02</span><strong>ОСНОВНЫЕ СВЕДЕНИЯ</strong></div>
+                <div class="company-editor-fields" data-create-step="fields" hidden>
+                  <div class="company-editor-step"><span>02</span><strong>ЗАПОЛНИТЕ СВЕДЕНИЯ</strong></div>
                   <label><span>НАЗВАНИЕ *</span><input name="name" required maxlength="120" autocomplete="off" placeholder="Полное название карточки" /></label>
                   <label><span>ПСЕВДОНИМ / ПОДЗАГОЛОВОК</span><input name="alias" maxlength="160" autocomplete="off" placeholder="Краткая идентификация" /></label>
-                  <label><span>КЛАССИФИКАЦИЯ *</span><input name="cardType" required maxlength="160" autocomplete="off" value="Клиент / наблюдаемый субъект" data-editor-card-type /></label>
+                  <label><span>КЛАССИФИКАЦИЯ *</span><input name="cardType" required maxlength="160" autocomplete="off" data-editor-card-type /></label>
                   <label><span>СТАТУС</span><select name="status"><option>НАБЛЮДЕНИЕ</option><option>НА САЙТЕ</option><option>КРИТИЧЕСКИЙ</option><option>АРХИВ</option></select></label>
                   <label><span>УРОВЕНЬ УГРОЗЫ</span><select name="threat"><option>T1 / низкий</option><option>T2 / умеренный</option><option>T3 / значительный</option><option>T4 / высокий</option><option>T5 / критический</option></select></label>
                   <label><span>УРОВЕНЬ ДОСТУПА</span><select name="access"><option>D1 / открытый</option><option>D2 / внутренний</option><option>D3 / ограниченный</option><option>D4 / закрытый</option><option>D5 / особый</option></select></label>
                   <label class="company-editor-field-wide"><span>МЕСТОПОЛОЖЕНИЕ *</span><input name="location" required maxlength="180" autocomplete="off" placeholder="Город, район, сектор или координаты" /></label>
                   <label class="company-editor-field-wide"><span>КРАТКОЕ РЕЗЮМЕ *</span><textarea name="summary" required maxlength="900" rows="4" placeholder="Короткое описание для карточки в реестре"></textarea></label>
                   <label class="company-editor-field-wide"><span>ПЕРВИЧНАЯ РЕГИСТРАЦИЯ *</span><textarea name="description" required maxlength="5000" rows="8" placeholder="Подробное документальное описание записи"></textarea></label>
-                  <section class="company-editor-relations-picker company-editor-field-wide" aria-labelledby="editor-relations-title">
-                    <header>
-                      <div><span>СВЯЗИ НА ДОСКЕ</span><strong id="editor-relations-title">СВЯЗАТЬ С ДРУГИМИ ДОСЬЕ</strong><p>Выбранные карточки будут соединены нитями на доске расследования и появятся в разделе связанных записей.</p></div>
-                      <button type="button" data-editor-relations-toggle aria-expanded="false">+ ДОБАВИТЬ СВЯЗИ</button>
-                    </header>
-                    <div class="company-editor-relations-panel" data-editor-relations-panel hidden>
-                      <label class="company-editor-relations-search"><span>ПОИСК ПО РЕЕСТРУ</span><input type="search" data-editor-relations-search autocomplete="off" placeholder="Имя, номер или тип карточки" /></label>
-                      <div class="company-editor-relations-summary"><span data-editor-relations-count>ВЫБРАНО: 0</span><button type="button" data-editor-relations-clear>СБРОСИТЬ</button></div>
-                      <div class="company-editor-relations-list" data-editor-relations-list></div>
-                    </div>
-                  </section>
                 </div>
 
-                <aside class="company-editor-upload">
-                  <div class="company-editor-step"><span>03</span><strong>ОБЛОЖКА</strong></div>
+                <aside class="company-editor-upload" data-create-step="fields" hidden>
+                  <div class="company-editor-step"><span>02</span><strong>ОБЛОЖКА</strong></div>
                   <label class="company-editor-drop" data-editor-drop>
                     <input type="file" name="image" accept="image/png,image/jpeg,image/webp" required />
                     <img data-editor-preview alt="Предпросмотр загруженной обложки" hidden />
                     <span data-editor-upload-copy><b>ЗАГРУЗИТЬ ФОТОГРАФИЮ</b><small>JPG, PNG или WEBP · до 15 МБ</small><i>ВЫБРАТЬ ФАЙЛ</i></span>
                   </label>
-                  <p>Изображение автоматически уменьшается перед сохранением, чтобы карточка быстро открывалась на телефоне.</p>
+                  <p>Фото автоматически уменьшается до веб-размера перед публикацией.</p>
                 </aside>
 
-                <div class="company-editor-submit">
-                  <div><span>04 / ПОДТВЕРЖДЕНИЕ</span><p>Новая запись получит следующий свободный номер и станет доступна в локальном реестре.</p></div>
-                  <button type="submit" data-editor-submit>СОЗДАТЬ КАРТОЧКУ</button>
+                <div class="company-editor-next" data-create-step="fields" hidden>
+                  <p>Сначала заполните обязательные сведения и добавьте обложку.</p>
+                  <button type="button" data-create-next>ДАЛЕЕ: ВЫБРАТЬ СВЯЗИ</button>
+                </div>
+
+                <section class="company-editor-relations-picker company-editor-relations-stage" data-create-step="relations" hidden aria-labelledby="editor-relations-title">
+                  <header>
+                    <div><span>03 / СВЯЗИ НА ДОСКЕ</span><strong id="editor-relations-title">СВЯЗАТЬ С ДРУГИМИ ДОСЬЕ</strong><p>Можно выбрать любое число клиентов, аномалий и инцидентов либо опубликовать карточку без связей.</p></div>
+                    <button type="button" data-editor-relations-toggle aria-expanded="false">ОТКРЫТЬ СПИСОК</button>
+                  </header>
+                  <div class="company-editor-relations-panel" data-editor-relations-panel hidden>
+                    <label class="company-editor-relations-search"><span>ПОИСК ПО РЕЕСТРУ</span><input type="search" data-editor-relations-search autocomplete="off" placeholder="Имя, номер или тип карточки" /></label>
+                    <div class="company-editor-relations-summary"><span data-editor-relations-count>ВЫБРАНО: 0</span><button type="button" data-editor-relations-clear>СБРОСИТЬ</button></div>
+                    <div class="company-editor-relations-list" data-editor-relations-list></div>
+                  </div>
+                </section>
+
+                <div class="company-editor-submit" data-create-step="relations" hidden>
+                  <div><span>04 / ПУБЛИКАЦИЯ</span><p>Номер выдаётся один раз и останется закреплён за карточкой.</p></div>
+                  <button type="submit" data-editor-submit>ОПУБЛИКОВАТЬ</button>
                 </div>
                 <div class="company-editor-result" data-editor-result hidden>
                   <div><span>КАРТОЧКА СОЗДАНА</span><strong data-editor-created-id>MID-C-0027</strong></div>
@@ -764,7 +739,24 @@
                 </div>
                 <p class="company-editor-error" data-editor-error role="alert" hidden></p>
               </form>
-            </div>
+            </section>
+
+            <section class="company-restore editor-work-panel" id="company-restore" data-editor-recovery-panel hidden aria-labelledby="company-restore-title">
+              <header class="editor-work-heading">
+                <div><span>ВОССТАНОВЛЕНИЕ / ИСТОРИЯ</span><h4 id="company-restore-title">ВЕРСИИ КАРТОЧЕК</h4></div>
+                <button type="button" data-editor-panel-close aria-label="Закрыть восстановление карточек">×</button>
+              </header>
+              <div class="editor-recovery-grid">
+                <section>
+                  <header><span>01</span><div><strong>УДАЛЁННЫЕ</strong><p>Вернуть скрытую карточку с тем же номером.</p></div></header>
+                  <div class="company-restore-list" data-restore-deleted-list><p data-restore-deleted-empty>УДАЛЁННЫХ КАРТОЧЕК НЕТ.</p></div>
+                </section>
+                <section>
+                  <header><span>02</span><div><strong>ОТРЕДАКТИРОВАННЫЕ</strong><p>Вернуть состояние, в котором карточка была впервые опубликована.</p></div></header>
+                  <div class="company-restore-list" data-restore-modified-list><p data-restore-modified-empty>ИЗМЕНЁННЫХ КАРТОЧЕК НЕТ.</p></div>
+                </section>
+              </div>
+            </section>
           </section>
         </section>
       </main>
@@ -797,6 +789,20 @@
       </footer>
     </div>
 
+    <dialog class="editor-login-dialog" id="editor-login-dialog" aria-labelledby="editor-login-title">
+      <form id="company-account-form" novalidate>
+        <header><span>MIDGAS / MODERATOR ACCESS</span><button type="button" data-editor-login-close aria-label="Закрыть окно входа">×</button></header>
+        <div class="editor-login-copy">
+          <span>ПРОТОТИП АВТОРИЗАЦИИ</span>
+          <h2 id="editor-login-title">ВХОД В РЕДАКТОР</h2>
+          <p>Пока серверная проверка не подключена, используйте любой корректный адрес и пароль от четырёх символов. Пароль не сохраняется.</p>
+        </div>
+        <label><span>ЭЛЕКТРОННАЯ ПОЧТА</span><input type="email" name="email" required autocomplete="email" placeholder="editor@midgas.archive" /></label>
+        <label><span>ПАРОЛЬ</span><input type="password" name="password" required minlength="4" autocomplete="current-password" placeholder="••••••••" /></label>
+        <button type="submit">ВОЙТИ</button>
+      </form>
+    </dialog>
+
     <script src="data.js"></script>
     <script src="featured-data.js?v=8"></script>
     <script src="client-updates.js?v=1"></script>
@@ -804,9 +810,9 @@
     <script src="site-completion.js?v=1"></script>
     <script src="krovolunanie-research.js?v=1"></script>
     <script src="editor-session.js?v=1"></script>
-    <script src="editor-storage.js?v=3"></script>
+    <script src="editor-storage.js?v=4"></script>
     <script src="relations-data.js?v=1"></script>
-    <script src="company-hub.js?v=9"></script>
+    <script src="company-hub.js?v=10"></script>
     <script src="investigation-board.js?v=7"></script>
     <script src="app.js?v=20"></script>
   </body>

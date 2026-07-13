@@ -22,7 +22,7 @@
 
   function emptyState() {
     return {
-      version: 2,
+      version: 3,
       records: {},
       lastIssued: { client: 0, anomaly: 0, incident: 0 },
       audit: [],
@@ -76,15 +76,42 @@
     return next;
   }
 
+  function stableValue(value) {
+    if (Array.isArray(value)) return value.map(stableValue);
+    if (!value || typeof value !== "object") return value;
+    return Object.keys(value).sort().reduce((result, key) => {
+      if (key !== "editorUpdatedAt") result[key] = stableValue(value[key]);
+      return result;
+    }, {});
+  }
+
+  function recordsMatch(left, right) {
+    return JSON.stringify(stableValue(left)) === JSON.stringify(stableValue(right));
+  }
+
   function normalizeEntry(value) {
     const type = RECORD_TYPES.includes(value?.type) ? value.type : "";
     const id = String(value?.id || value?.record?.id || "").trim();
     if (!type || !id || !value?.record) return null;
     const record = normalizeRecord(type, { ...value.record, id });
+    const origin = value.origin === "created" || value.origin === "base"
+      ? value.origin
+      : baseRegistry[type]?.[id] ? "base" : "created";
+    const publicationRecord = origin === "created"
+      ? normalizeRecord(type, value.publicationRecord || record)
+      : null;
+    const published = origin === "base" ? baseRegistry[type]?.[id] : publicationRecord;
+    const storedRevision = Number(value.revisionCount);
+    const revisionCount = Number.isInteger(storedRevision) && storedRevision >= 0
+      ? storedRevision
+      : published && !recordsMatch(record, published) ? 1 : 0;
     return {
       type,
       id,
+      origin,
       record,
+      publicationRecord,
+      revisionCount,
       createdAt: value.createdAt ? String(value.createdAt) : record.editorCreatedAt || null,
       updatedAt: value.updatedAt ? String(value.updatedAt) : record.editorUpdatedAt || value.createdAt || null,
       deletedAt: value.deletedAt ? String(value.deletedAt) : null,
@@ -216,6 +243,19 @@
     return base ? normalizeRecord(type, base) : null;
   }
 
+  function publicationRecord(type, id, source = state) {
+    const entry = stateEntry(type, id, source);
+    if (entry?.origin === "created") return entry.publicationRecord ? normalizeRecord(type, entry.publicationRecord) : null;
+    const base = baseRegistry[type]?.[id];
+    return base ? normalizeRecord(type, base) : null;
+  }
+
+  function entryIsModified(entry, source = state) {
+    if (!entry || entry.deletedAt) return false;
+    const published = publicationRecord(entry.type, entry.id, source);
+    return Boolean(published && !recordsMatch(entry.record, published));
+  }
+
   function nextId(type, source = state) {
     if (!RECORD_TYPES.includes(type)) throw new Error("Неизвестный тип карточки.");
     const number = Math.max(0, Number(source.lastIssued[type]) || 0) + 1;
@@ -264,6 +304,7 @@
       editorCreatedAt: now,
       editorUpdatedAt: now,
       editorRelations: relations,
+      editorRelationsVersion: 1,
       fields,
       sections: [{
         title: "ПЕРВИЧНАЯ РЕГИСТРАЦИЯ",
@@ -276,7 +317,10 @@
     next.records[entryKey(type, id)] = {
       type,
       id,
+      origin: "created",
       record,
+      publicationRecord: clone(record),
+      revisionCount: 0,
       createdAt: now,
       updatedAt: now,
       deletedAt: null,
@@ -313,7 +357,10 @@
     next.records[entryKey(type, id)] = {
       type,
       id,
+      origin: existingEntry?.origin || (baseRegistry[type]?.[id] ? "base" : "created"),
       record,
+      publicationRecord: existingEntry?.publicationRecord || (baseRegistry[type]?.[id] ? null : clone(existing)),
+      revisionCount: (existingEntry?.revisionCount || 0) + 1,
       createdAt: existingEntry?.createdAt || existing.editorCreatedAt || null,
       updatedAt: now,
       deletedAt: null,
@@ -338,7 +385,10 @@
     next.records[entryKey(type, id)] = {
       type,
       id,
+      origin: previousEntry?.origin || (baseRegistry[type]?.[id] ? "base" : "created"),
       record: existing,
+      publicationRecord: previousEntry?.publicationRecord || (baseRegistry[type]?.[id] ? null : clone(existing)),
+      revisionCount: previousEntry?.revisionCount || 0,
       createdAt: previousEntry?.createdAt || existing.editorCreatedAt || null,
       updatedAt: previousEntry?.updatedAt || existing.editorUpdatedAt || now,
       deletedAt: now,
@@ -370,6 +420,35 @@
     return { type, record: entry.record, restoredAt: now };
   }
 
+  function resetToPublished(type, id) {
+    requireEditor();
+    if (!RECORD_TYPES.includes(type)) throw new Error("Неизвестный тип карточки.");
+    const next = loadState();
+    const entry = stateEntry(type, id, next);
+    if (!entry || entry.deletedAt) throw new Error("Активная отредактированная карточка не найдена.");
+    const published = publicationRecord(type, id, next);
+    if (!published) throw new Error("Исходная опубликованная версия не найдена.");
+    const now = new Date().toISOString();
+    let record;
+    if (entry.origin === "base") {
+      record = normalizeRecord(type, published);
+      delete next.records[entryKey(type, id)];
+    } else {
+      record = normalizeRecord(type, { ...published, editorUpdatedAt: now });
+      entry.record = record;
+      entry.updatedAt = now;
+      entry.deletedAt = null;
+      entry.revisionCount = 0;
+    }
+    appendAudit(next, "reset", type, id, record.name, now);
+    next.lastIssued[type] = Math.max(next.lastIssued[type], numericId(type, id));
+    persist(next);
+    state = next;
+    registry[type][id] = record;
+    dispatch("reset", type, record);
+    return { type, record, resetAt: now };
+  }
+
   function get(type, id, { includeDeleted = false } = {}) {
     if (!RECORD_TYPES.includes(type)) return null;
     const entry = stateEntry(type, id);
@@ -382,6 +461,13 @@
     return Object.values(state.records)
       .filter((entry) => entry.deletedAt)
       .sort((left, right) => String(right.deletedAt).localeCompare(String(left.deletedAt)))
+      .map((entry) => clone(entry));
+  }
+
+  function listModified() {
+    return Object.values(state.records)
+      .filter((entry) => entryIsModified(entry, state))
+      .sort((left, right) => String(right.updatedAt || "").localeCompare(String(left.updatedAt || "")))
       .map((entry) => clone(entry));
   }
 
@@ -399,13 +485,23 @@
     legacyKey: LEGACY_KEY,
     list: () => Object.values(state.records).filter((entry) => !entry.deletedAt).map((entry) => clone(entry)),
     listDeleted,
+    listModified,
     audit: () => clone(state.audit),
     get,
+    getPublication: (type, id) => {
+      const record = publicationRecord(type, id);
+      return record ? clone(record) : null;
+    },
+    isModified: (type, id) => {
+      const entry = stateEntry(type, id);
+      return entryIsModified(entry, state);
+    },
     isDeleted,
     nextId: (type) => nextId(type),
     create,
     update,
     softDelete,
     restore,
+    resetToPublished,
   });
 })();
