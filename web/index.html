@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="THE MIDGAS — исследовательский архив клиентов, аномалий и инцидентов." />
     <title>THE MIDGAS — Research Archive</title>
-    <link rel="stylesheet" href="styles.css?v=36" />
+    <link rel="stylesheet" href="styles.css?v=37" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -19,12 +19,14 @@
             <a href="registry.html?type=client">Клиенты</a>
             <a href="registry.html?type=anomaly">Аномалии</a>
             <a href="registry.html?type=incident">Инциденты</a>
+            <a href="#historical-archive">Архив</a>
           </div>
           <a class="wordmark" href="#top" aria-label="THE MIDGAS — на главную">THE MIDGAS</a>
           <div class="nav-group nav-group-right">
-            <a href="#historical-archive">Архив</a>
-            <a href="#glossary">Глоссарий</a>
-            <a href="#company-hub">Другое</a>
+            <a href="#company-materials">Материалы</a>
+            <a href="#company-journal">Журнал</a>
+            <a href="#company-board">Доска</a>
+            <a href="#company-account">Аккаунт</a>
           </div>
         </nav>
       </header>
@@ -427,7 +429,7 @@
         </section>
 
         <section class="company-hub" id="company-hub" aria-labelledby="company-hub-title">
-          <header class="company-hero">
+          <header class="company-hero" id="company-materials">
             <div class="company-hero-media" aria-hidden="true">
               <img class="company-hero-back" src="assets/historical-archive/bg-11.webp" alt="" data-company-parallax="-0.085" />
               <div class="company-hero-frame company-hero-frame--one" data-company-parallax="0.12">
@@ -643,9 +645,63 @@
             </div>
           </section>
 
-          <section class="company-editor" id="company-editor" aria-labelledby="company-editor-title">
+          <section class="company-account" id="company-account" aria-labelledby="company-account-title">
+            <header class="company-module-heading company-reveal">
+              <div class="company-section-label"><span>06</span><p>ДОСТУП К РЕДАКЦИИ</p></div>
+              <div><span>EDITOR ACCOUNT / PROTOTYPE</span><h3 id="company-account-title">АККАУНТ<br />РЕДАКТОРА</h3></div>
+              <p>Редактор, удаление и восстановление досье доступны только после входа. Сейчас это демонстрационный контур: адрес и пароль не проверяются сервером и никуда не отправляются.</p>
+            </header>
+
+            <div class="company-account-shell company-reveal">
+              <aside class="company-account-index" aria-hidden="true">
+                <span>ACCESS / D4</span>
+                <strong>06</strong>
+                <p>Один вход открывает создание, правку и восстановление записей в этом браузере.</p>
+              </aside>
+
+              <div class="company-account-console">
+                <div class="company-account-topline"><span>MIDGAS / AUTH</span><strong>РЕДАКЦИОННЫЙ КОНТУР</strong><i data-account-indicator>СЕАНС ЗАКРЫТ</i></div>
+                <form class="company-account-form" id="company-account-form" novalidate>
+                  <div class="company-account-copy">
+                    <span>01 / ИДЕНТИФИКАЦИЯ</span>
+                    <h4>ВОЙТИ В РЕДАКТОР</h4>
+                    <p>Для прототипа подойдёт любой корректный адрес и пароль от четырёх символов. Пароль не сохраняется.</p>
+                  </div>
+                  <label><span>ЭЛЕКТРОННАЯ ПОЧТА</span><input type="email" name="email" required autocomplete="email" placeholder="editor@midgas.archive" /></label>
+                  <label><span>ПАРОЛЬ</span><input type="password" name="password" required minlength="4" autocomplete="current-password" placeholder="••••••••" /></label>
+                  <button type="submit">ВОЙТИ В СИСТЕМУ</button>
+                  <p class="company-account-demo"><strong>DEMO ACCESS</strong> После подключения Supabase вход будет проверять подтверждённую учётную запись и выданную администратором роль редактора.</p>
+                </form>
+
+                <section class="company-account-session" data-account-session hidden aria-live="polite">
+                  <div>
+                    <span>СЕАНС РЕДАКТОРА АКТИВЕН</span>
+                    <strong data-account-email>editor@midgas.archive</strong>
+                    <p>Доступны создание, редактирование, мягкое удаление и восстановление записей.</p>
+                  </div>
+                  <nav>
+                    <button type="button" data-account-open-editor>ОТКРЫТЬ РЕДАКТОР</button>
+                    <button type="button" data-account-logout>ВЫЙТИ</button>
+                  </nav>
+                </section>
+                <p class="company-account-status" data-account-status role="status" aria-live="polite"></p>
+              </div>
+            </div>
+
+            <section class="company-restore" id="company-restore" data-account-protected hidden aria-labelledby="company-restore-title">
+              <header>
+                <div><span>02 / УДАЛЁННЫЕ ЗАПИСИ</span><h4 id="company-restore-title">ВОССТАНОВЛЕНИЕ</h4></div>
+                <p>Скрытые карточки сохраняют исходный номер и могут быть возвращены в реестр без перенумерации.</p>
+              </header>
+              <div class="company-restore-list" data-restore-list>
+                <p data-restore-empty>УДАЛЁННЫХ ЗАПИСЕЙ НЕТ.</p>
+              </div>
+            </section>
+          </section>
+
+          <section class="company-editor" id="company-editor" data-account-protected hidden aria-labelledby="company-editor-title">
             <header class="company-editor-heading company-reveal">
-              <div class="company-section-label"><span>06</span><p>РЕДАКЦИОННЫЙ МОДУЛЬ</p></div>
+              <div class="company-section-label"><span>07</span><p>РЕДАКЦИОННЫЙ МОДУЛЬ</p></div>
               <div><span>РАБОЧИЙ ПРОТОТИП / D4</span><h3 id="company-editor-title">РЕДАКТОР<br />ДОСЬЕ</h3></div>
               <p>Соберите новую карточку клиента, инцидента или аномалии. После подтверждения запись сразу появится в реестре и журнале изменений этого браузера.</p>
             </header>
@@ -747,8 +803,9 @@
     <script src="incident-updates.js?v=1"></script>
     <script src="site-completion.js?v=1"></script>
     <script src="krovolunanie-research.js?v=1"></script>
+    <script src="editor-session.js?v=1"></script>
     <script src="editor-storage.js?v=2"></script>
-    <script src="company-hub.js?v=7"></script>
+    <script src="company-hub.js?v=8"></script>
     <script src="investigation-board.js?v=5"></script>
     <script src="app.js?v=19"></script>
   </body>

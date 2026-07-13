@@ -9,6 +9,66 @@
     anomaly: ["АНОМАЛИЯ", "АНОМАЛИИ"],
     incident: ["ИНЦИДЕНТ", "ИНЦИДЕНТЫ"],
   };
+
+  const sessionApi = window.MIDGAS_EDITOR_SESSION;
+  const accountForm = document.querySelector("#company-account-form");
+  const accountSession = document.querySelector("[data-account-session]");
+  const accountEmail = document.querySelector("[data-account-email]");
+  const accountStatus = document.querySelector("[data-account-status]");
+  const accountIndicator = document.querySelector("[data-account-indicator]");
+  const accountProtected = [...document.querySelectorAll("[data-account-protected]")];
+  const accountOpenEditor = document.querySelector("[data-account-open-editor]");
+  const accountLogout = document.querySelector("[data-account-logout]");
+
+  function renderAccount(session, message = "") {
+    const isEditor = Boolean(session?.role === "editor");
+    if (accountForm) accountForm.hidden = isEditor;
+    if (accountSession) accountSession.hidden = !isEditor;
+    accountProtected.forEach((element) => { element.hidden = !isEditor; });
+    if (accountEmail) accountEmail.textContent = session?.email || "";
+    if (accountIndicator) accountIndicator.textContent = isEditor ? "СЕАНС АКТИВЕН" : "СЕАНС ЗАКРЫТ";
+    if (accountStatus) {
+      accountStatus.textContent = message || (isEditor
+        ? "ДЕМО-ДОСТУП ПОДТВЕРЖДЁН В ЭТОМ БРАУЗЕРЕ."
+        : "ДЛЯ ДОСТУПА К РЕДАКТОРУ ВЫПОЛНИТЕ ВХОД.");
+    }
+  }
+
+  renderAccount(sessionApi?.read?.() || null);
+
+  accountForm?.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (!accountForm.reportValidity()) return;
+    const values = new FormData(accountForm);
+    try {
+      const session = sessionApi?.signIn?.({ email: values.get("email") });
+      if (!session) throw new Error("Модуль редакционного доступа недоступен.");
+      accountForm.reset();
+      renderAccount(session, "ВХОД ВЫПОЛНЕН. РЕДАКТОР И ВОССТАНОВЛЕНИЕ ОТКРЫТЫ.");
+      document.querySelector("#company-editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (error) {
+      if (accountStatus) accountStatus.textContent = error.message || "НЕ УДАЛОСЬ ОТКРЫТЬ РЕДАКЦИОННЫЙ СЕАНС.";
+    }
+  });
+
+  accountOpenEditor?.addEventListener("click", () => {
+    document.querySelector("#company-editor")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  accountLogout?.addEventListener("click", () => {
+    sessionApi?.signOut?.();
+    renderAccount(null, "СЕАНС ЗАКРЫТ. РЕДАКЦИОННЫЕ ИНСТРУМЕНТЫ СКРЫТЫ.");
+    document.querySelector("#company-account")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  });
+
+  window.addEventListener(sessionApi?.eventName || "midgas:editor-session", (event) => {
+    renderAccount(event.detail?.session || null);
+  });
+
+  if (window.location.hash === "#company-editor" && !sessionApi?.isEditor?.()) {
+    window.history.replaceState(null, "", "#company-account");
+  }
+
   function stableValue(value) {
     if (Array.isArray(value)) return value.map(stableValue);
     if (!value || typeof value !== "object") return value;
