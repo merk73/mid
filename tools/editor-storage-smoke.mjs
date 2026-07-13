@@ -78,13 +78,13 @@ function payload(name) {
 
 const storage = makeStorage();
 const blocked = load(storage, false);
-assert.throws(() => blocked.MIDGAS_EDITOR_STORE.create(payload("НЕТ ДОСТУПА")), /только после входа/i);
+await assert.rejects(() => blocked.MIDGAS_EDITOR_STORE.create(payload("НЕТ ДОСТУПА")), /только после входа/i);
 assert.throws(() => blocked.MIDGAS_EDITOR_STORE.resetToPublished("client", "MID-C-0026"), /только после входа/i);
 
 const first = load(storage, true);
 assert.equal(first.MIDGAS_EDITOR_STORE.nextId("client"), "MID-C-0027");
 
-first.MIDGAS_EDITOR_STORE.update("client", "MID-C-0026", { name: "ИЗМЕНЁННАЯ БАЗОВАЯ" });
+await first.MIDGAS_EDITOR_STORE.update("client", "MID-C-0026", { name: "ИЗМЕНЁННАЯ БАЗОВАЯ" });
 assert.equal(first.MIDGAS_EDITOR_STORE.isModified("client", "MID-C-0026"), true);
 assert.equal(first.MIDGAS_EDITOR_STORE.listModified()[0].id, "MID-C-0026");
 const resetBase = first.MIDGAS_EDITOR_STORE.resetToPublished("client", "MID-C-0026");
@@ -92,11 +92,11 @@ assert.equal(resetBase.record.name, "БАЗОВАЯ ЗАПИСЬ");
 assert.equal(resetBase.record.id, "MID-C-0026");
 assert.equal(first.MIDGAS_EDITOR_STORE.isModified("client", "MID-C-0026"), false);
 
-const created27 = first.MIDGAS_EDITOR_STORE.create(payload("ЗАПИСЬ 27"));
+const created27 = await first.MIDGAS_EDITOR_STORE.create(payload("ЗАПИСЬ 27"));
 assert.equal(created27.record.id, "MID-C-0027");
 assert.equal(first.MIDGAS_EDITOR_STORE.isModified("client", "MID-C-0027"), false);
 
-const updated27 = first.MIDGAS_EDITOR_STORE.update("client", "MID-C-0027", {
+const updated27 = await first.MIDGAS_EDITOR_STORE.update("client", "MID-C-0027", {
   id: "MID-C-9999",
   type: "anomaly",
   kind: "ANOMALY",
@@ -112,13 +112,13 @@ assert.equal(reset27.record.name, "ЗАПИСЬ 27");
 assert.equal(reset27.record.id, "MID-C-0027");
 assert.equal(first.MIDGAS_EDITOR_STORE.nextId("client"), "MID-C-0028");
 assert.equal(first.MIDGAS_EDITOR_STORE.isModified("client", "MID-C-0027"), false);
-first.MIDGAS_EDITOR_STORE.update("client", "MID-C-0027", { name: "ОБНОВЛЁННАЯ 27" });
+await first.MIDGAS_EDITOR_STORE.update("client", "MID-C-0027", { name: "ОБНОВЛЁННАЯ 27" });
 
 first.MIDGAS_EDITOR_STORE.softDelete("client", "MID-C-0027");
 assert.equal(first.MIDGAS_RECORDS.client["MID-C-0027"], undefined);
 assert.equal(first.MIDGAS_EDITOR_STORE.nextId("client"), "MID-C-0028");
 
-const created28 = first.MIDGAS_EDITOR_STORE.create(payload("ЗАПИСЬ 28"));
+const created28 = await first.MIDGAS_EDITOR_STORE.create(payload("ЗАПИСЬ 28"));
 assert.equal(created28.record.id, "MID-C-0028");
 first.MIDGAS_EDITOR_STORE.restore("client", "MID-C-0027");
 assert.equal(first.MIDGAS_RECORDS.client["MID-C-0027"].name, "ОБНОВЛЁННАЯ 27");
@@ -131,7 +131,7 @@ first.MIDGAS_EDITOR_STORE.restore("client", "MID-C-0026");
 assert.equal(first.MIDGAS_EDITOR_STORE.isModified("client", "MID-C-0026"), false);
 
 first.MIDGAS_EDITOR_STORE.softDelete("client", "MID-C-0028");
-const created29 = first.MIDGAS_EDITOR_STORE.create(payload("ЗАПИСЬ 29"));
+const created29 = await first.MIDGAS_EDITOR_STORE.create(payload("ЗАПИСЬ 29"));
 assert.equal(created29.record.id, "MID-C-0029");
 
 const reloaded = load(storage, true);

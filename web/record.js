@@ -48,12 +48,10 @@ function createMediaGrid(items) {
 
 if (!record) {
   empty.hidden = false;
-  setText("#record-stage", "НЕТ ЗАПИСИ");
 } else {
   document.body.dataset.recordType = type;
   if (headerBackButton) headerBackButton.dataset.fallback = `registry.html?type=${encodeURIComponent(type)}`;
   document.title = `${record.id} — ${record.name} — THE MIDGAS`;
-  setText("#record-stage", record.stage);
   setText("#record-id", record.id);
   setText("#record-kind", record.kind);
   setText("#record-name", record.name);
@@ -102,6 +100,18 @@ if (!record) {
       const heading = document.createElement("h3");
       heading.textContent = section.title;
       body.append(heading);
+
+      const sectionImage = typeof section.image === "string" ? { src: section.image } : section.image;
+      if (sectionImage?.src) {
+        const sectionImageGrid = createMediaGrid([{
+          ...sectionImage,
+          alt: sectionImage.alt || section.title || "Фотография раздела MIDGAS",
+          caption: sectionImage.caption || "ФОТОМАТЕРИАЛ MIDGAS",
+          aspect: sectionImage.aspect || "wide",
+        }]);
+        sectionImageGrid.classList.add("lore-section-image");
+        body.append(sectionImageGrid);
+      }
 
       section.paragraphs.forEach((paragraph, paragraphIndex) => {
         const element = document.createElement("p");

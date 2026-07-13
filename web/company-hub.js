@@ -464,7 +464,7 @@
   const editorFile = editorForm?.elements.namedItem("image");
   const editorPreview = document.querySelector("[data-editor-preview]");
   const editorUploadCopy = document.querySelector("[data-editor-upload-copy]");
-  const editorCardType = document.querySelector("[data-editor-card-type]");
+  const editorClientAccessField = document.querySelector("[data-client-access-field]");
   const editorSubmit = document.querySelector("[data-editor-submit]");
   const editorResult = document.querySelector("[data-editor-result]");
   const editorError = document.querySelector("[data-editor-error]");
@@ -479,14 +479,7 @@
   const editorCreateNext = document.querySelector("[data-create-next]");
   let preparedImage = "";
   let preparedFile = "";
-  let activeCardTypeDefault = "";
   let imagePreparing = false;
-
-  const cardTypeDefaults = {
-    client: "Клиент / наблюдаемый субъект",
-    incident: "Инцидент / активный процесс",
-    anomaly: "Аномалия / зона наблюдения",
-  };
 
   function setCreateStage(stage) {
     editorFieldsSteps.forEach((element) => { element.hidden = stage === "type"; });
@@ -499,8 +492,9 @@
     preparedImage = "";
     preparedFile = "";
     imagePreparing = false;
-    activeCardTypeDefault = "";
-    if (editorCardType) editorCardType.value = "";
+    if (editorClientAccessField) editorClientAccessField.hidden = true;
+    const accessSelect = editorClientAccessField?.querySelector("select");
+    if (accessSelect) accessSelect.disabled = true;
     if (editorPreview) {
       editorPreview.src = "";
       editorPreview.hidden = true;
@@ -655,10 +649,11 @@
 
   editorForm?.querySelectorAll('input[name="type"]').forEach((input) => {
     input.addEventListener("change", () => {
-      if (!input.checked || !editorCardType) return;
-      const nextDefault = cardTypeDefaults[input.value] || cardTypeDefaults.client;
-      if (!editorCardType.value.trim() || editorCardType.value === activeCardTypeDefault) editorCardType.value = nextDefault;
-      activeCardTypeDefault = nextDefault;
+      if (!input.checked) return;
+      const isClient = input.value === "client";
+      if (editorClientAccessField) editorClientAccessField.hidden = !isClient;
+      const accessSelect = editorClientAccessField?.querySelector("select");
+      if (accessSelect) accessSelect.disabled = !isClient;
       setCreateStage("fields");
     });
   });
@@ -734,12 +729,10 @@
         id: input.dataset.relationId,
         label: input.dataset.relationLabel,
       }));
-      const created = window.MIDGAS_EDITOR_STORE?.create({
+      const created = await window.MIDGAS_EDITOR_STORE?.create({
         type: formData.get("type"),
         name: formData.get("name"),
         alias: formData.get("alias"),
-        cardType: formData.get("cardType"),
-        status: formData.get("status"),
         threat: formData.get("threat"),
         access: formData.get("access"),
         location: formData.get("location"),

@@ -26,6 +26,7 @@
   let preparedImage = "";
   let preparedFileSignature = "";
   let relationScrollTop = 0;
+  let pendingSectionImages = 0;
 
   if (!store || !editorForm || !typeLabels[type] || !id) return;
 
@@ -84,28 +85,115 @@
     fieldsList?.append(row);
   }
 
+  function setSectionImageBusy(delta, message = "") {
+    pendingSectionImages = Math.max(0, pendingSectionImages + delta);
+    if (saveButton) saveButton.disabled = pendingSectionImages > 0;
+    if (message && status) status.textContent = message;
+  }
+
   function addSection(section = {}) {
     const source = clone(section || {});
     const row = document.createElement("article");
     row.className = "record-editor-section-row";
     row._originalSection = source;
+    row._sectionImage = typeof source.image === "string"
+      ? { src: source.image, alt: source.title || "Фотография раздела", caption: "ФОТОМАТЕРИАЛ MIDGAS", aspect: "wide" }
+      : source.image ? clone(source.image) : null;
     const marker = document.createElement("span");
     marker.textContent = String((sectionsList?.children.length || 0) + 1).padStart(2, "0");
     const inputs = document.createElement("div");
+    inputs.className = "record-editor-section-content";
     const titleInput = document.createElement("input");
     titleInput.type = "text";
     titleInput.required = true;
     titleInput.maxLength = 180;
     titleInput.value = String(source.title || "НОВЫЙ РАЗДЕЛ");
     titleInput.placeholder = "Заголовок раздела";
+    titleInput.dataset.recordEditorSectionTitle = "";
     titleInput.setAttribute("aria-label", "Заголовок раздела");
     const paragraphsInput = document.createElement("textarea");
     paragraphsInput.required = true;
     paragraphsInput.rows = 10;
     paragraphsInput.value = Array.isArray(source.paragraphs) ? source.paragraphs.join("\n\n") : "";
     paragraphsInput.placeholder = "Абзац 1\n\nАбзац 2";
+    paragraphsInput.dataset.recordEditorSectionParagraphs = "";
     paragraphsInput.setAttribute("aria-label", "Абзацы раздела");
-    inputs.append(titleInput, paragraphsInput);
+
+    const imagePanel = document.createElement("div");
+    imagePanel.className = "record-editor-section-image";
+    const imageCopy = document.createElement("div");
+    const imageLabel = document.createElement("span");
+    imageLabel.textContent = "ФОТОГРАФИЯ РАЗДЕЛА";
+    const imageNote = document.createElement("strong");
+    const imageCaption = document.createElement("input");
+    imageCaption.type = "text";
+    imageCaption.maxLength = 180;
+    imageCaption.placeholder = "Подпись к фотографии";
+    imageCaption.setAttribute("aria-label", "Подпись к фотографии раздела");
+    const imagePreview = document.createElement("img");
+    imagePreview.alt = row._sectionImage?.alt || source.title || "Фотография раздела";
+    const imageActions = document.createElement("div");
+    const addImage = makeButton("ДОБАВИТЬ ФОТО", "record-editor-section-image-add", () => imageInput.click());
+    const removeImage = makeButton("УДАЛИТЬ", "record-editor-section-image-remove", () => {
+      row._sectionImage = null;
+      imagePreview.removeAttribute("src");
+      imagePreview.hidden = true;
+      imageCaption.value = "";
+      imageCaption.hidden = true;
+      removeImage.hidden = true;
+      addImage.textContent = "ДОБАВИТЬ ФОТО";
+      imageNote.textContent = "ФОТО НЕ ПРИКРЕПЛЕНО";
+    });
+    const imageInput = document.createElement("input");
+    imageInput.type = "file";
+    imageInput.accept = "image/png,image/jpeg,image/webp";
+    imageInput.className = "record-editor-section-image-file";
+    imageInput.setAttribute("aria-label", "Добавить или заменить фотографию раздела");
+
+    function renderSectionImage() {
+      const current = row._sectionImage;
+      const hasImage = Boolean(current?.src);
+      imageNote.textContent = hasImage ? "ФОТО ПРИКРЕПЛЕНО К РАЗДЕЛУ" : "ФОТО НЕ ПРИКРЕПЛЕНО";
+      imagePreview.hidden = !hasImage;
+      imageCaption.hidden = !hasImage;
+      removeImage.hidden = !hasImage;
+      addImage.textContent = hasImage ? "ЗАМЕНИТЬ ФОТО" : "ДОБАВИТЬ ФОТО";
+      if (hasImage) {
+        imagePreview.src = current.src;
+        imagePreview.alt = current.alt || source.title || "Фотография раздела";
+        imageCaption.value = current.caption || "ФОТОМАТЕРИАЛ MIDGAS";
+      }
+    }
+
+    imageInput.addEventListener("change", async () => {
+      const file = imageInput.files?.[0];
+      if (!file) return;
+      addImage.disabled = true;
+      setSectionImageBusy(1, "ПОДГОТАВЛИВАЮ ФОТОГРАФИЮ РАЗДЕЛА…");
+      try {
+        const src = await prepareImage(file, { maximumSide: 1100, targetBytes: 260 * 1024 });
+        row._sectionImage = {
+          src,
+          alt: source.title || "Фотография раздела",
+          caption: imageCaption.value.trim() || "ФОТОМАТЕРИАЛ MIDGAS",
+          aspect: "wide",
+        };
+        renderSectionImage();
+        const size = Math.round(src.length * 0.75 / 1024);
+        if (status) status.textContent = `ФОТОГРАФИЯ РАЗДЕЛА УМЕНЬШЕНА ДО ~${size} КБ.`;
+      } catch (error) {
+        if (status) status.textContent = error.message || "НЕ УДАЛОСЬ ПОДГОТОВИТЬ ФОТОГРАФИЮ РАЗДЕЛА.";
+      } finally {
+        imageInput.value = "";
+        addImage.disabled = false;
+        setSectionImageBusy(-1);
+      }
+    });
+
+    imageCopy.append(imageLabel, imageNote);
+    imageActions.append(addImage, removeImage, imageInput);
+    imagePanel.append(imageCopy, imagePreview, imageCaption, imageActions);
+    inputs.append(titleInput, paragraphsInput, imagePanel);
     const remove = makeButton("УДАЛИТЬ РАЗДЕЛ", "record-editor-remove-section", () => {
       row.remove();
       [...(sectionsList?.children || [])].forEach((item, index) => {
@@ -114,6 +202,7 @@
     });
     row.append(marker, inputs, remove);
     sectionsList?.append(row);
+    renderSectionImage();
   }
 
   function canonicalRelations(record) {
@@ -185,7 +274,6 @@
     editorForm.elements.namedItem("name").value = record.name || "";
     editorForm.elements.namedItem("alias").value = record.alias || "";
     editorForm.elements.namedItem("cardType").value = record.cardType || "";
-    editorForm.elements.namedItem("stage").value = record.stage || "";
     editorForm.elements.namedItem("summary").value = record.summary || "";
     if (preview) {
       preview.src = record.image || "";
@@ -198,7 +286,7 @@
     if (imageStatus) imageStatus.textContent = "Файл будет автоматически уменьшен и преобразован в WEBP. Если файл не выбран, текущая фотография останется без изменений.";
     fieldsList?.replaceChildren();
     (record.fields || []).forEach(([term, value]) => addField(term, value));
-    if (!record.fields?.length) addField("Статус", record.stage || "");
+    if (!record.fields?.length) addField("Тип", record.cardType || "");
     sectionsList?.replaceChildren();
     (record.sections || []).forEach((section) => addSection(section));
     if (!record.sections?.length) addSection({ title: "ПЕРВИЧНАЯ РЕГИСТРАЦИЯ", paragraphs: [record.summary || ""] });
@@ -279,13 +367,13 @@
     });
   }
 
-  async function prepareImage(file) {
+  async function prepareImage(file, options = {}) {
     if (!file?.type?.startsWith("image/")) throw new Error("Выберите изображение JPG, PNG или WEBP.");
     if (file.size > 15 * 1024 * 1024) throw new Error("Файл больше 15 МБ.");
     const sourceUrl = URL.createObjectURL(file);
     try {
       const source = await loadImage(sourceUrl);
-      const maximumSide = 1200;
+      const maximumSide = Number(options.maximumSide) || 1200;
       const scale = Math.min(1, maximumSide / Math.max(source.naturalWidth, source.naturalHeight));
       let width = Math.max(1, Math.round(source.naturalWidth * scale));
       let height = Math.max(1, Math.round(source.naturalHeight * scale));
@@ -295,7 +383,7 @@
       canvas.getContext("2d", { alpha: false }).drawImage(source, 0, 0, width, height);
       let quality = 0.82;
       let blob = await canvasBlob(canvas, "image/webp", quality);
-      const targetBytes = 480 * 1024;
+      const targetBytes = Number(options.targetBytes) || 480 * 1024;
       for (let attempt = 0; blob && blob.size > targetBytes && attempt < 6; attempt += 1) {
         quality = Math.max(0.5, quality - 0.08);
         width = Math.max(1, Math.round(width * 0.86));
@@ -353,7 +441,6 @@
     }
 
     upsert("Тип", editorForm.elements.namedItem("cardType").value.trim());
-    upsert("Статус", editorForm.elements.namedItem("stage").value.trim());
     if (relations.length) fields.push(["Связанные записи", relations.map((relation) => relation.id).join(", ")]);
     return fields;
   }
@@ -375,13 +462,20 @@
 
   function collectSections(relations) {
     return [...(sectionsList?.children || [])].map((row, index) => {
-      const [titleInput, paragraphsInput] = row.querySelectorAll("input, textarea");
+      const titleInput = row.querySelector("[data-record-editor-section-title]");
+      const paragraphsInput = row.querySelector("[data-record-editor-section-paragraphs]");
       const paragraphs = paragraphsInput.value.split(/\n\s*\n/).map((value) => value.trim()).filter(Boolean);
       const section = {
         ...(row._originalSection || {}),
         title: titleInput.value.trim(),
         paragraphs,
       };
+      if (row._sectionImage?.src) {
+        const caption = row.querySelector(".record-editor-section-image > input[type=\"text\"]")?.value.trim() || "ФОТОМАТЕРИАЛ MIDGAS";
+        section.image = { ...clone(row._sectionImage), caption, alt: caption };
+      } else {
+        delete section.image;
+      }
       if (index === 0) section.relatedRecords = relations;
       else if (Object.prototype.hasOwnProperty.call(section, "relatedRecords")) section.relatedRecords = [];
       return section;
@@ -409,7 +503,6 @@
         name: editorForm.elements.namedItem("name").value.trim(),
         alias: editorForm.elements.namedItem("alias").value.trim(),
         cardType: editorForm.elements.namedItem("cardType").value.trim(),
-        stage: editorForm.elements.namedItem("stage").value.trim(),
         summary: editorForm.elements.namedItem("summary").value.trim(),
         fields: collectFields(relations),
         sections: collectSections(relations),
@@ -422,7 +515,7 @@
       } else {
         patch.image = record.image;
       }
-      store.update(type, id, patch);
+      await store.update(type, id, patch);
       if (status) status.textContent = "ИЗМЕНЕНИЯ СОХРАНЕНЫ. ОБНОВЛЯЮ ДОСЬЕ…";
       window.setTimeout(() => window.location.reload(), 350);
     } catch (error) {

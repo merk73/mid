@@ -50,9 +50,7 @@ function createRegistryCard(record) {
   data.className = "client-card-data";
   const id = document.createElement("span");
   id.textContent = record.id;
-  const stage = document.createElement("span");
-  stage.textContent = record.stage;
-  data.append(id, stage);
+  data.append(id);
 
   const heading = document.createElement("h3");
   heading.textContent = record.name;

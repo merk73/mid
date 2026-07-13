@@ -1,6 +1,9 @@
 (() => {
   const STORAGE_KEY = "midgas-editor-state-v2";
   const LEGACY_KEY = "midgas-editor-records-v1";
+  const IMAGE_DB_NAME = "midgas-editor-images-v1";
+  const IMAGE_STORE_NAME = "images";
+  const IMAGE_REF_PREFIX = "midgas-image:";
   const RECORD_TYPES = ["client", "anomaly", "incident"];
   const TYPE_META = {
     client: { prefix: "MID-C-", kind: "CLIENT", defaultCardType: "Клиент / наблюдаемый субъект" },
@@ -19,6 +22,140 @@
   }
 
   const baseRegistry = Object.fromEntries(RECORD_TYPES.map((type) => [type, clone(registry[type])]));
+  const resolvedImageUrls = new Map();
+  const pendingImageUrls = new Map();
+  let imageDbPromise = null;
+
+  function isStoredImageRef(value) {
+    return typeof value === "string" && value.startsWith(IMAGE_REF_PREFIX);
+  }
+
+  function isInlineImage(value) {
+    return typeof value === "string" && /^data:image\//i.test(value);
+  }
+
+  function openImageDb() {
+    if (!("indexedDB" in window) || !window.indexedDB) return Promise.resolve(null);
+    if (imageDbPromise) return imageDbPromise;
+    imageDbPromise = new Promise((resolve, reject) => {
+      const request = window.indexedDB.open(IMAGE_DB_NAME, 1);
+      request.onupgradeneeded = () => {
+        const db = request.result;
+        if (!db.objectStoreNames.contains(IMAGE_STORE_NAME)) db.createObjectStore(IMAGE_STORE_NAME);
+      };
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error || new Error("IndexedDB недоступна."));
+      request.onblocked = () => reject(new Error("Хранилище изображений заблокировано другой вкладкой."));
+    });
+    return imageDbPromise;
+  }
+
+  function dataUrlBlob(value) {
+    const separator = value.indexOf(",");
+    if (separator < 0) throw new Error("Повреждённый формат изображения.");
+    const metadata = value.slice(5, separator);
+    const payload = value.slice(separator + 1);
+    const mimeType = metadata.split(";")[0] || "application/octet-stream";
+    const binary = /;base64/i.test(metadata)
+      ? window.atob(payload)
+      : decodeURIComponent(payload);
+    const bytes = new Uint8Array(binary.length);
+    for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+    return new Blob([bytes], { type: mimeType });
+  }
+
+  function imageToken() {
+    return window.crypto?.randomUUID?.()
+      || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+  }
+
+  async function writeImageBlob(key, blob) {
+    const db = await openImageDb();
+    if (!db) return false;
+    await new Promise((resolve, reject) => {
+      const transaction = db.transaction(IMAGE_STORE_NAME, "readwrite");
+      transaction.objectStore(IMAGE_STORE_NAME).put(blob, key);
+      transaction.oncomplete = () => resolve();
+      transaction.onerror = () => reject(transaction.error || new Error("Не удалось записать изображение."));
+      transaction.onabort = () => reject(transaction.error || new Error("Запись изображения отменена."));
+    });
+    return true;
+  }
+
+  async function readImageBlob(key) {
+    const db = await openImageDb();
+    if (!db) return null;
+    return new Promise((resolve, reject) => {
+      const transaction = db.transaction(IMAGE_STORE_NAME, "readonly");
+      const request = transaction.objectStore(IMAGE_STORE_NAME).get(key);
+      request.onsuccess = () => resolve(request.result instanceof Blob ? request.result : null);
+      request.onerror = () => reject(request.error || new Error("Не удалось прочитать изображение."));
+    });
+  }
+
+  async function externalizeInlineImage(value, memo) {
+    if (!isInlineImage(value)) return value;
+    if (memo.has(value)) return memo.get(value);
+    const db = await openImageDb();
+    if (!db) return value;
+    try {
+      const blob = dataUrlBlob(value);
+      const key = imageToken();
+      await writeImageBlob(key, blob);
+      const reference = `${IMAGE_REF_PREFIX}${key}`;
+      memo.set(value, reference);
+      if (window.URL?.createObjectURL) resolvedImageUrls.set(reference, window.URL.createObjectURL(blob));
+      return reference;
+    } catch (cause) {
+      const error = new Error("Не удалось сохранить изображение в локальном медиахранилище. Освободите место браузера и повторите попытку.");
+      error.cause = cause;
+      throw error;
+    }
+  }
+
+  async function externalizeImages(value, memo = new Map()) {
+    if (isInlineImage(value)) return externalizeInlineImage(value, memo);
+    if (Array.isArray(value)) {
+      for (let index = 0; index < value.length; index += 1) value[index] = await externalizeImages(value[index], memo);
+      return value;
+    }
+    if (!value || typeof value !== "object" || (typeof Blob !== "undefined" && value instanceof Blob)) return value;
+    for (const key of Object.keys(value)) value[key] = await externalizeImages(value[key], memo);
+    return value;
+  }
+
+  async function resolveImageReference(reference) {
+    if (!isStoredImageRef(reference)) return reference;
+    if (resolvedImageUrls.has(reference)) return resolvedImageUrls.get(reference);
+    if (pendingImageUrls.has(reference)) return pendingImageUrls.get(reference);
+    const pending = (async () => {
+      try {
+        const blob = await readImageBlob(reference.slice(IMAGE_REF_PREFIX.length));
+        if (!blob || !window.URL?.createObjectURL) return reference;
+        const url = window.URL.createObjectURL(blob);
+        resolvedImageUrls.set(reference, url);
+        return url;
+      } catch {
+        return reference;
+      }
+    })();
+    pendingImageUrls.set(reference, pending);
+    try {
+      return await pending;
+    } finally {
+      pendingImageUrls.delete(reference);
+    }
+  }
+
+  function resolvedImages(value) {
+    if (isStoredImageRef(value)) return resolvedImageUrls.get(value) || value;
+    if (Array.isArray(value)) return value.map(resolvedImages);
+    if (!value || typeof value !== "object") return value;
+    return Object.keys(value).reduce((result, key) => {
+      result[key] = resolvedImages(value[key]);
+      return result;
+    }, {});
+  }
 
   function emptyState() {
     return {
@@ -54,6 +191,41 @@
     }, []);
   }
 
+  function normalizeClientAccess(value) {
+    const source = String(value || "").trim();
+    const code = source.match(/\bD([0-5])\b/i)?.[1];
+    const levels = {
+      1: "D1 / очень низкий",
+      2: "D2 / низкий",
+      3: "D3 / средний",
+      4: "D4 / высокий",
+      5: "D5 / полный доступ",
+    };
+    if (code) return levels[code === "0" ? 1 : code];
+    const normalized = source.toLocaleLowerCase("ru").replaceAll("ё", "е");
+    if (!normalized || normalized === "нет") return levels[1];
+    if (normalized.includes("очень низк")) return levels[1];
+    if (normalized.includes("низк")) return levels[2];
+    if (normalized.includes("средн")) return levels[3];
+    if (normalized.includes("полн")) return levels[5];
+    if (normalized.includes("высок")) return levels[4];
+    if (normalized.includes("высш") || normalized.includes("макс") || normalized.includes("маким")) return levels[5];
+    return source;
+  }
+
+  function normalizeFields(type, fields) {
+    if (!Array.isArray(fields)) return [];
+    return fields.map((field) => {
+      if (!Array.isArray(field)) return field;
+      const [term, value, ...rest] = field;
+      const normalizedTerm = String(term || "").toLocaleLowerCase("ru").replaceAll("ё", "е").trim();
+      if (type === "client" && (normalizedTerm === "уровень доступа" || normalizedTerm === "осведомленность клиента")) {
+        return ["Уровень доступа", normalizeClientAccess(value), ...rest];
+      }
+      return field;
+    });
+  }
+
   function normalizeRecord(type, record) {
     const meta = TYPE_META[type];
     const next = {
@@ -69,11 +241,21 @@
       cardType: String(record?.cardType || meta.defaultCardType),
       image: String(record?.image || ""),
       summary: String(record?.summary || ""),
-      fields: Array.isArray(record?.fields) ? record.fields : [],
+      fields: normalizeFields(type, record?.fields),
       sections: Array.isArray(record?.sections) ? record.sections : [],
     };
     if (Array.isArray(record?.editorRelations)) next.editorRelations = normalizeRelations(record.editorRelations);
     return next;
+  }
+
+  RECORD_TYPES.forEach((type) => {
+    Object.entries(registry[type]).forEach(([id, record]) => {
+      registry[type][id] = normalizeRecord(type, record);
+    });
+  });
+
+  function displayRecord(type, record) {
+    return normalizeRecord(type, resolvedImages(record));
   }
 
   function stableValue(value) {
@@ -213,16 +395,17 @@
   }
 
   function dispatch(action, type, record) {
-    window.dispatchEvent(new CustomEvent("midgas:record-mutated", { detail: { action, type, record } }));
+    const visibleRecord = displayRecord(type, record);
+    window.dispatchEvent(new CustomEvent("midgas:record-mutated", { detail: { action, type, record: visibleRecord } }));
     if (action === "create") {
-      window.dispatchEvent(new CustomEvent("midgas:record-created", { detail: { type, record } }));
+      window.dispatchEvent(new CustomEvent("midgas:record-created", { detail: { type, record: visibleRecord } }));
     }
   }
 
   function applyState(next) {
     Object.values(next.records).forEach((entry) => {
       if (entry.deletedAt) delete registry[entry.type][entry.id];
-      else registry[entry.type][entry.id] = normalizeRecord(entry.type, entry.record);
+      else registry[entry.type][entry.id] = displayRecord(entry.type, entry.record);
     });
   }
 
@@ -231,6 +414,49 @@
   if (!window.localStorage.getItem(STORAGE_KEY) && Object.keys(state.records).length) {
     try { persist(state); } catch { /* Existing legacy records remain readable for this session. */ }
   }
+
+  function collectStoredImageRefs(value, result = new Set()) {
+    if (isStoredImageRef(value)) result.add(value);
+    else if (Array.isArray(value)) value.forEach((item) => collectStoredImageRefs(item, result));
+    else if (value && typeof value === "object") Object.values(value).forEach((item) => collectStoredImageRefs(item, result));
+    return result;
+  }
+
+  async function hydrateImageElement(image) {
+    const reference = image?.getAttribute?.("src") || "";
+    if (!isStoredImageRef(reference)) return;
+    const resolved = await resolveImageReference(reference);
+    if (resolved !== reference && image.getAttribute("src") === reference) image.src = resolved;
+  }
+
+  function hydrateImageTree(root) {
+    if (!root) return;
+    if (root.matches?.("img")) hydrateImageElement(root);
+    root.querySelectorAll?.("img").forEach(hydrateImageElement);
+  }
+
+  if (typeof document !== "undefined" && window.MutationObserver) {
+    const imageObserver = new window.MutationObserver((mutations) => {
+      mutations.forEach((mutation) => {
+        if (mutation.type === "attributes") hydrateImageElement(mutation.target);
+        mutation.addedNodes?.forEach(hydrateImageTree);
+      });
+    });
+    imageObserver.observe(document.documentElement, {
+      subtree: true,
+      childList: true,
+      attributes: true,
+      attributeFilter: ["src"],
+    });
+  }
+
+  const imagesReady = (async () => {
+    const references = [...collectStoredImageRefs(state)];
+    await Promise.all(references.map(resolveImageReference));
+    applyState(state);
+    if (typeof document !== "undefined") hydrateImageTree(document);
+    window.dispatchEvent(new CustomEvent("midgas:images-ready"));
+  })();
 
   function stateEntry(type, id, source = state) {
     return source.records[entryKey(type, id)] || null;
@@ -262,19 +488,20 @@
     return `${TYPE_META[type].prefix}${String(number).padStart(4, "0")}`;
   }
 
-  function create(payload) {
+  async function create(payload) {
     requireEditor();
     const type = RECORD_TYPES.includes(payload?.type) ? payload.type : "client";
     const next = loadState();
+    const imageMemo = new Map();
+    await externalizeImages(next, imageMemo);
     const id = nextId(type, next);
     const now = new Date().toISOString();
     const cardType = String(payload.cardType || TYPE_META[type].defaultCardType).trim();
     const name = String(payload.name || "").trim();
     const alias = String(payload.alias || name).trim();
     const location = String(payload.location || "Не раскрывается").trim();
-    const status = String(payload.status || "НАБЛЮДЕНИЕ").trim();
     const threat = String(payload.threat || "T1 / низкий").trim();
-    const access = String(payload.access || "D1 / открытый").trim();
+    const access = normalizeClientAccess(payload.access || "D1 / очень низкий");
     const summary = String(payload.summary || "").trim();
     const description = String(payload.description || summary).trim();
     const relations = normalizeRelations(payload.relations);
@@ -282,24 +509,24 @@
     if (!name || !summary || !description || !payload.image) {
       throw new Error("Заполните обязательные поля и загрузите изображение.");
     }
+    const image = await externalizeInlineImage(String(payload.image), imageMemo);
 
     const fields = [
       ["Тип", cardType],
-      ["Статус", status],
       ["Уровень угрозы", threat],
-      ["Уровень доступа", access],
       ["Местоположение", location],
     ];
+    if (type === "client") fields.splice(2, 0, ["Уровень доступа", access]);
     if (relations.length) fields.push(["Связанные записи", relations.map((item) => item.id).join(", ")]);
 
     const record = normalizeRecord(type, {
       id,
       kind: TYPE_META[type].kind,
-      stage: status,
+      stage: "НА САЙТЕ",
       name,
       alias,
       cardType,
-      image: String(payload.image),
+      image,
       summary,
       editorCreatedAt: now,
       editorUpdatedAt: now,
@@ -328,21 +555,23 @@
     appendAudit(next, "create", type, id, name, now);
     persist(next);
     state = next;
-    registry[type][id] = record;
+    registry[type][id] = displayRecord(type, record);
     dispatch("create", type, record);
-    return { type, record, createdAt: now };
+    return { type, record: displayRecord(type, record), createdAt: now };
   }
 
-  function update(type, id, patch = {}) {
+  async function update(type, id, patch = {}) {
     requireEditor();
     if (!RECORD_TYPES.includes(type)) throw new Error("Неизвестный тип карточки.");
     const next = loadState();
+    const imageMemo = new Map();
+    await externalizeImages(next, imageMemo);
     const existingEntry = stateEntry(type, id, next);
     if (existingEntry?.deletedAt) throw new Error("Сначала восстановите удалённую карточку.");
     const existing = currentRecord(type, id, next);
     if (!existing) throw new Error("Карточка не найдена.");
     const now = new Date().toISOString();
-    const safePatch = { ...patch };
+    const safePatch = await externalizeImages({ ...patch }, imageMemo);
     delete safePatch.id;
     delete safePatch.type;
     delete safePatch.kind;
@@ -369,9 +598,9 @@
     appendAudit(next, "update", type, id, record.name, now);
     persist(next);
     state = next;
-    registry[type][id] = record;
+    registry[type][id] = displayRecord(type, record);
     dispatch("update", type, record);
-    return { type, record, updatedAt: now };
+    return { type, record: displayRecord(type, record), updatedAt: now };
   }
 
   function softDelete(type, id) {
@@ -415,9 +644,9 @@
     appendAudit(next, "restore", type, id, entry.record.name, now);
     persist(next);
     state = next;
-    registry[type][id] = entry.record;
+    registry[type][id] = displayRecord(type, entry.record);
     dispatch("restore", type, entry.record);
-    return { type, record: entry.record, restoredAt: now };
+    return { type, record: displayRecord(type, entry.record), restoredAt: now };
   }
 
   function resetToPublished(type, id) {
@@ -444,9 +673,9 @@
     next.lastIssued[type] = Math.max(next.lastIssued[type], numericId(type, id));
     persist(next);
     state = next;
-    registry[type][id] = record;
+    registry[type][id] = displayRecord(type, record);
     dispatch("reset", type, record);
-    return { type, record, resetAt: now };
+    return { type, record: displayRecord(type, record), resetAt: now };
   }
 
   function get(type, id, { includeDeleted = false } = {}) {
@@ -454,7 +683,7 @@
     const entry = stateEntry(type, id);
     if (entry?.deletedAt && !includeDeleted) return null;
     const record = currentRecord(type, id);
-    return record ? clone(record) : null;
+    return record ? clone(displayRecord(type, record)) : null;
   }
 
   function listDeleted() {
@@ -483,6 +712,10 @@
   window.MIDGAS_EDITOR_STORE = Object.freeze({
     storageKey: STORAGE_KEY,
     legacyKey: LEGACY_KEY,
+    imagesReady,
+    imageReferencePrefix: IMAGE_REF_PREFIX,
+    imagesReady,
+    resolveImage: resolveImageReference,
     list: () => Object.values(state.records).filter((entry) => !entry.deletedAt).map((entry) => clone(entry)),
     listDeleted,
     listModified,
@@ -490,7 +723,7 @@
     get,
     getPublication: (type, id) => {
       const record = publicationRecord(type, id);
-      return record ? clone(record) : null;
+      return record ? clone(displayRecord(type, record)) : null;
     },
     isModified: (type, id) => {
       const entry = stateEntry(type, id);

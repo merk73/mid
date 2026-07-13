@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Детальная запись реестра THE MIDGAS." />
     <title>Запись реестра — THE MIDGAS</title>
-    <link rel="stylesheet" href="styles.css?v=41" />
+    <link rel="stylesheet" href="styles.css?v=42" />
   </head>
   <body>
     <div class="site-shell record-shell">
@@ -85,7 +85,6 @@
             <label><span>НАЗВАНИЕ *</span><input name="name" required maxlength="160" /></label>
             <label><span>ПСЕВДОНИМ / ПОДЗАГОЛОВОК</span><input name="alias" maxlength="180" /></label>
             <label><span>КЛАССИФИКАЦИЯ *</span><input name="cardType" required maxlength="180" /></label>
-            <label><span>СТАТУС *</span><input name="stage" required maxlength="120" /></label>
             <label class="record-editor-wide"><span>КРАТКОЕ ОПИСАНИЕ *</span><textarea name="summary" required maxlength="2000" rows="5"></textarea></label>
           </section>
 
@@ -105,12 +104,12 @@
 
           <section class="record-editor-collection" aria-labelledby="record-editor-sections-title">
             <header><div><span>ПОЛНЫЙ МАТЕРИАЛ</span><h3 id="record-editor-sections-title">РАЗДЕЛЫ И АБЗАЦЫ</h3></div><button type="button" data-record-editor-add-section>+ ДОБАВИТЬ РАЗДЕЛ</button></header>
-            <p class="record-editor-help">Каждый новый абзац отделяйте пустой строкой. При сохранении фотографии и диаграммы внутри существующего раздела сохраняются.</p>
+            <p class="record-editor-help">Абзацы внутри раздела отделяйте пустой строкой. К каждому разделу можно прикрепить одну фотографию, заменить её или удалить; новый файл автоматически уменьшается перед сохранением.</p>
             <div class="record-editor-sections-list" data-record-editor-sections></div>
           </section>
 
           <section class="record-editor-collection record-editor-relations" aria-labelledby="record-editor-relations-title">
-            <header><div><span>ГРАФ РАССЛЕДОВАНИЯ</span><h3 id="record-editor-relations-title">СВЯЗИ</h3></div><strong data-record-editor-relations-count>ВЫБРАНО: 0</strong></header>
+            <header><div><span>ГРАФ СВЯЗЕЙ</span><h3 id="record-editor-relations-title">СВЯЗИ</h3></div><strong data-record-editor-relations-count>ВЫБРАНО: 0</strong></header>
             <label class="record-editor-relation-search"><span>ПОИСК ПО КАРТОТЕКЕ</span><input type="search" data-record-editor-relations-search placeholder="Имя, номер или тип" /></label>
             <div class="record-editor-relations-list" data-record-editor-relations></div>
           </section>
@@ -147,11 +146,11 @@
     <script src="site-completion.js?v=1"></script>
     <script src="krovolunanie-research.js?v=1"></script>
     <script src="editor-session.js?v=1"></script>
-    <script src="editor-storage.js?v=4"></script>
+    <script src="editor-storage.js?v=5"></script>
     <script src="relations-data.js?v=1"></script>
-    <script src="app.js?v=20"></script>
+    <script src="app.js?v=21"></script>
     <script src="research-charts.js?v=6"></script>
-    <script src="record.js?v=9"></script>
-    <script src="record-editor.js?v=3"></script>
+    <script src="record.js?v=10"></script>
+    <script src="record-editor.js?v=4"></script>
   </body>
 </html>

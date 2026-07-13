@@ -208,7 +208,6 @@
     title: document.querySelector("[data-board-title]"),
     summary: document.querySelector("[data-board-summary]"),
     id: document.querySelector("[data-board-id]"),
-    stage: document.querySelector("[data-board-stage]"),
     link: document.querySelector("[data-board-link]"),
   };
   const newestEditorNode = recordNodes
@@ -254,7 +253,6 @@
         : node.summary;
     }
     if (inspector.id) inspector.id.textContent = node.id;
-    if (inspector.stage) inspector.stage.textContent = node.stage;
     if (inspector.link) {
       inspector.link.hidden = node.kind === "place";
       if (node.kind !== "place") inspector.link.href = `record.html?type=${node.kind}&id=${encodeURIComponent(node.id)}`;
