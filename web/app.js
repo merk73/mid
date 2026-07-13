@@ -3,38 +3,6 @@ const navigation = document.querySelector(".main-navigation");
 const siteHeader = document.querySelector(".home-page .site-header");
 const coverHero = document.querySelector(".home-page .hero-cover");
 const headerBackButton = document.querySelector(".header-back-button");
-const otherMenuButton = document.querySelector(".other-menu-toggle");
-const otherMenu = document.querySelector(".other-menu");
-
-function setOtherMenu(open) {
-  if (!otherMenuButton || !otherMenu) return;
-  if (window.matchMedia("(max-width: 760px)").matches) open = false;
-  if (open) {
-    const buttonRect = otherMenuButton.getBoundingClientRect();
-    const headerRect = otherMenuButton.closest(".site-header")?.getBoundingClientRect();
-    otherMenu.style.width = `${buttonRect.width}px`;
-    otherMenu.style.right = `${Math.max((headerRect?.right || window.innerWidth) - buttonRect.right, 0)}px`;
-  }
-  otherMenu.hidden = !open;
-  otherMenuButton.setAttribute("aria-expanded", String(open));
-  otherMenuButton.closest(".site-header")?.classList.toggle("other-menu-open", open);
-}
-
-otherMenuButton?.addEventListener("click", (event) => {
-  event.stopPropagation();
-  setOtherMenu(otherMenu.hidden);
-});
-
-otherMenu?.addEventListener("click", (event) => event.stopPropagation());
-
-document.addEventListener("click", () => setOtherMenu(false));
-document.addEventListener("keydown", (event) => {
-  if (event.key === "Escape") setOtherMenu(false);
-});
-
-window.addEventListener("resize", () => {
-  if (!otherMenu?.hidden) setOtherMenu(true);
-});
 
 headerBackButton?.addEventListener("click", () => {
   let hasInternalReferrer = false;
@@ -67,7 +35,6 @@ menuButton?.addEventListener("click", () => {
   menuButton.classList.toggle("is-open", isOpen);
   menuButton.setAttribute("aria-expanded", String(isOpen));
   menuButton.setAttribute("aria-label", isOpen ? "Закрыть меню" : "Открыть меню");
-  if (!isOpen) setOtherMenu(false);
 });
 
 navigation?.addEventListener("click", (event) => {
