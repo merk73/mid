@@ -18,12 +18,14 @@
   const relationsSearch = document.querySelector("[data-record-editor-relations-search]");
   const relationsCount = document.querySelector("[data-record-editor-relations-count]");
   const preview = document.querySelector("[data-record-editor-preview]");
+  const imageStatus = document.querySelector("[data-record-editor-image-status]");
   const status = document.querySelector("[data-record-editor-status]");
   const saveButton = document.querySelector("[data-record-editor-save]");
   const deleteStatus = document.querySelector("[data-record-delete-status]");
   let hiddenRelations = [];
   let preparedImage = "";
   let preparedFileSignature = "";
+  let relationScrollTop = 0;
 
   if (!store || !editorForm || !typeLabels[type] || !id) return;
 
@@ -193,6 +195,7 @@
     preparedFileSignature = "";
     const imageInput = editorForm.elements.namedItem("image");
     if (imageInput) imageInput.value = "";
+    if (imageStatus) imageStatus.textContent = "Файл будет автоматически уменьшен и преобразован в WEBP. Если файл не выбран, текущая фотография останется без изменений.";
     fieldsList?.replaceChildren();
     (record.fields || []).forEach(([term, value]) => addField(term, value));
     if (!record.fields?.length) addField("Статус", record.stage || "");
@@ -236,10 +239,16 @@
   document.querySelector("[data-record-editor-add-field]")?.addEventListener("click", () => addField());
   document.querySelector("[data-record-editor-add-section]")?.addEventListener("click", () => addSection({ title: "НОВЫЙ РАЗДЕЛ", paragraphs: [""] }));
 
+  relationsList?.addEventListener("pointerdown", () => {
+    relationScrollTop = editorForm.scrollTop;
+  }, true);
+  relationsList?.addEventListener("keydown", (event) => {
+    if (event.key === " " || event.key === "Enter") relationScrollTop = editorForm.scrollTop;
+  }, true);
   relationsList?.addEventListener("change", () => {
-    const scrollTop = editorForm.scrollTop;
     updateRelationCount();
-    window.requestAnimationFrame(() => { editorForm.scrollTop = scrollTop; });
+    editorForm.scrollTop = relationScrollTop;
+    window.requestAnimationFrame(() => { editorForm.scrollTop = relationScrollTop; });
   });
   relationsSearch?.addEventListener("input", () => {
     const query = relationsSearch.value.trim().toLocaleLowerCase("ru");
@@ -286,10 +295,11 @@
       canvas.getContext("2d", { alpha: false }).drawImage(source, 0, 0, width, height);
       let quality = 0.82;
       let blob = await canvasBlob(canvas, "image/webp", quality);
-      for (let attempt = 0; blob && blob.size > 560 * 1024 && attempt < 6; attempt += 1) {
+      const targetBytes = 480 * 1024;
+      for (let attempt = 0; blob && blob.size > targetBytes && attempt < 6; attempt += 1) {
         quality = Math.max(0.5, quality - 0.08);
-        width = Math.max(420, Math.round(width * 0.86));
-        height = Math.max(280, Math.round(height * 0.86));
+        width = Math.max(1, Math.round(width * 0.86));
+        height = Math.max(1, Math.round(height * 0.86));
         const resized = document.createElement("canvas");
         resized.width = width;
         resized.height = height;
@@ -311,14 +321,18 @@
     preparedFileSignature = "";
     if (!file) return;
     if (saveButton) saveButton.disabled = true;
+    if (imageStatus) imageStatus.textContent = "Подготавливаю и уменьшаю новое изображение…";
     if (status) status.textContent = "ПОДГОТАВЛИВАЮ НОВУЮ ОБЛОЖКУ…";
     try {
       preparedImage = await prepareImage(file);
       preparedFileSignature = `${file.name}:${file.size}:${file.lastModified}`;
       if (preview) preview.src = preparedImage;
-      if (status) status.textContent = `ОБЛОЖКА АВТОМАТИЧЕСКИ УМЕНЬШЕНА ДО ~${Math.round(preparedImage.length * 0.75 / 1024)} КБ.`;
+      const preparedKilobytes = Math.round(preparedImage.length * 0.75 / 1024);
+      if (imageStatus) imageStatus.textContent = `Готово: файл автоматически уменьшен до ~${preparedKilobytes} КБ и будет сохранён после подтверждения.`;
+      if (status) status.textContent = `ОБЛОЖКА АВТОМАТИЧЕСКИ УМЕНЬШЕНА ДО ~${preparedKilobytes} КБ.`;
     } catch (error) {
       imageInput.value = "";
+      if (imageStatus) imageStatus.textContent = error.message || "Не удалось подготовить изображение.";
       if (status) status.textContent = error.message || "НЕ УДАЛОСЬ ПОДГОТОВИТЬ ИЗОБРАЖЕНИЕ.";
     } finally {
       if (saveButton) saveButton.disabled = false;

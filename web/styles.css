@@ -8337,6 +8337,8 @@ body.record-editor-open { overflow: hidden; }
   box-shadow: 0 40px 140px rgba(0, 0, 0, 0.7);
 }
 
+.record-editor-dialog { overflow: hidden; }
+
 .record-editor-dialog::backdrop,
 .record-delete-dialog::backdrop {
   background: rgba(0, 0, 0, 0.82);
@@ -8458,8 +8460,8 @@ body.record-editor-open { overflow: hidden; }
 
 .record-editor-cover {
   display: grid;
-  grid-template-columns: minmax(280px, 0.82fr) minmax(360px, 1.18fr);
-  min-height: 320px;
+  grid-template-columns: minmax(260px, 0.82fr) minmax(0, 1.18fr);
+  min-height: 0;
   border-bottom: 1px solid #5a5a56;
 }
 
@@ -8491,22 +8493,29 @@ body.record-editor-open { overflow: hidden; }
 
 .record-editor-cover > label {
   position: relative;
-  min-height: 320px;
+  min-width: 0;
+  min-height: 0;
+  height: clamp(300px, 34vw, 420px);
   overflow: hidden;
   cursor: pointer;
 }
 
 .record-editor-cover > label input {
   position: absolute;
-  width: 1px;
-  height: 1px;
+  z-index: 3;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
   opacity: 0;
+  cursor: pointer;
 }
 
 .record-editor-cover img {
+  display: block;
   width: 100%;
   height: 100%;
-  min-height: 320px;
+  min-height: 0;
   object-fit: cover;
   filter: grayscale(1) contrast(1.06) brightness(0.72);
 }
@@ -8520,9 +8529,12 @@ body.record-editor-open { overflow: hidden; }
   background: var(--paper);
   font-size: 8px;
   letter-spacing: 0.08em;
+  pointer-events: none;
 }
 
 .record-editor-cover label:hover > span { color: var(--paper); background: var(--company-red); }
+.record-editor-cover > label:focus-within { outline: 2px solid var(--company-red); outline-offset: -2px; }
+.record-editor-image-status { min-height: 48px; }
 
 .record-editor-collection {
   border-bottom: 1px solid #5a5a56;
@@ -8837,21 +8849,30 @@ body.record-editor-open { overflow: hidden; }
   .record-editor-wide { grid-column: auto; }
   .record-editor-cover { grid-template-columns: 1fr; }
   .record-editor-cover > div { padding: 26px 16px; border-right: 0; border-bottom: 1px solid #5a5a56; }
-  .record-editor-cover > label,
-  .record-editor-cover img { min-height: min(76vw, 420px); }
+  .record-editor-cover > label { height: clamp(260px, 76vw, 360px); }
+  .record-editor-cover img { min-height: 0; }
   .record-editor-collection > header { grid-template-columns: 1fr; }
   .record-editor-collection > header > div { padding: 20px 16px; }
   .record-editor-collection > header > button { min-height: 52px; border-top: 1px solid #5a5a56; border-left: 0; }
   .record-editor-fields-list { grid-template-columns: 1fr; }
-  .record-editor-field-row { grid-template-columns: minmax(100px, 0.38fr) minmax(0, 1fr) 42px; border-right: 0; }
+  .record-editor-field-row {
+    grid-template-columns: minmax(0, 1fr) 42px;
+    grid-template-areas: "term remove" "value remove";
+    border-right: 0;
+  }
+  .record-editor-field-row input { grid-area: term; min-height: 54px; border-bottom: 1px solid #4d4d49; }
+  .record-editor-field-row textarea { grid-area: value; min-height: 96px; }
+  .record-editor-remove { grid-area: remove; }
   .record-editor-section-row { grid-template-columns: 46px minmax(0, 1fr); }
   .record-editor-section-row > div { grid-template-columns: 1fr; }
   .record-editor-section-row input,
-  .record-editor-section-row textarea { min-height: 150px; border-right: 0; border-bottom: 1px solid #4d4d49; }
+  .record-editor-section-row textarea { border-right: 0; border-bottom: 1px solid #4d4d49; }
+  .record-editor-section-row input { min-height: 64px; }
+  .record-editor-section-row textarea { min-height: 180px; }
   .record-editor-remove-section { grid-column: 1 / -1; min-height: 46px; border-top: 1px solid #4d4d49; }
   .record-editor-relations > header > strong { min-height: 44px; border-top: 1px solid #5a5a56; border-left: 0; }
   .record-editor-relation-search { align-items: stretch; flex-direction: column; padding: 14px 16px; }
-  .record-editor-relations-list { grid-template-columns: 1fr; max-height: 52svh; }
+  .record-editor-relations-list { grid-template-columns: 1fr; max-height: none; overflow: visible; }
   .record-editor-submit { grid-template-columns: 1fr; }
   .record-editor-submit button { min-height: 64px; border-top: 1px solid #5a5a56; border-left: 0; }
   .record-delete-dialog > form { padding: 38px 18px; }
