@@ -6678,18 +6678,34 @@ button {
   .company-module-heading > p,
   .company-editor-heading > p { margin-top: 26px; font-size: 11px; line-height: 1.7; }
 
-  .company-process-grid { display: block; }
+  .company-process-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    align-items: stretch;
+  }
   .company-process-shot,
   .company-process-shot--wide,
   .company-process-shot--tall {
     width: 100%;
-    margin: 0 0 18px;
-    aspect-ratio: 4 / 5;
+    margin: 0;
+    aspect-ratio: 3 / 4;
   }
 
-  .company-process-shot--wide { aspect-ratio: 4 / 3; }
-  .company-process-shot figcaption { padding: 12px; }
-  .company-process-shot figcaption strong { font-size: 10px; }
+  .company-process-shot--wide { aspect-ratio: 3 / 4; }
+  .company-process-shot figcaption {
+    grid-template-columns: 1fr;
+    gap: 3px;
+    padding: 9px;
+  }
+  .company-process-shot figcaption strong {
+    justify-self: start;
+    font-size: 9px;
+    line-height: 1.05;
+  }
+  .company-process-shot figcaption span,
+  .company-process-shot figcaption em { font-size: 5.5px; }
+  .company-process-shot figcaption em { grid-column: 1; }
 
   .company-journal-dashboard { grid-template-columns: 1fr; }
   .company-journal-summary { min-height: 176px; }
