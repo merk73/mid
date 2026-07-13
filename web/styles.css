@@ -4856,6 +4856,8 @@ button {
 }
 
 .home-page .glossary-group .glossary-entry:nth-child(n) {
+  position: relative;
+  isolation: isolate;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   grid-template-rows: auto 0fr;
@@ -4871,7 +4873,20 @@ button {
   transition:
     grid-template-rows 240ms ease,
     color 180ms ease,
-    background-color 180ms ease;
+    background-color 180ms ease,
+    transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 260ms ease;
+}
+
+.home-page .glossary-group .glossary-entry:nth-child(n)::before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  background: var(--ink);
+  content: "";
+  transform: scaleX(0);
+  transform-origin: right center;
+  transition: transform 320ms cubic-bezier(0.7, 0, 0.2, 1);
 }
 
 .home-page .glossary-group .glossary-entry:nth-child(n):hover,
@@ -4887,6 +4902,12 @@ button {
   grid-template-rows: auto 1fr;
   color: var(--paper);
   background: var(--ink);
+  transform: none;
+  box-shadow: none;
+}
+
+.home-page .glossary-group .glossary-entry.is-open:nth-child(n)::before {
+  transform: scaleX(1);
 }
 
 .glossary-entry-trigger {
@@ -4926,6 +4947,7 @@ button {
   line-height: 1.05;
   letter-spacing: -0.025em;
   overflow-wrap: anywhere;
+  transition: transform 260ms cubic-bezier(0.2, 0.8, 0.2, 1), letter-spacing 260ms ease;
 }
 
 .glossary-entry-indicator {
@@ -4935,6 +4957,37 @@ button {
   height: 26px;
   border: 1px solid currentColor;
   border-radius: 50%;
+  transition: color 220ms ease, background-color 220ms ease, transform 320ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .home-page .glossary-group .glossary-entry:nth-child(n):not(.is-open):hover {
+    z-index: 2;
+    color: var(--paper);
+    background: var(--paper);
+    box-shadow: 8px 9px 0 rgba(17, 17, 17, 0.18);
+    transform: translate3d(-3px, -4px, 0);
+  }
+
+  .home-page .glossary-group .glossary-entry:nth-child(n):not(.is-open):hover::before {
+    transform: scaleX(1);
+    transform-origin: left center;
+  }
+
+  .home-page .glossary-group .glossary-entry:nth-child(n):not(.is-open):hover .glossary-entry-trigger > span:first-child {
+    color: #aaa;
+  }
+
+  .home-page .glossary-group .glossary-entry:nth-child(n):not(.is-open):hover .glossary-entry-trigger h4 {
+    letter-spacing: 0.005em;
+    transform: translateX(7px);
+  }
+
+  .home-page .glossary-group .glossary-entry:nth-child(n):not(.is-open):hover .glossary-entry-indicator {
+    color: var(--ink);
+    background: var(--paper);
+    transform: rotate(90deg) scale(1.08);
+  }
 }
 
 .glossary-entry-indicator::before,
@@ -5147,6 +5200,9 @@ button {
 
 @media (prefers-reduced-motion: reduce) {
   .home-page .glossary-group .glossary-entry:nth-child(n),
+  .home-page .glossary-group .glossary-entry:nth-child(n)::before,
+  .home-page .glossary-entry-trigger h4,
+  .glossary-entry-indicator,
   .glossary-entry-indicator::after,
   .glossary-entry-body {
     transition: none;
