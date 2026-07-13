@@ -110,8 +110,8 @@
   const edges = [...edgeMap.values()];
 
   const recordColumns = 6;
-  const recordSpacingX = 470;
-  const recordSpacingY = 350;
+  const recordSpacingX = 250;
+  const recordSpacingY = 240;
   const recordRows = Math.ceil(recordNodes.length / recordColumns);
   const recordStartX = (width - (recordColumns - 1) * recordSpacingX) / 2;
   const recordStartY = (height - (recordRows - 1) * recordSpacingY) / 2;
