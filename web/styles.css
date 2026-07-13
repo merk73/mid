@@ -5615,7 +5615,7 @@ button {
 
 .company-process-shot--tall {
   grid-column: span 4;
-  margin-top: -8vw;
+  margin-top: 0;
   aspect-ratio: 3 / 5;
 }
 
@@ -7979,4 +7979,30 @@ button {
 
 @media (prefers-reduced-motion: reduce) {
   .company-method--simple .company-protocol--simple li { transition: none; }
+}
+
+/* Desktop field archive: stable masonry columns without overlaps. */
+@media (min-width: 761px) {
+  .company-process-grid {
+    display: block;
+    column-count: 4;
+    column-gap: clamp(14px, 1.7vw, 26px);
+  }
+
+  .company-process-shot,
+  .company-process-shot--wide,
+  .company-process-shot--tall {
+    display: inline-block;
+    width: 100%;
+    margin: 0 0 clamp(14px, 1.7vw, 26px);
+    break-inside: avoid;
+    vertical-align: top;
+  }
+
+  .company-process-shot--wide { aspect-ratio: 4 / 3; }
+  .company-process-shot--tall { aspect-ratio: 3 / 5; }
+}
+
+@media (min-width: 761px) and (max-width: 1120px) {
+  .company-process-grid { column-count: 3; }
 }
