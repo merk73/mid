@@ -1,9 +1,0 @@
-{
-  "name": "midgas-sites",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "node scripts/build-sites.mjs",
-    "validate:sites": "node scripts/validate-sites.mjs"
-  }
-}
