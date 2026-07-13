@@ -89,6 +89,7 @@ if (!record) {
       notice.append(label, text);
       sections.append(notice);
     }
+    const explicitRelations = Array.isArray(record.editorRelations) ? record.editorRelations : null;
     record.sections.forEach((section, index) => {
       const article = document.createElement("article");
       article.className = "lore-section";
@@ -116,7 +117,9 @@ if (!record) {
         if (trailingMedia.length) body.append(createMediaGrid(trailingMedia));
       }
 
-      if (section.relatedRecords?.length) {
+      const relationItems = (explicitRelations ? (index === 0 ? explicitRelations : []) : (section.relatedRecords || []))
+        .filter((item) => window.MIDGAS_RECORDS?.[item.type]?.[item.id]);
+      if (relationItems.length) {
         const related = document.createElement("div");
         related.className = "related-records";
         const relatedLabel = document.createElement("strong");
@@ -124,7 +127,7 @@ if (!record) {
         const relatedList = document.createElement("div");
         relatedList.className = "related-record-list";
 
-        section.relatedRecords.forEach((item) => {
+        relationItems.forEach((item) => {
           const link = document.createElement("a");
           link.href = `record.html?type=${encodeURIComponent(item.type)}&id=${encodeURIComponent(item.id)}`;
           link.textContent = item.label || item.id;

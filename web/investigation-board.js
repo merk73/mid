@@ -93,28 +93,27 @@
     ids.forEach((id) => addEdge(placeKey, keyFromId(id), "place"));
   });
 
-  const relationPairs = [
-    ["MID-A-0001", clientId(3)], ["MID-A-0001", clientId(11)], ["MID-A-0001", clientId(20)],
-    ["MID-A-0001", clientId(21)], ["MID-A-0001", clientId(24)], ["MID-A-0001", clientId(18)],
-    ["MID-A-0001", clientId(2)], ["MID-A-0001", clientId(8)], ["MID-I-0001", "MID-A-0001"],
-    ["MID-I-0001", clientId(24)], ["MID-I-0002", "MID-A-0001"], [clientId(7), clientId(5)],
-    [clientId(7), clientId(6)], [clientId(7), clientId(16)], [clientId(6), clientId(5)],
-    [clientId(12), clientId(17)], [clientId(12), clientId(9)], [clientId(12), clientId(16)],
-    [clientId(13), clientId(2)], [clientId(17), clientId(9)], [clientId(17), clientId(16)],
-    [clientId(19), clientId(14)], [clientId(19), clientId(9)], [clientId(19), clientId(1)],
-    [clientId(19), clientId(8)], [clientId(19), clientId(2)], [clientId(22), clientId(1)],
-    [clientId(25), clientId(9)], [clientId(25), clientId(6)], [clientId(26), clientId(25)],
-    [clientId(26), clientId(9)],
-  ];
-  relationPairs.forEach(([source, target]) => addEdge(keyFromId(source), keyFromId(target), "record"));
+  const relationPairs = window.MIDGAS_RELATIONS?.pairs || [];
+  const explicitRelationNodes = new Set(recordNodes
+    .filter((node) => Array.isArray(node.record.editorRelations)
+      && (node.record.editorRelations.length || node.record.editorRelationsVersion === 1))
+    .map((node) => node.key));
+  relationPairs.forEach(([source, target]) => {
+    const sourceKey = keyFromId(source);
+    const targetKey = keyFromId(target);
+    if (explicitRelationNodes.has(sourceKey) || explicitRelationNodes.has(targetKey)) return;
+    addEdge(sourceKey, targetKey, "record");
+  });
 
   recordNodes.forEach((node) => {
     const sectionRelations = Array.isArray(node.record.sections)
       ? node.record.sections.flatMap((section) => Array.isArray(section.relatedRecords) ? section.relatedRecords : [])
       : [];
-    const storedRelations = Array.isArray(node.record.editorRelations) ? node.record.editorRelations : [];
+    const hasExplicitRelations = Array.isArray(node.record.editorRelations)
+      && (node.record.editorRelations.length || node.record.editorRelationsVersion === 1);
+    const storedRelations = hasExplicitRelations ? node.record.editorRelations : sectionRelations;
     const seen = new Set();
-    [...storedRelations, ...sectionRelations].forEach((relation) => {
+    storedRelations.forEach((relation) => {
       const id = String(relation?.id || "");
       const type = typeOrder.includes(relation?.type)
         ? relation.type

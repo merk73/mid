@@ -223,6 +223,17 @@ glossaryFilterButtons.forEach((button) => {
 
 glossarySearch?.addEventListener("input", updateGlossary);
 
+document.querySelectorAll('a[href*="record.html?"]').forEach((link) => {
+  try {
+    const target = new URL(link.href, window.location.href);
+    const targetType = target.searchParams.get("type") || "";
+    const targetId = target.searchParams.get("id") || "";
+    if (window.MIDGAS_EDITOR_STORE?.isDeleted?.(targetType, targetId)) link.hidden = true;
+  } catch {
+    // Keep malformed editorial links visible for manual review.
+  }
+});
+
 const motionTargets = document.querySelectorAll(
   ".home-page .hero-cover-copy > *, .home-page .intro-section > *, .home-page .support-section > *, .home-page .section-heading > *, .home-page .registry-row, .home-page .historical-archive-heading > *, .home-page .historical-archive-footer > *, .home-page .client-card, .home-page .archive-section > *, .home-page .glossary-section > *",
 );

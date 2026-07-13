@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Детальная запись реестра THE MIDGAS." />
     <title>Запись реестра — THE MIDGAS</title>
-    <link rel="stylesheet" href="styles.css?v=37" />
+    <link rel="stylesheet" href="styles.css?v=38" />
   </head>
   <body>
     <div class="site-shell record-shell">
@@ -38,6 +38,10 @@
             <p class="record-code"><span id="record-id"></span> / <span id="record-kind"></span></p>
             <h1 id="record-name"></h1>
             <p class="record-alias" id="record-alias"></p>
+            <div class="record-editor-actions" data-record-editor-actions hidden>
+              <button type="button" data-record-edit>РЕДАКТИРОВАТЬ</button>
+              <button type="button" data-record-delete>УДАЛИТЬ КАРТОЧКУ</button>
+            </div>
           </div>
           <figure class="record-portrait">
             <img id="record-image" src="" alt="" />
@@ -68,6 +72,67 @@
         </section>
       </main>
 
+      <dialog class="record-editor-dialog" id="record-editor-dialog" aria-labelledby="record-editor-dialog-title">
+        <form class="record-editor-form" id="record-editor-form" novalidate>
+          <header class="record-editor-dialog-heading">
+            <div><span>EDITOR / EXISTING RECORD</span><h2 id="record-editor-dialog-title">РЕДАКТИРОВАТЬ<br />ДОСЬЕ</h2></div>
+            <button type="button" data-record-editor-close aria-label="Закрыть редактор">×</button>
+          </header>
+
+          <section class="record-editor-identity">
+            <label><span>НОМЕР / НЕИЗМЕНЯЕМЫЙ</span><input name="recordId" readonly /></label>
+            <label><span>ТИП / НЕИЗМЕНЯЕМЫЙ</span><input name="recordKind" readonly /></label>
+            <label><span>НАЗВАНИЕ *</span><input name="name" required maxlength="160" /></label>
+            <label><span>ПСЕВДОНИМ / ПОДЗАГОЛОВОК</span><input name="alias" maxlength="180" /></label>
+            <label><span>КЛАССИФИКАЦИЯ *</span><input name="cardType" required maxlength="180" /></label>
+            <label><span>СТАТУС *</span><input name="stage" required maxlength="120" /></label>
+            <label class="record-editor-wide"><span>КРАТКОЕ ОПИСАНИЕ *</span><textarea name="summary" required maxlength="2000" rows="5"></textarea></label>
+          </section>
+
+          <section class="record-editor-cover">
+            <div><span>ОБЛОЖКА</span><strong>ЗАМЕНИТЬ ИЗОБРАЖЕНИЕ</strong><p>Если файл не выбран, текущая фотография останется без изменений.</p></div>
+            <label>
+              <input type="file" name="image" accept="image/png,image/jpeg,image/webp" />
+              <img data-record-editor-preview src="" alt="Предпросмотр обложки" />
+              <span>ВЫБРАТЬ НОВЫЙ ФАЙЛ</span>
+            </label>
+          </section>
+
+          <section class="record-editor-collection" aria-labelledby="record-editor-fields-title">
+            <header><div><span>ПОЛЯ ДОСЬЕ</span><h3 id="record-editor-fields-title">СВЕДЕНИЯ</h3></div><button type="button" data-record-editor-add-field>+ ДОБАВИТЬ ПОЛЕ</button></header>
+            <div class="record-editor-fields-list" data-record-editor-fields></div>
+          </section>
+
+          <section class="record-editor-collection" aria-labelledby="record-editor-sections-title">
+            <header><div><span>ПОЛНЫЙ МАТЕРИАЛ</span><h3 id="record-editor-sections-title">РАЗДЕЛЫ И АБЗАЦЫ</h3></div><button type="button" data-record-editor-add-section>+ ДОБАВИТЬ РАЗДЕЛ</button></header>
+            <p class="record-editor-help">Каждый новый абзац отделяйте пустой строкой. При сохранении фотографии и диаграммы внутри существующего раздела сохраняются.</p>
+            <div class="record-editor-sections-list" data-record-editor-sections></div>
+          </section>
+
+          <section class="record-editor-collection record-editor-relations" aria-labelledby="record-editor-relations-title">
+            <header><div><span>ГРАФ РАССЛЕДОВАНИЯ</span><h3 id="record-editor-relations-title">СВЯЗИ</h3></div><strong data-record-editor-relations-count>ВЫБРАНО: 0</strong></header>
+            <label class="record-editor-relation-search"><span>ПОИСК ПО КАРТОТЕКЕ</span><input type="search" data-record-editor-relations-search placeholder="Имя, номер или тип" /></label>
+            <div class="record-editor-relations-list" data-record-editor-relations></div>
+          </section>
+
+          <footer class="record-editor-submit">
+            <p data-record-editor-status role="status" aria-live="polite">Номер карточки останется неизменным.</p>
+            <button type="submit" data-record-editor-save>СОХРАНИТЬ ИЗМЕНЕНИЯ</button>
+          </footer>
+        </form>
+      </dialog>
+
+      <dialog class="record-delete-dialog" id="record-delete-dialog" aria-labelledby="record-delete-title">
+        <form id="record-delete-form">
+          <span>SOFT DELETE / REVERSIBLE</span>
+          <h2 id="record-delete-title">СКРЫТЬ<br />КАРТОЧКУ?</h2>
+          <p>Запись исчезнет из реестра, журнала, доски и связей. Её номер не будет выдан повторно, а саму карточку можно восстановить в аккаунте редактора.</p>
+          <strong data-record-delete-id></strong>
+          <div><button type="button" data-record-delete-cancel>ОТМЕНА</button><button type="submit">УДАЛИТЬ ИЗ ПУБЛИКАЦИИ</button></div>
+          <p data-record-delete-status role="alert"></p>
+        </form>
+      </dialog>
+
       <footer class="site-footer">
         <span>THE MIDGAS © 2026</span>
         <span>RESEARCH DATA SYSTEM</span>
@@ -82,9 +147,11 @@
     <script src="site-completion.js?v=1"></script>
     <script src="krovolunanie-research.js?v=1"></script>
     <script src="editor-session.js?v=1"></script>
-    <script src="editor-storage.js?v=2"></script>
-    <script src="app.js?v=19"></script>
+    <script src="editor-storage.js?v=3"></script>
+    <script src="relations-data.js?v=1"></script>
+    <script src="app.js?v=20"></script>
     <script src="research-charts.js?v=6"></script>
-    <script src="record.js?v=8"></script>
+    <script src="record.js?v=9"></script>
+    <script src="record-editor.js?v=2"></script>
   </body>
 </html>

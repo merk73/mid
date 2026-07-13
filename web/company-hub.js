@@ -19,6 +19,45 @@
   const accountProtected = [...document.querySelectorAll("[data-account-protected]")];
   const accountOpenEditor = document.querySelector("[data-account-open-editor]");
   const accountLogout = document.querySelector("[data-account-logout]");
+  const restoreList = document.querySelector("[data-restore-list]");
+  const restoreEmpty = document.querySelector("[data-restore-empty]");
+
+  function renderRestoreList() {
+    if (!restoreList) return;
+    const deleted = window.MIDGAS_EDITOR_STORE?.listDeleted?.() || [];
+    restoreList.querySelectorAll(".company-restore-entry").forEach((entry) => entry.remove());
+    if (restoreEmpty) restoreEmpty.hidden = deleted.length > 0;
+    deleted.forEach((entry) => {
+      const article = document.createElement("article");
+      article.className = "company-restore-entry";
+      const meta = document.createElement("div");
+      const code = document.createElement("span");
+      const name = document.createElement("strong");
+      const date = document.createElement("time");
+      code.textContent = `${typeNames[entry.type]?.[0] || entry.type} / ${entry.id}`;
+      name.textContent = entry.record?.name || entry.id;
+      date.dateTime = entry.deletedAt;
+      date.textContent = `СКРЫТА ${new Intl.DateTimeFormat("ru-RU", { dateStyle: "medium", timeStyle: "short" }).format(new Date(entry.deletedAt))}`;
+      meta.append(code, name, date);
+      const restore = document.createElement("button");
+      restore.type = "button";
+      restore.textContent = "ВОССТАНОВИТЬ";
+      restore.addEventListener("click", () => {
+        try {
+          window.MIDGAS_EDITOR_STORE.restore(entry.type, entry.id);
+          if (accountStatus) accountStatus.textContent = `${entry.id} ВОССТАНОВЛЕНА. ОБНОВЛЯЮ РЕЕСТР…`;
+          window.setTimeout(() => {
+            window.location.hash = "company-restore";
+            window.location.reload();
+          }, 320);
+        } catch (error) {
+          if (accountStatus) accountStatus.textContent = error.message || "НЕ УДАЛОСЬ ВОССТАНОВИТЬ КАРТОЧКУ.";
+        }
+      });
+      article.append(meta, restore);
+      restoreList.append(article);
+    });
+  }
 
   function renderAccount(session, message = "") {
     const isEditor = Boolean(session?.role === "editor");
@@ -32,6 +71,7 @@
         ? "ДЕМО-ДОСТУП ПОДТВЕРЖДЁН В ЭТОМ БРАУЗЕРЕ."
         : "ДЛЯ ДОСТУПА К РЕДАКТОРУ ВЫПОЛНИТЕ ВХОД.");
     }
+    if (isEditor) renderRestoreList();
   }
 
   renderAccount(sessionApi?.read?.() || null);
@@ -64,6 +104,8 @@
   window.addEventListener(sessionApi?.eventName || "midgas:editor-session", (event) => {
     renderAccount(event.detail?.session || null);
   });
+
+  window.addEventListener("midgas:record-mutated", renderRestoreList);
 
   if (window.location.hash === "#company-editor" && !sessionApi?.isEditor?.()) {
     window.history.replaceState(null, "", "#company-account");
@@ -155,8 +197,14 @@
     const days = new Map();
 
     function addDay(date, entries) {
-      if (!days.has(date)) days.set(date, { date, records: { client: [], anomaly: [], incident: [] } });
+      if (!days.has(date)) days.set(date, { date, records: { client: [], anomaly: [], incident: [] }, events: [] });
       types.forEach((type) => days.get(date).records[type].push(...(entries[type] || [])));
+    }
+
+    function addEvent(event) {
+      const date = journalDateKey(event.at);
+      if (!days.has(date)) days.set(date, { date, records: { client: [], anomaly: [], incident: [] }, events: [] });
+      days.get(date).events.push(event);
     }
 
     addDay("2026-07-03", { client: builtIn.client.slice(0, 5) });
@@ -175,8 +223,12 @@
       });
     });
 
+    (window.MIDGAS_EDITOR_STORE?.audit?.() || [])
+      .filter((event) => ["update", "delete", "restore"].includes(event.action) && event.at)
+      .forEach(addEvent);
+
     return [...days.values()]
-      .filter((day) => types.some((type) => day.records[type].length))
+      .filter((day) => day.events.length || types.some((type) => day.records[type].length))
       .sort((left, right) => right.date.localeCompare(left.date));
   }
 
@@ -196,8 +248,17 @@
       counts.incident ? `${counts.incident} ${plural(counts.incident, ["инцидент", "инцидента", "инцидентов"])}` : "",
       counts.anomaly ? `${counts.anomaly} ${plural(counts.anomaly, ["аномалия", "аномалии", "аномалий"])}` : "",
     ].filter(Boolean);
+    const eventCounts = (day.events || []).reduce((result, event) => {
+      result[event.action] = (result[event.action] || 0) + 1;
+      return result;
+    }, {});
+    const statements = [];
+    if (changes.length) statements.push(`Добавлено ${changes.join(", ")}`);
+    if (eventCounts.update) statements.push(`обновлено ${eventCounts.update}`);
+    if (eventCounts.delete) statements.push(`скрыто ${eventCounts.delete}`);
+    if (eventCounts.restore) statements.push(`восстановлено ${eventCounts.restore}`);
     const todayPrefix = day.date === journalDateKey(new Date()) ? "Сегодня: " : "";
-    title.textContent = `${todayPrefix}Добавлено ${changes.join(", ")}.`;
+    title.textContent = `${todayPrefix}${statements.join("; ")}.`;
     const action = document.createElement("span");
     action.className = "company-journal-action";
     action.innerHTML = `<span>ПОДРОБНЕЕ</span><i aria-hidden="true"></i>`;
@@ -229,6 +290,30 @@
       group.append(heading, list);
       content.append(group);
     });
+
+    if (day.events?.length) {
+      const eventLabels = { update: "ОБНОВЛЕНО", delete: "СКРЫТО", restore: "ВОССТАНОВЛЕНО" };
+      const group = document.createElement("section");
+      group.className = "company-journal-events";
+      const heading = document.createElement("h5");
+      heading.textContent = `РЕДАКЦИОННЫЕ ОПЕРАЦИИ / ${String(day.events.length).padStart(2, "0")}`;
+      const list = document.createElement("ul");
+      day.events.slice().sort((left, right) => String(right.at).localeCompare(String(left.at))).forEach((event) => {
+        const item = document.createElement("li");
+        const targetExists = Boolean(registry[event.type]?.[event.id]);
+        const wrapper = targetExists ? document.createElement("a") : document.createElement("div");
+        if (targetExists) wrapper.href = recordLink(event.type, { id: event.id });
+        const code = document.createElement("span");
+        const name = document.createElement("strong");
+        code.textContent = `${eventLabels[event.action] || event.action.toUpperCase()} / ${event.id}`;
+        name.textContent = event.name || event.id;
+        wrapper.append(code, name);
+        item.append(wrapper);
+        list.append(item);
+      });
+      group.append(heading, list);
+      content.append(group);
+    }
 
     details.addEventListener("toggle", () => {
       action.querySelector("span").textContent = details.open ? "СКРЫТЬ" : "ПОДРОБНЕЕ";
