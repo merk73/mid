@@ -201,18 +201,20 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
 
 .history-hero-fog {
   position: absolute;
-  z-index: 1;
-  right: -8%;
-  bottom: -22%;
-  width: 116%;
-  height: 84%;
+  z-index: 5;
+  right: -15%;
+  bottom: -12%;
+  width: 130%;
+  height: auto;
+  min-height: 58%;
   max-width: none;
-  object-fit: cover;
+  pointer-events: none;
+  object-fit: contain;
   object-position: 50% 100%;
-  opacity: 0.22;
-  filter: grayscale(1) brightness(0.56) contrast(1.2);
+  opacity: 0.62;
+  filter: grayscale(1) brightness(0.54) contrast(1.22);
   mix-blend-mode: screen;
-  transform: translate3d(var(--hero-parallax-x, 0), var(--hero-parallax-y, 0), 0) scale(1.08);
+  transform: translate3d(var(--hero-parallax-x, 0), var(--hero-parallax-y, 0), 0) scale(1.12);
   will-change: transform;
 }
 
@@ -238,7 +240,7 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
 
 .history-hero-meta {
   position: relative;
-  z-index: 4;
+  z-index: 6;
   display: flex;
   justify-content: space-between;
   color: #858585;
@@ -247,7 +249,7 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
 
 .history-hero-copy {
   position: relative;
-  z-index: 4;
+  z-index: 6;
   display: grid;
   align-self: end;
   grid-template-columns: 1fr;

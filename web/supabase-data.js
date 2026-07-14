@@ -296,7 +296,7 @@
       const record = registry[type]?.[code];
       if (record) record.editorRelations = clone(byCode.get(code) || []);
     });
-    window.setTimeout(installRelationshipFacade, 0);
+    installRelationshipFacade();
   }
 
   async function loadPublicRecords({ throwOnError = false } = {}) {

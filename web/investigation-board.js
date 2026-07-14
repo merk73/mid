@@ -1,8 +1,17 @@
-(() => {
+(async () => {
   const viewport = document.querySelector("#company-board-canvas");
   const world = document.querySelector("#company-board-world");
   const svg = world?.querySelector(".company-board-lines");
   if (!viewport || !world || !svg) return;
+
+  const remoteData = window.MIDGAS_SUPABASE_DATA;
+  if (remoteData?.ready) {
+    try {
+      await remoteData.ready;
+    } catch {
+      // Встроенный реестр остаётся рабочим резервом при недоступности сети.
+    }
+  }
 
   const registry = window.MIDGAS_RECORDS || { client: {}, anomaly: {}, incident: {} };
   const width = 3600;
