@@ -48,10 +48,10 @@ navigation?.addEventListener("click", (event) => {
 });
 
 const clientGrid = document.querySelector("#client-grid");
-const clientRecords = Object.values(window.MIDGAS_RECORDS?.client || {});
 
 function renderPreviewGrid(grid, records, recordType, limit) {
   if (!grid) return;
+  grid.replaceChildren();
   records.slice(0, limit).forEach((record) => {
     const card = document.createElement("a");
     card.className = "client-card";
@@ -94,9 +94,15 @@ function renderPreviewGrid(grid, records, recordType, limit) {
   }
 }
 
-renderPreviewGrid(clientGrid, clientRecords, "client", document.body.classList.contains("home-page") ? 7 : clientRecords.length);
-renderPreviewGrid(document.querySelector("#anomaly-grid"), Object.values(window.MIDGAS_RECORDS?.anomaly || {}), "anomaly", 4);
-renderPreviewGrid(document.querySelector("#incident-grid"), Object.values(window.MIDGAS_RECORDS?.incident || {}), "incident", 4);
+function renderRecordPreviews() {
+  const clientRecords = Object.values(window.MIDGAS_RECORDS?.client || {});
+  renderPreviewGrid(clientGrid, clientRecords, "client", document.body.classList.contains("home-page") ? 7 : clientRecords.length);
+  renderPreviewGrid(document.querySelector("#anomaly-grid"), Object.values(window.MIDGAS_RECORDS?.anomaly || {}), "anomaly", 4);
+  renderPreviewGrid(document.querySelector("#incident-grid"), Object.values(window.MIDGAS_RECORDS?.incident || {}), "incident", 4);
+}
+
+renderRecordPreviews();
+window.addEventListener("midgas:records-ready", renderRecordPreviews);
 
 const filterButtons = document.querySelectorAll(".filter-button");
 

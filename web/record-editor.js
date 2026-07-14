@@ -54,6 +54,7 @@
 
   renderAccess();
   window.addEventListener(session?.eventName || "midgas:editor-session", renderAccess);
+  window.addEventListener("midgas:records-ready", renderAccess);
 
   function makeButton(label, className, handler) {
     const button = document.createElement("button");
@@ -515,8 +516,8 @@
       } else {
         patch.image = record.image;
       }
-      await store.update(type, id, patch);
-      if (status) status.textContent = "ИЗМЕНЕНИЯ СОХРАНЕНЫ. ОБНОВЛЯЮ ДОСЬЕ…";
+      const saved = await store.update(type, id, patch);
+      if (status) status.textContent = `${saved?.syncMessage || "ИЗМЕНЕНИЯ СОХРАНЕНЫ."} ОБНОВЛЯЮ ДОСЬЕ…`;
       window.setTimeout(() => window.location.reload(), 350);
     } catch (error) {
       if (status) status.textContent = error.message || "НЕ УДАЛОСЬ СОХРАНИТЬ ИЗМЕНЕНИЯ.";
@@ -546,11 +547,11 @@
     if (event.target === deleteDialog) closeDialog(deleteDialog);
   });
 
-  deleteForm?.addEventListener("submit", (event) => {
+  deleteForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
     try {
-      store.softDelete(type, id);
-      if (deleteStatus) deleteStatus.textContent = "КАРТОЧКА СКРЫТА. ПЕРЕХОЖУ В РЕЕСТР…";
+      const deleted = await store.softDelete(type, id);
+      if (deleteStatus) deleteStatus.textContent = `${deleted?.syncMessage || "КАРТОЧКА СКРЫТА."} ПЕРЕХОЖУ В РЕЕСТР…`;
       window.setTimeout(() => {
         window.location.href = `registry.html?type=${encodeURIComponent(type)}`;
       }, 420);

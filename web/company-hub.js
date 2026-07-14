@@ -20,7 +20,16 @@
   const accountEmail = document.querySelector("[data-account-email]");
   const accountStatus = document.querySelector("[data-account-status]");
   const accountIndicator = document.querySelector("[data-account-indicator]");
-  const accountLogout = document.querySelector("[data-account-logout]");
+  const accountLogout = document.querySelectorAll("[data-account-logout]");
+  const accountSessionLabel = document.querySelector("[data-account-session-label]");
+  const accountSessionCopy = document.querySelector("[data-account-session-copy]");
+  const editorActions = document.querySelector("[data-editor-actions]");
+  const authModeLabel = document.querySelector("[data-auth-mode-label]");
+  const authTitle = document.querySelector("[data-auth-title]");
+  const authCopy = document.querySelector("[data-auth-copy]");
+  const authStatus = document.querySelector("[data-auth-status]");
+  const authSubmit = document.querySelector("[data-auth-submit]");
+  const authModeToggle = document.querySelector("[data-auth-mode-toggle]");
   const createOpen = document.querySelector("[data-editor-create-open]");
   const recoveryOpen = document.querySelector("[data-editor-recovery-open]");
   const createPanel = document.querySelector("[data-editor-create-panel]");
@@ -29,6 +38,30 @@
   const modifiedList = document.querySelector("[data-restore-modified-list]");
   const deletedEmpty = document.querySelector("[data-restore-deleted-empty]");
   const modifiedEmpty = document.querySelector("[data-restore-modified-empty]");
+  let authMode = "sign-in";
+
+  function setAuthMode(mode) {
+    authMode = mode === "sign-up" ? "sign-up" : "sign-in";
+    const registering = authMode === "sign-up";
+    if (authModeLabel) authModeLabel.textContent = registering ? "РЕГИСТРАЦИЯ В SUPABASE" : "ЗАЩИЩЁННЫЙ ВХОД SUPABASE";
+    if (authTitle) authTitle.textContent = registering ? "СОЗДАТЬ АККАУНТ" : "ВХОД В РЕДАКТОР";
+    if (authCopy) {
+      authCopy.textContent = registering
+        ? "После регистрации подтвердите электронную почту. Новый аккаунт получит статус ожидания, а редактор откроется после одобрения владельцем MIDGAS."
+        : "Введите электронную почту и пароль Supabase. Доступ к редактору откроется только для аккаунта с одобренной ролью editor или admin.";
+    }
+    if (authSubmit) authSubmit.textContent = registering ? "ЗАРЕГИСТРИРОВАТЬСЯ" : "ВОЙТИ";
+    if (authModeToggle) authModeToggle.textContent = registering ? "УЖЕ ЕСТЬ АККАУНТ? ВОЙТИ" : "НЕТ АККАУНТА? ЗАРЕГИСТРИРОВАТЬСЯ";
+    const password = accountForm?.elements.namedItem("password");
+    if (password) password.autocomplete = registering ? "new-password" : "current-password";
+    if (authStatus) authStatus.textContent = "";
+  }
+
+  function setAuthBusy(busy) {
+    if (authSubmit) authSubmit.disabled = busy;
+    if (authModeToggle) authModeToggle.disabled = busy;
+    accountForm?.querySelectorAll("input").forEach((input) => { input.disabled = busy; });
+  }
 
   function closeLoginDialog() {
     if (!loginDialog) return;
@@ -38,6 +71,7 @@
 
   function openLoginDialog() {
     if (!loginDialog) return;
+    if (authStatus) authStatus.textContent = "";
     if (typeof loginDialog.showModal === "function") loginDialog.showModal();
     else loginDialog.setAttribute("open", "");
     window.setTimeout(() => accountForm?.elements.namedItem("email")?.focus({ preventScroll: true }), 40);
@@ -73,15 +107,17 @@
     const button = document.createElement("button");
     button.type = "button";
     button.textContent = actionLabel;
-    button.addEventListener("click", () => {
+    button.addEventListener("click", async () => {
       try {
-        action();
-        if (accountStatus) accountStatus.textContent = `${entry.id}: ОПЕРАЦИЯ ВЫПОЛНЕНА. ОБНОВЛЯЮ РЕЕСТР…`;
+        button.disabled = true;
+        const result = await action();
+        if (accountStatus) accountStatus.textContent = `${entry.id}: ${result?.syncMessage || "ОПЕРАЦИЯ ВЫПОЛНЕНА."} ОБНОВЛЯЮ РЕЕСТР…`;
         window.setTimeout(() => {
           window.location.hash = "company-restore";
           window.location.reload();
         }, 280);
       } catch (error) {
+        button.disabled = false;
         if (accountStatus) accountStatus.textContent = error.message || "НЕ УДАЛОСЬ ВОССТАНОВИТЬ ВЕРСИЮ.";
       }
     });
@@ -97,51 +133,99 @@
     if (deletedEmpty) deletedEmpty.hidden = deleted.length > 0;
     if (modifiedEmpty) modifiedEmpty.hidden = modified.length > 0;
     deleted.forEach((entry) => {
-      deletedList?.append(makeRecoveryEntry(entry, "ВОССТАНОВИТЬ", () => {
-        window.MIDGAS_EDITOR_STORE.restore(entry.type, entry.id);
-      }));
+      deletedList?.append(makeRecoveryEntry(entry, "ВОССТАНОВИТЬ", () => (
+        window.MIDGAS_EDITOR_STORE.restore(entry.type, entry.id)
+      )));
     });
     modified.forEach((entry) => {
-      modifiedList?.append(makeRecoveryEntry(entry, "ВЕРНУТЬ ИСХОДНУЮ", () => {
-        window.MIDGAS_EDITOR_STORE.resetToPublished(entry.type, entry.id);
-      }));
+      modifiedList?.append(makeRecoveryEntry(entry, "ВЕРНУТЬ ИСХОДНУЮ", () => (
+        window.MIDGAS_EDITOR_STORE.resetToPublished(entry.type, entry.id)
+      )));
     });
   }
 
   function renderAccount(session, message = "") {
-    const isEditor = Boolean(session?.role === "editor");
-    if (editorLocked) editorLocked.hidden = isEditor;
-    if (editorHome) editorHome.hidden = !isEditor;
+    const signedIn = Boolean(session?.authenticated && session?.email);
+    const isEditor = Boolean(sessionApi?.isEditor?.());
+    if (editorLocked) editorLocked.hidden = signedIn;
+    if (editorHome) editorHome.hidden = !signedIn;
+    if (editorActions) editorActions.hidden = !isEditor;
     if (!isEditor) [createPanel, recoveryPanel].forEach((panel) => { if (panel) panel.hidden = true; });
     if (accountEmail) accountEmail.textContent = session?.email || "";
-    if (accountIndicator) accountIndicator.textContent = isEditor ? "ДОСТУП ОТКРЫТ" : "ДОСТУП ЗАКРЫТ";
+    if (accountSessionLabel) accountSessionLabel.textContent = isEditor ? "ВХОД ВЫПОЛНЕН" : "ЗАЯВКА ОЖИДАЕТ ОДОБРЕНИЯ";
+    if (accountSessionCopy) {
+      accountSessionCopy.textContent = isEditor
+        ? "Редакционные операции разрешены вашей ролью Supabase."
+        : "Вы вошли в аккаунт, но редактор откроется только после назначения роли editor или admin.";
+    }
+    if (accountIndicator) {
+      accountIndicator.textContent = isEditor
+        ? "ДОСТУП ОТКРЫТ"
+        : (signedIn ? "ОЖИДАЕТ ОДОБРЕНИЯ" : "ДОСТУП ЗАКРЫТ");
+    }
     if (accountStatus) {
-      accountStatus.textContent = message || (isEditor
-        ? "ВХОД ВЫПОЛНЕН. ВЫБЕРИТЕ НУЖНОЕ ДЕЙСТВИЕ."
-        : "У ВАС НЕТ ДОСТУПА К РЕДАКТОРУ.");
+      accountStatus.textContent = message || (session?.membershipError
+        ? `ВХОД ВЫПОЛНЕН, НО РОЛЬ НЕ ПРОВЕРЕНА: ${session.membershipError}`
+        : (isEditor
+          ? "ВХОД ВЫПОЛНЕН. ВЫБЕРИТЕ НУЖНОЕ ДЕЙСТВИЕ."
+          : (signedIn
+            ? "АККАУНТ ПОДТВЕРЖДЁН. ОЖИДАЙТЕ ОДОБРЕНИЯ РЕДАКЦИОННОГО ДОСТУПА."
+            : "ВОЙДИТЕ ИЛИ СОЗДАЙТЕ АККАУНТ SUPABASE.")));
     }
     if (isEditor) renderRecoveryLists();
   }
 
-  renderAccount(sessionApi?.read?.() || null);
+  renderAccount(sessionApi?.read?.() || null, "ПРОВЕРЯЕМ СОХРАНЁННЫЙ СЕАНС SUPABASE…");
+  sessionApi?.ready?.then((session) => renderAccount(session || null));
+  setAuthMode("sign-in");
 
-  accountForm?.addEventListener("submit", (event) => {
+  accountForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!accountForm.reportValidity()) return;
     const values = new FormData(accountForm);
+    setAuthBusy(true);
+    if (authStatus) authStatus.textContent = authMode === "sign-up" ? "СОЗДАЁМ АККАУНТ…" : "ПРОВЕРЯЕМ ДАННЫЕ…";
     try {
-      const session = sessionApi?.signIn?.({ email: values.get("email") });
+      const credentials = { email: values.get("email"), password: values.get("password") };
+      if (authMode === "sign-up") {
+        const result = await sessionApi?.signUp?.(credentials);
+        if (!result) throw new Error("Модуль регистрации Supabase недоступен.");
+        if (result.confirmationRequired) {
+          accountForm.elements.namedItem("password").value = "";
+          setAuthMode("sign-in");
+          if (authStatus) authStatus.textContent = "АККАУНТ СОЗДАН. ПОДТВЕРДИТЕ ПОЧТУ ПО ССЫЛКЕ ИЗ ПИСЬМА, ЗАТЕМ ВОЙДИТЕ.";
+          if (accountStatus) accountStatus.textContent = "РЕГИСТРАЦИЯ ВЫПОЛНЕНА. ОТПРАВЛЕНО ПИСЬМО ДЛЯ ПОДТВЕРЖДЕНИЯ.";
+          return;
+        }
+        accountForm.reset();
+        closeLoginDialog();
+        renderAccount(result.session, result.session?.membershipError
+          ? ""
+          : "АККАУНТ СОЗДАН. РЕДАКЦИОННЫЙ ДОСТУП ОЖИДАЕТ ОДОБРЕНИЯ.");
+        return;
+      }
+
+      const session = await sessionApi?.signIn?.(credentials);
       if (!session) throw new Error("Модуль редакционного доступа недоступен.");
       accountForm.reset();
       closeLoginDialog();
-      renderAccount(session, "ВХОД ВЫПОЛНЕН. РЕЖИМ РЕДАКТОРА РАЗБЛОКИРОВАН.");
+      renderAccount(session, session.membershipError
+        ? ""
+        : (sessionApi.isEditor()
+          ? "ВХОД ВЫПОЛНЕН. РЕЖИМ РЕДАКТОРА РАЗБЛОКИРОВАН."
+          : "ВХОД ВЫПОЛНЕН. РЕДАКЦИОННЫЙ ДОСТУП ОЖИДАЕТ ОДОБРЕНИЯ."));
     } catch (error) {
-      if (accountStatus) accountStatus.textContent = error.message || "НЕ УДАЛОСЬ ОТКРЫТЬ РЕДАКЦИОННЫЙ СЕАНС.";
+      const message = error.message || "НЕ УДАЛОСЬ ОТКРЫТЬ РЕДАКЦИОННЫЙ СЕАНС.";
+      if (authStatus) authStatus.textContent = message;
+      if (accountStatus) accountStatus.textContent = message;
+    } finally {
+      setAuthBusy(false);
     }
   });
 
   loginOpen?.addEventListener("click", openLoginDialog);
   loginClose?.addEventListener("click", closeLoginDialog);
+  authModeToggle?.addEventListener("click", () => setAuthMode(authMode === "sign-in" ? "sign-up" : "sign-in"));
   loginDialog?.addEventListener("click", (event) => { if (event.target === loginDialog) closeLoginDialog(); });
   createOpen?.addEventListener("click", () => {
     resetCreateWizard();
@@ -156,11 +240,18 @@
     });
   });
 
-  accountLogout?.addEventListener("click", () => {
-    sessionApi?.signOut?.();
-    renderAccount(null, "СЕАНС ЗАКРЫТ. РЕДАКЦИОННЫЕ ИНСТРУМЕНТЫ СКРЫТЫ.");
-    document.querySelector("#company-account")?.scrollIntoView({ behavior: "smooth", block: "start" });
-  });
+  accountLogout.forEach((button) => button.addEventListener("click", async () => {
+    button.disabled = true;
+    try {
+      await sessionApi?.signOut?.();
+      renderAccount(null, "СЕАНС ЗАКРЫТ. РЕДАКЦИОННЫЕ ИНСТРУМЕНТЫ СКРЫТЫ.");
+      document.querySelector("#company-account")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    } catch (error) {
+      if (accountStatus) accountStatus.textContent = error.message || "НЕ УДАЛОСЬ ЗАКРЫТЬ СЕАНС.";
+    } finally {
+      button.disabled = false;
+    }
+  }));
 
   window.addEventListener(sessionApi?.eventName || "midgas:editor-session", (event) => {
     renderAccount(event.detail?.session || null);
@@ -168,9 +259,11 @@
 
   window.addEventListener("midgas:record-mutated", renderRecoveryLists);
 
-  if (window.location.hash === "#company-editor" && !sessionApi?.isEditor?.()) {
-    window.history.replaceState(null, "", "#company-account");
-  }
+  sessionApi?.ready?.then(() => {
+    if (window.location.hash === "#company-editor" && !sessionApi?.isEditor?.()) {
+      window.history.replaceState(null, "", "#company-account");
+    }
+  });
 
   function stableValue(value) {
     if (Array.isArray(value)) return value.map(stableValue);
@@ -750,7 +843,7 @@
       const openLink = document.querySelector("[data-editor-open]");
       const registryLink = document.querySelector("[data-editor-registry]");
       if (createdId) createdId.textContent = created.record.id;
-      if (status) status.textContent = `«${created.record.name}» опубликована. Связей: ${relations.length}.`;
+      if (status) status.textContent = `«${created.record.name}» опубликована. Связей: ${relations.length}. ${created.syncMessage || ""}`.trim();
       if (openLink) openLink.href = recordUrl;
       if (registryLink) registryLink.href = registryUrl;
       if (editorResult) {

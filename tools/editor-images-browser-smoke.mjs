@@ -11,6 +11,14 @@ const browser = await chromium.launch({
 
 try {
   const page = await browser.newPage();
+  await page.route("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@**", (route) => route.fulfill({
+    contentType: "application/javascript",
+    body: "window.supabase = {};",
+  }));
+  await page.route("**/supabase-config.js?*", (route) => route.fulfill({
+    contentType: "application/javascript",
+    body: "window.MIDGAS_SUPABASE_CONFIG = null;",
+  }));
   await page.goto("http://127.0.0.1:43129/index.html", { waitUntil: "networkidle" });
   await page.evaluate(async () => {
     localStorage.clear();
@@ -22,7 +30,18 @@ try {
   await page.reload({ waitUntil: "networkidle" });
 
   const result = await page.evaluate(async () => {
-    MIDGAS_EDITOR_SESSION.signIn({ email: "browser-smoke@midgas.test" });
+    const approvedSession = Object.freeze({
+      email: "browser-smoke@midgas.test",
+      role: "editor",
+      approvedAt: "2026-07-14T00:00:00Z",
+      authenticated: true,
+    });
+    window.MIDGAS_EDITOR_SESSION = Object.freeze({
+      eventName: "midgas:editor-session",
+      ready: Promise.resolve(approvedSession),
+      read: () => approvedSession,
+      isEditor: () => true,
+    });
     const cover = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=";
     const sectionPhoto = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Wl2n1cAAAAASUVORK5CYII=";
     const created = await MIDGAS_EDITOR_STORE.create({

@@ -87,3 +87,35 @@ if (registryType === "client") {
     filters.append(button);
   });
 }
+
+function refreshRegistryFromSource() {
+  const records = Object.values(window.MIDGAS_RECORDS?.[registryType] || {})
+    .sort((left, right) => left.id.localeCompare(right.id, "ru"));
+  registryGrid.replaceChildren(...records.map(createRegistryCard));
+  registryEmpty.hidden = records.length > 0;
+  document.querySelector("#catalog-count").textContent = `${String(records.length).padStart(4, "0")} ЗАПИСЕЙ`;
+  if (registryType !== "client") return;
+  const loreCount = records.filter((record) => record.sections?.length).length;
+  const filterData = [
+    ["all", `ВСЕ / ${records.length}`],
+    ["lore", `С ЛОРОМ / ${loreCount}`],
+    ["missing", `БЕЗ ЛОРА / ${records.length - loreCount}`],
+  ];
+  filters.replaceChildren();
+  filterData.forEach(([value, label], index) => {
+    const button = document.createElement("button");
+    button.className = `filter-button${index === 0 ? " is-active" : ""}`;
+    button.type = "button";
+    button.dataset.filter = value;
+    button.textContent = label;
+    button.addEventListener("click", () => {
+      filters.querySelectorAll("button").forEach((item) => item.classList.toggle("is-active", item === button));
+      registryGrid.querySelectorAll(".registry-card").forEach((card) => {
+        card.hidden = value !== "all" && card.dataset.status !== value;
+      });
+    });
+    filters.append(button);
+  });
+}
+
+window.addEventListener("midgas:records-ready", refreshRegistryFromSource);

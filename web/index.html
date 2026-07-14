@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="THE MIDGAS — исследовательский архив клиентов, аномалий и инцидентов." />
     <title>THE MIDGAS — Research Archive</title>
-    <link rel="stylesheet" href="styles.css?v=42" />
+    <link rel="stylesheet" href="styles.css?v=43" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -594,7 +594,7 @@
           <section class="company-account company-editor-hub" id="company-account" aria-labelledby="company-account-title">
             <header class="company-module-heading company-reveal">
               <div class="company-section-label"><span>06</span><p>РЕДАКЦИОННЫЙ ДОСТУП</p></div>
-              <div><span>EDITOR MODE / PROTOTYPE</span><h3 id="company-account-title">РЕЖИМ<br />РЕДАКТОРА</h3></div>
+              <div><span>EDITOR MODE / SUPABASE AUTH</span><h3 id="company-account-title">РЕЖИМ<br />РЕДАКТОРА</h3></div>
               <p>Создание, исправление, скрытие и восстановление досье собраны в одном рабочем контуре.</p>
             </header>
 
@@ -603,16 +603,16 @@
               <section class="editor-mode-locked" data-editor-locked>
                 <span>РЕДАКЦИОННЫЙ КОНТУР D4</span>
                 <h4>У ВАС НЕТ ДОСТУПА К РЕДАКТОРУ</h4>
-                <p>Войдите в аккаунт модератора для разблокировки.</p>
-                <button type="button" data-editor-login-open>ВОЙТИ</button>
+                <p>Войдите в одобренный аккаунт или отправьте заявку на редакционный доступ.</p>
+                <button type="button" data-editor-login-open>ВОЙТИ ИЛИ СОЗДАТЬ АККАУНТ</button>
               </section>
               <section class="editor-mode-home" data-editor-home hidden aria-live="polite">
                 <div class="editor-mode-identity">
-                  <span>ВХОД ВЫПОЛНЕН</span>
+                  <span data-account-session-label>ВХОД ВЫПОЛНЕН</span>
                   <strong data-account-email>editor@midgas.archive</strong>
-                  <p>Редакционные операции доступны в этом браузере.</p>
+                  <p data-account-session-copy>Редакционные операции разрешены вашей ролью Supabase.</p>
                 </div>
-                <nav class="editor-mode-actions">
+                <nav class="editor-mode-actions" data-editor-actions>
                   <button type="button" data-editor-create-open><span>01</span><strong>СОЗДАТЬ КАРТОЧКУ</strong><small>Клиент, аномалия или инцидент</small></button>
                   <button type="button" data-editor-recovery-open><span>02</span><strong>ВОССТАНОВИТЬ КАРТОЧКУ</strong><small>Удалённые и изменённые версии</small></button>
                 </nav>
@@ -746,27 +746,32 @@
       <form id="company-account-form" novalidate>
         <header><span>MIDGAS / MODERATOR ACCESS</span><button type="button" data-editor-login-close aria-label="Закрыть окно входа">×</button></header>
         <div class="editor-login-copy">
-          <span>ПРОТОТИП АВТОРИЗАЦИИ</span>
-          <h2 id="editor-login-title">ВХОД В РЕДАКТОР</h2>
-          <p>Пока серверная проверка не подключена, используйте любой корректный адрес и пароль от четырёх символов. Пароль не сохраняется.</p>
+          <span data-auth-mode-label>ЗАЩИЩЁННЫЙ ВХОД SUPABASE</span>
+          <h2 id="editor-login-title" data-auth-title>ВХОД В РЕДАКТОР</h2>
+          <p data-auth-copy>Введите электронную почту и пароль Supabase. Доступ к редактору откроется только для аккаунта с одобренной ролью editor или admin.</p>
         </div>
         <label><span>ЭЛЕКТРОННАЯ ПОЧТА</span><input type="email" name="email" required autocomplete="email" placeholder="editor@midgas.archive" /></label>
-        <label><span>ПАРОЛЬ</span><input type="password" name="password" required minlength="4" autocomplete="current-password" placeholder="••••••••" /></label>
-        <button type="submit">ВОЙТИ</button>
+        <label><span>ПАРОЛЬ</span><input type="password" name="password" required minlength="6" autocomplete="current-password" placeholder="••••••••" /></label>
+        <p class="editor-auth-status" data-auth-status role="status" aria-live="polite"></p>
+        <button type="submit" data-auth-submit>ВОЙТИ</button>
+        <button class="editor-auth-toggle" type="button" data-auth-mode-toggle>НЕТ АККАУНТА? ЗАРЕГИСТРИРОВАТЬСЯ</button>
       </form>
     </dialog>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
+    <script src="supabase-config.js?v=1"></script>
     <script src="data.js"></script>
     <script src="featured-data.js?v=8"></script>
     <script src="client-updates.js?v=1"></script>
     <script src="incident-updates.js?v=1"></script>
     <script src="site-completion.js?v=1"></script>
     <script src="krovolunanie-research.js?v=1"></script>
-    <script src="editor-session.js?v=1"></script>
-    <script src="editor-storage.js?v=5"></script>
+    <script src="editor-session.js?v=2"></script>
+    <script src="supabase-data.js?v=1"></script>
+    <script src="editor-storage.js?v=6"></script>
     <script src="relations-data.js?v=1"></script>
-    <script src="company-hub.js?v=11"></script>
+    <script src="company-hub.js?v=12"></script>
     <script src="investigation-board.js?v=9"></script>
-    <script src="app.js?v=21"></script>
+    <script src="app.js?v=22"></script>
   </body>
 </html>

@@ -9538,8 +9538,13 @@ body.record-editor-open { overflow: hidden; }
 .editor-login-dialog label > span { color: #85847f; font-size: 7px; letter-spacing: 0.08em; }
 .editor-login-dialog input { width: 100%; min-height: 50px; padding: 0 12px; color: var(--paper); background: #191919; border: 1px solid #555550; border-radius: 0; outline: 0; }
 .editor-login-dialog input:focus { border-color: var(--paper); outline: 2px solid var(--company-red); outline-offset: -2px; }
+.editor-auth-status { grid-column: 1 / -1; min-height: 34px; margin: 0; padding: 0 28px 16px; color: #c6c4bc; font-size: 8px; line-height: 1.55; }
 .editor-login-dialog form > button[type="submit"] { grid-column: 1 / -1; min-height: 62px; color: var(--ink); background: var(--paper); border: 0; border-top: 1px solid #555550; cursor: pointer; font-size: 9px; letter-spacing: 0.08em; }
 .editor-login-dialog form > button[type="submit"]:hover { color: var(--paper); background: var(--company-red); }
+.editor-auth-toggle { grid-column: 1 / -1; min-height: 48px; color: #aaa9a3; background: #151515; border: 0; border-top: 1px solid #555550; cursor: pointer; font-size: 8px; letter-spacing: 0.07em; }
+.editor-auth-toggle:hover { color: var(--paper); background: #252525; }
+.editor-login-dialog button:disabled,
+.editor-login-dialog input:disabled { cursor: wait; opacity: 0.55; }
 
 /* The change log is an editor utility now, not a standalone landing section. */
 .company-editor-hub .company-journal--editor {
@@ -9595,7 +9600,9 @@ body.record-editor-open { overflow: hidden; }
   .editor-login-copy,
   .editor-login-dialog label,
   .editor-login-dialog label + label { grid-column: 1; padding-right: 18px; padding-left: 18px; }
-  .editor-login-dialog form > button[type="submit"] { grid-column: 1; }
+  .editor-auth-status { grid-column: 1; padding-right: 18px; padding-left: 18px; }
+  .editor-login-dialog form > button[type="submit"],
+  .editor-auth-toggle { grid-column: 1; }
   .company-editor-hub .company-journal--editor { margin-top: 12px; }
   .company-journal--editor .company-module-heading--compact { grid-template-columns: 1fr; min-height: 0; }
   .company-journal--editor .company-module-heading--compact > * { padding: 14px; }

@@ -3,7 +3,7 @@ const type = params.get("type") || "client";
 const id = params.get("id") || "";
 const source = params.get("from") || "";
 const records = window.MIDGAS_RECORDS?.[type] || {};
-const record = records[id];
+let record = records[id];
 
 const backLink = document.querySelector("#record-back");
 if (backLink) {
@@ -45,6 +45,15 @@ function createMediaGrid(items) {
 
   return gallery;
 }
+
+function renderRecord(nextRecord) {
+  record = nextRecord;
+  content.hidden = true;
+  overview.hidden = true;
+  lore.hidden = true;
+  empty.hidden = true;
+  document.querySelector("#record-fields")?.replaceChildren();
+  document.querySelector("#record-sections")?.replaceChildren();
 
 if (!record) {
   empty.hidden = false;
@@ -167,3 +176,9 @@ if (!record) {
   overview.hidden = false;
   lore.hidden = false;
 }
+}
+
+renderRecord(record);
+window.addEventListener("midgas:records-ready", () => {
+  renderRecord(window.MIDGAS_RECORDS?.[type]?.[id] || null);
+});

@@ -279,10 +279,10 @@
     const origin = value.origin === "created" || value.origin === "base"
       ? value.origin
       : baseRegistry[type]?.[id] ? "base" : "created";
-    const publicationRecord = origin === "created"
-      ? normalizeRecord(type, value.publicationRecord || record)
-      : null;
-    const published = origin === "base" ? baseRegistry[type]?.[id] : publicationRecord;
+    const publicationRecord = value.publicationRecord
+      ? normalizeRecord(type, value.publicationRecord)
+      : origin === "created" ? normalizeRecord(type, record) : null;
+    const published = publicationRecord || (origin === "base" ? baseRegistry[type]?.[id] : null);
     const storedRevision = Number(value.revisionCount);
     const revisionCount = Number.isInteger(storedRevision) && storedRevision >= 0
       ? storedRevision
@@ -291,6 +291,7 @@
       type,
       id,
       origin,
+      syncSource: value.syncSource === "remote" ? "remote" : "local",
       record,
       publicationRecord,
       revisionCount,
@@ -464,6 +465,7 @@
 
   function currentRecord(type, id, source = state) {
     const entry = stateEntry(type, id, source);
+    if (entry?.syncSource === "remote" && registry[type]?.[id]) return normalizeRecord(type, registry[type][id]);
     if (entry) return normalizeRecord(type, entry.record);
     const base = baseRegistry[type]?.[id] || registry[type]?.[id];
     return base ? normalizeRecord(type, base) : null;
@@ -471,7 +473,7 @@
 
   function publicationRecord(type, id, source = state) {
     const entry = stateEntry(type, id, source);
-    if (entry?.origin === "created") return entry.publicationRecord ? normalizeRecord(type, entry.publicationRecord) : null;
+    if (entry?.publicationRecord) return normalizeRecord(type, entry.publicationRecord);
     const base = baseRegistry[type]?.[id];
     return base ? normalizeRecord(type, base) : null;
   }
@@ -488,7 +490,105 @@
     return `${TYPE_META[type].prefix}${String(number).padStart(4, "0")}`;
   }
 
-  async function create(payload) {
+  function supabaseBridge() {
+    const bridge = window.MIDGAS_SUPABASE_DATA;
+    return bridge?.isConfigured?.() ? bridge : null;
+  }
+
+  function remoteCreateDraft(payload, type) {
+    const now = new Date().toISOString();
+    const cardType = String(payload.cardType || TYPE_META[type].defaultCardType).trim();
+    const name = String(payload.name || "").trim();
+    const alias = String(payload.alias || name).trim();
+    const location = String(payload.location || "Не раскрывается").trim();
+    const threat = String(payload.threat || "T1 / низкий").trim();
+    const access = normalizeClientAccess(payload.access || "D1 / очень низкий");
+    const summary = String(payload.summary || "").trim();
+    const description = String(payload.description || summary).trim();
+    const relations = normalizeRelations(payload.relations);
+    if (!name || !summary || !description || !payload.image) {
+      throw new Error("Заполните обязательные поля и загрузите изображение.");
+    }
+    const fields = [
+      ["Тип", cardType],
+      ["Уровень угрозы", threat],
+      ["Местоположение", location],
+    ];
+    if (type === "client") fields.splice(2, 0, ["Уровень доступа", access]);
+    if (relations.length) fields.push(["Связанные записи", relations.map((item) => item.id).join(", ")]);
+    return {
+      relations,
+      record: normalizeRecord(type, {
+        id: "",
+        kind: TYPE_META[type].kind,
+        stage: "НА САЙТЕ",
+        name,
+        alias,
+        cardType,
+        image: payload.image,
+        summary,
+        editorCreatedAt: now,
+        editorUpdatedAt: now,
+        editorRelations: relations,
+        editorRelationsVersion: 1,
+        fields,
+        sections: [{
+          title: "ПЕРВИЧНАЯ РЕГИСТРАЦИЯ",
+          paragraphs: [description],
+          relatedRecords: relations,
+        }],
+      }),
+    };
+  }
+
+  function cacheRemoteMutation(action, result) {
+    const type = RECORD_TYPES.includes(result?.type) ? result.type : "";
+    const id = String(result?.record?.id || result?.row?.record_code || "").trim();
+    if (!type || !id || !result?.record) return result;
+    const next = loadState();
+    const previous = stateEntry(type, id, next);
+    const now = String(
+      result.updatedAt || result.createdAt || result.deletedAt || result.restoredAt || result.resetAt || new Date().toISOString(),
+    );
+    const record = normalizeRecord(type, { ...result.record, id });
+    const published = result.publicationRecord
+      ? normalizeRecord(type, { ...result.publicationRecord, id })
+      : previous?.publicationRecord || (baseRegistry[type]?.[id] ? normalizeRecord(type, baseRegistry[type][id]) : clone(record));
+    const origin = action === "create"
+      ? "created"
+      : previous?.origin || (baseRegistry[type]?.[id] ? "base" : "created");
+    const deletedAt = action === "delete" ? String(result.deletedAt || now) : null;
+    next.records[entryKey(type, id)] = {
+      type,
+      id,
+      origin,
+      syncSource: "remote",
+      record,
+      publicationRecord: published,
+      revisionCount: action === "reset" || action === "create"
+        ? 0
+        : action === "update" ? (previous?.revisionCount || 0) + 1 : previous?.revisionCount || 0,
+      createdAt: String(result.createdAt || previous?.createdAt || record.editorCreatedAt || now),
+      updatedAt: now,
+      deletedAt,
+    };
+    next.lastIssued[type] = Math.max(next.lastIssued[type], numericId(type, id));
+    appendAudit(next, action, type, id, record.name, now);
+    try { persist(next); } catch { /* Supabase remains authoritative if the local cache is full. */ }
+    state = next;
+    if (deletedAt) delete registry[type][id];
+    else registry[type][id] = displayRecord(type, record);
+    dispatch(action, type, record);
+    return {
+      ...result,
+      type,
+      record: displayRecord(type, record),
+      sync: "remote",
+      syncMessage: result.syncMessage || "Сохранено в Supabase.",
+    };
+  }
+
+  async function createLocal(payload) {
     requireEditor();
     const type = RECORD_TYPES.includes(payload?.type) ? payload.type : "client";
     const next = loadState();
@@ -560,7 +660,25 @@
     return { type, record: displayRecord(type, record), createdAt: now };
   }
 
-  async function update(type, id, patch = {}) {
+  async function create(payload) {
+    requireEditor();
+    const bridge = supabaseBridge();
+    if (!bridge) return createLocal(payload);
+    const type = RECORD_TYPES.includes(payload?.type) ? payload.type : "client";
+    const draft = remoteCreateDraft(payload, type);
+    try {
+      await bridge.ready;
+      const result = await bridge.createRecord({ type, record: draft.record, relations: draft.relations });
+      return cacheRemoteMutation("create", result);
+    } catch (error) {
+      if (!bridge.isNetworkError?.(error)) throw error;
+      const local = await createLocal(payload);
+      bridge.markLocalFallback?.("Создание записи", error);
+      return { ...local, sync: "local-fallback", syncMessage: "Нет сети: сохранено только в локальном резерве." };
+    }
+  }
+
+  async function updateLocal(type, id, patch = {}) {
     requireEditor();
     if (!RECORD_TYPES.includes(type)) throw new Error("Неизвестный тип карточки.");
     const next = loadState();
@@ -603,7 +721,24 @@
     return { type, record: displayRecord(type, record), updatedAt: now };
   }
 
-  function softDelete(type, id) {
+  async function update(type, id, patch = {}) {
+    requireEditor();
+    if (!RECORD_TYPES.includes(type)) throw new Error("Неизвестный тип карточки.");
+    const bridge = supabaseBridge();
+    if (!bridge) return updateLocal(type, id, patch);
+    try {
+      await bridge.ready;
+      const result = await bridge.updateRecord(type, id, { ...patch, editorUpdatedAt: new Date().toISOString() });
+      return cacheRemoteMutation("update", result);
+    } catch (error) {
+      if (!bridge.isNetworkError?.(error)) throw error;
+      const local = await updateLocal(type, id, patch);
+      bridge.markLocalFallback?.(`Обновление ${id}`, error);
+      return { ...local, sync: "local-fallback", syncMessage: "Нет сети: сохранено только в локальном резерве." };
+    }
+  }
+
+  function softDeleteLocal(type, id) {
     requireEditor();
     if (!RECORD_TYPES.includes(type)) throw new Error("Неизвестный тип карточки.");
     const next = loadState();
@@ -631,7 +766,24 @@
     return { type, record: existing, deletedAt: now };
   }
 
-  function restore(type, id) {
+  function softDelete(type, id) {
+    requireEditor();
+    const bridge = supabaseBridge();
+    if (!bridge) return softDeleteLocal(type, id);
+    return (async () => {
+      try {
+        await bridge.ready;
+        return cacheRemoteMutation("delete", await bridge.softDeleteRecord(type, id));
+      } catch (error) {
+        if (!bridge.isNetworkError?.(error)) throw error;
+        const local = softDeleteLocal(type, id);
+        bridge.markLocalFallback?.(`Удаление ${id}`, error);
+        return { ...local, sync: "local-fallback", syncMessage: "Нет сети: удаление сохранено только локально." };
+      }
+    })();
+  }
+
+  function restoreLocal(type, id) {
     requireEditor();
     if (!RECORD_TYPES.includes(type)) throw new Error("Неизвестный тип карточки.");
     const next = loadState();
@@ -639,6 +791,7 @@
     if (!entry?.deletedAt) throw new Error("Удалённая карточка не найдена.");
     const now = new Date().toISOString();
     entry.deletedAt = null;
+    entry.syncSource = "local";
     entry.updatedAt = now;
     entry.record = normalizeRecord(type, { ...entry.record, editorUpdatedAt: now });
     appendAudit(next, "restore", type, id, entry.record.name, now);
@@ -649,7 +802,24 @@
     return { type, record: displayRecord(type, entry.record), restoredAt: now };
   }
 
-  function resetToPublished(type, id) {
+  function restore(type, id) {
+    requireEditor();
+    const bridge = supabaseBridge();
+    if (!bridge) return restoreLocal(type, id);
+    return (async () => {
+      try {
+        await bridge.ready;
+        return cacheRemoteMutation("restore", await bridge.restoreRecord(type, id));
+      } catch (error) {
+        if (!bridge.isNetworkError?.(error)) throw error;
+        const local = restoreLocal(type, id);
+        bridge.markLocalFallback?.(`Восстановление ${id}`, error);
+        return { ...local, sync: "local-fallback", syncMessage: "Нет сети: восстановление сохранено только локально." };
+      }
+    })();
+  }
+
+  function resetToPublishedLocal(type, id) {
     requireEditor();
     if (!RECORD_TYPES.includes(type)) throw new Error("Неизвестный тип карточки.");
     const next = loadState();
@@ -665,6 +835,7 @@
     } else {
       record = normalizeRecord(type, { ...published, editorUpdatedAt: now });
       entry.record = record;
+      entry.syncSource = "local";
       entry.updatedAt = now;
       entry.deletedAt = null;
       entry.revisionCount = 0;
@@ -676,6 +847,23 @@
     registry[type][id] = displayRecord(type, record);
     dispatch("reset", type, record);
     return { type, record: displayRecord(type, record), resetAt: now };
+  }
+
+  function resetToPublished(type, id) {
+    requireEditor();
+    const bridge = supabaseBridge();
+    if (!bridge) return resetToPublishedLocal(type, id);
+    return (async () => {
+      try {
+        await bridge.ready;
+        return cacheRemoteMutation("reset", await bridge.resetRecord(type, id));
+      } catch (error) {
+        if (!bridge.isNetworkError?.(error)) throw error;
+        const local = resetToPublishedLocal(type, id);
+        bridge.markLocalFallback?.(`Сброс ${id}`, error);
+        return { ...local, sync: "local-fallback", syncMessage: "Нет сети: сброс сохранён только локально." };
+      }
+    })();
   }
 
   function get(type, id, { includeDeleted = false } = {}) {
@@ -703,6 +891,26 @@
   function isDeleted(type, id) {
     return Boolean(stateEntry(type, id)?.deletedAt);
   }
+
+  window.addEventListener("midgas:records-ready", (event) => {
+    const rows = Array.isArray(event.detail?.records) ? event.detail.records : [];
+    if (!rows.length) return;
+    const activeCodes = new Set(rows.map((row) => String(row?.record_code || "")));
+    const next = loadState();
+    let changed = false;
+    Object.values(next.records).forEach((entry) => {
+      if (entry.syncSource !== "remote" || !activeCodes.has(entry.id) || !registry[entry.type]?.[entry.id]) return;
+      entry.record = normalizeRecord(entry.type, registry[entry.type][entry.id]);
+      const row = rows.find((candidate) => candidate?.record_code === entry.id);
+      entry.updatedAt = String(row?.updated_at || entry.updatedAt || "");
+      entry.deletedAt = null;
+      changed = true;
+    });
+    if (!changed) return;
+    try { persist(next); } catch { /* The remote registry is still available in memory. */ }
+    state = next;
+    applyState(state);
+  });
 
   window.addEventListener("storage", (event) => {
     if (event.key !== STORAGE_KEY) return;

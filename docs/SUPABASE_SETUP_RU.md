@@ -7,8 +7,9 @@
 1. В своем нынешнем аккаунте Supabase создайте **отдельный проект MIDGAS**.
 2. Настройте Email/Password и адреса GitHub Pages по разделу 2 ниже.
 3. Выполните целиком файл `supabase/migrations/20260714000100_midgas_editor.sql` через **SQL Editor → New query → Run**.
-4. Зарегистрируйте на сайте первый аккаунт модератора и подтвердите почту.
-5. В SQL Editor назначьте его администратором, заменив адрес:
+4. Сразу после него тем же способом один раз выполните `supabase/migrations/20260714000200_seed_existing_registry.sql`. Он переносит 29 текущих карточек и 31 связь, сохраняя их постоянные номера.
+5. Зарегистрируйте на сайте первый аккаунт модератора и подтвердите почту.
+6. В SQL Editor назначьте его администратором, заменив адрес:
 
    ```sql
    update public.editor_members
@@ -18,9 +19,9 @@
    );
    ```
 
-6. В **Connect** скопируйте только Project URL и `sb_publishable_...` и передайте их Codex для подключения интерфейса. Secret key и пароль базы не нужны.
-7. После интеграции проверьте сценарии `anon`, `pending`, `editor`, `admin` по таблице в разделе 9.
-8. При покупке домена не создавайте новую базу: добавьте новый адрес в Auth Redirect URLs, проверьте вход и затем поменяйте Site URL.
+7. В **Connect** скопируйте только Project URL и `sb_publishable_...` и передайте их Codex для подключения интерфейса. Secret key и пароль базы не нужны.
+8. После интеграции проверьте сценарии `anon`, `pending`, `editor`, `admin` по таблице в разделе 9.
+9. При покупке домена не создавайте новую базу: добавьте новый адрес в Auth Redirect URLs, проверьте вход и затем поменяйте Site URL.
 
 Если аккаунт был создан до применения миграции и строки в `editor_members` нет, один раз выполните перед назначением роли:
 
@@ -34,7 +35,7 @@ on conflict (user_id) do nothing;
 
 - аккаунт на [Supabase](https://supabase.com/dashboard);
 - доступ владельца к проекту GitHub `merk73/mid`;
-- файл миграции `supabase/migrations/20260714000100_midgas_editor.sql` из репозитория.
+- два файла миграций из `supabase/migrations/`: сначала `20260714000100_midgas_editor.sql`, затем `20260714000200_seed_existing_registry.sql`.
 
 В браузерный код MIDGAS можно передавать только **Project URL** и ключ вида `sb_publishable_...`. Никогда не помещайте в сайт, GitHub, переписку или скриншоты `sb_secret_...`, `service_role`, пароль базы данных и строку подключения. Publishable key предназначен для публичных клиентов, а реальные права ограничиваются `GRANT` и RLS. Подробнее: [официальное описание API-ключей](https://supabase.com/docs/guides/getting-started/api-keys).
 
@@ -81,9 +82,10 @@ on conflict (user_id) do nothing;
 
 1. Откройте в репозитории файл `supabase/migrations/20260714000100_midgas_editor.sql` и скопируйте его целиком.
 2. В Supabase откройте **SQL Editor → New query**, вставьте SQL и нажмите **Run** один раз.
-3. Убедитесь, что запрос завершился без ошибок. Не запускайте отдельные фрагменты миграции в случайном порядке.
-4. Откройте **Database → Tables** и проверьте созданные таблицы реестра, связей, редакторов, версий и аудита.
-5. Откройте **Database → Advisors → Security** и устраните все новые предупреждения перед подключением сайта.
+3. Создайте ещё один **New query**, целиком вставьте `supabase/migrations/20260714000200_seed_existing_registry.sql` и нажмите **Run** один раз. Seed запускается только на пустой таблице `records` и намеренно остановится, если в ней уже есть карточки.
+4. Убедитесь, что оба запроса завершились без ошибок. Не запускайте отдельные фрагменты миграций в случайном порядке.
+5. Откройте **Database → Tables** и проверьте: в `records` должно быть 29 строк, в `relationships` — 31 строка.
+6. Откройте **Database → Advisors → Security** и устраните все новые предупреждения перед подключением сайта.
 
 Миграция должна применяться сначала к отдельному тестовому проекту. Если ее потребуется изменить, создайте следующую миграцию, а не редактируйте уже примененную на рабочей базе.
 
@@ -120,19 +122,14 @@ Publishable key: sb_publishable_...
 Supabase официально поддерживает CDN-версию библиотеки:
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  const MIDGAS_SUPABASE_URL = 'https://<project-ref>.supabase.co';
-  const MIDGAS_SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_...';
-
-  const midgasSupabase = window.supabase.createClient(
-    MIDGAS_SUPABASE_URL,
-    MIDGAS_SUPABASE_PUBLISHABLE_KEY
-  );
-</script>
+<script
+  src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2"
+  integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM"
+  crossorigin="anonymous"></script>
+<script src="supabase-config.js"></script>
 ```
 
-Перед production-публикацией нужно закрепить проверенную точную версию `@supabase/supabase-js` вместо плавающего `@2`, либо подключить пакет через npm/pnpm и зафиксировать lockfile. Официальная установка: [supabase-js](https://supabase.com/docs/reference/javascript/installing).
+В MIDGAS уже закреплена точная версия `@supabase/supabase-js` и добавлена SRI-проверка. Project URL и publishable key находятся в `web/supabase-config.js`; секретных ключей в браузерном коде нет. Официальная установка: [supabase-js](https://supabase.com/docs/reference/javascript/installing).
 
 После интеграции локальное хранилище останется только временным кэшем/режимом миграции. Источником истины станут таблицы Supabase и Storage.
 
@@ -144,7 +141,7 @@ Supabase официально поддерживает CDN-версию библ
 2. В `auth.users` появляется учетная запись, а в таблице редакторов — запись со статусом/ролью `pending`.
 3. Пользователь может войти, но RLS запрещает ему создавать, изменять, удалять, восстанавливать карточки и загружать файлы.
 4. Владелец проекта проверяет заявку и вручную меняет роль на `editor` или `admin` через подготовленную административную операцию/SQL из migration.
-5. Пользователь выходит и входит снова; интерфейс редактора разблокируется после повторной проверки серверных прав.
+5. После одобрения сайт повторно проверяет роль при возврате на вкладку. При необходимости пользователь может обновить страницу; повторный вход обычно не требуется.
 
 Первого администратора назначайте только из SQL Editor под владельцем проекта. Не храните роль в `user_metadata`: эти данные пользователь может менять сам. Для авторизации используйте защищенную таблицу ролей или `app_metadata`. См. [User Management](https://supabase.com/docs/guides/auth/managing-user-data) и предупреждения в [RLS guide](https://supabase.com/docs/guides/database/postgres/row-level-security#helper-functions).
 
