@@ -486,10 +486,12 @@
   renderJournal();
 
   const quotes = [
-    ["Архив начинается в тот момент, когда свидетельство перестаёт быть одиночным.", "РЕДАКЦИОННЫЙ ПРОТОКОЛ / ЗАПИСЬ 01"],
-    ["Если два источника спорят, мы сохраняем оба. Иногда противоречие точнее любого вывода.", "ЖУРНАЛ СВЕРКИ / ЗАПИСЬ 07"],
-    ["На местности важен не самый громкий сигнал, а тот, который возвращается в той же точке.", "ПОЛЕВОЙ БЛОКНОТ / СЕКТОР ВИТЯЗЬ"],
-    ["Закрыть досье можно только тогда, когда исчезли не вопросы, а сам наблюдаемый процесс.", "ПРОТОКОЛ НАБЛЮДЕНИЯ / ПУНКТ 12"],
+    ["Я целый месяц жил на Урале. Там была строительная площадка. Волшебный город для сериала. Там и играл в пинг-понг. Ещё приезжал на КАМАЗе Баста.", "СЛУЧАЙНАЯ ЗАПИСЬ / 01"],
+    ["Мохнатая ОПГ не выкупает прикола чилить целый день.", "СЛУЧАЙНАЯ ЗАПИСЬ / 02"],
+    ["Видимо, началось.", "СЛУЧАЙНАЯ ЗАПИСЬ / 03"],
+    ["Эта дрянь выползла из недр черемушкинской сточной канавы, и теперь мы не знаем, куда его деть.", "СЛУЧАЙНАЯ ЗАПИСЬ / 04"],
+    ["Зачем они светофоры ускорили?", "СЛУЧАЙНАЯ ЗАПИСЬ / 05"],
+    ["День рождения только через пару дней, а Ярослав уже начал поздравлять.", "СЛУЧАЙНАЯ ЗАПИСЬ / 06"],
   ];
   let quoteIndex = 0;
   const quoteText = document.querySelector("[data-quote-text]");
@@ -498,6 +500,8 @@
   const quoteFrame = quoteText?.closest("blockquote");
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let quoteAnimation = null;
+  let quoteTimer = null;
+  const QUOTE_ROTATION_MS = 6500;
 
   function renderQuote(index) {
     if (quoteText) quoteText.textContent = quotes[index][0];
@@ -548,8 +552,23 @@
     }
   }
 
-  document.querySelector("[data-quote-prev]")?.addEventListener("click", () => showQuote(quoteIndex - 1));
-  document.querySelector("[data-quote-next]")?.addEventListener("click", () => showQuote(quoteIndex + 1));
+  function restartQuoteTimer() {
+    window.clearInterval(quoteTimer);
+    quoteTimer = null;
+    if (reducedMotion || document.hidden || !quoteFrame) return;
+    quoteTimer = window.setInterval(() => { void showQuote(quoteIndex + 1); }, QUOTE_ROTATION_MS);
+  }
+
+  document.querySelector("[data-quote-prev]")?.addEventListener("click", () => {
+    void showQuote(quoteIndex - 1);
+    restartQuoteTimer();
+  });
+  document.querySelector("[data-quote-next]")?.addEventListener("click", () => {
+    void showQuote(quoteIndex + 1);
+    restartQuoteTimer();
+  });
+  document.addEventListener("visibilitychange", restartQuoteTimer);
+  restartQuoteTimer();
 
   // The full pannable investigation map is initialized by investigation-board.js.
 
