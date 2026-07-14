@@ -173,11 +173,62 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
   border-bottom: 1px solid #383838;
 }
 
+.history-hero-media,
+.history-hero-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.history-hero-media {
+  z-index: 0;
+  overflow: hidden;
+  background: #050505;
+}
+
+.history-hero-background {
+  position: absolute;
+  inset: -9% -6%;
+  width: 112%;
+  height: 118%;
+  max-width: none;
+  object-fit: cover;
+  object-position: 50% 52%;
+  filter: grayscale(1) brightness(0.4) contrast(1.18);
+  transform: translate3d(0, var(--hero-parallax-y, 0), 0) scale(1.08);
+  will-change: transform;
+}
+
+.history-hero-fog {
+  position: absolute;
+  z-index: 1;
+  right: -8%;
+  bottom: -22%;
+  width: 116%;
+  height: 84%;
+  max-width: none;
+  object-fit: cover;
+  object-position: 50% 100%;
+  opacity: 0.22;
+  filter: grayscale(1) brightness(0.56) contrast(1.2);
+  mix-blend-mode: screen;
+  transform: translate3d(var(--hero-parallax-x, 0), var(--hero-parallax-y, 0), 0) scale(1.08);
+  will-change: transform;
+}
+
+.history-hero-shade {
+  z-index: 2;
+  background:
+    linear-gradient(90deg, rgba(0, 0, 0, 0.68), rgba(0, 0, 0, 0.25) 58%, rgba(0, 0, 0, 0.5)),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.8), transparent 58%, rgba(0, 0, 0, 0.24));
+}
+
 .history-hero::before {
   position: absolute;
   inset: 0;
   content: "";
-  opacity: 0.24;
+  z-index: 3;
+  opacity: 0.14;
   background-image:
     linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
@@ -187,7 +238,7 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
 
 .history-hero-meta {
   position: relative;
-  z-index: 2;
+  z-index: 4;
   display: flex;
   justify-content: space-between;
   color: #858585;
@@ -196,7 +247,7 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
 
 .history-hero-copy {
   position: relative;
-  z-index: 2;
+  z-index: 4;
   display: grid;
   align-self: end;
   grid-template-columns: 1fr;
@@ -870,7 +921,7 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
 .archive-scene[data-scene="hyperborea"] { --scene-accent: #6e8fa6; --fg-width: min(35vw, 560px); --fg-bottom: -10%; --bg-position: 56% 50%; }
 .archive-scene[data-scene="interplanetary"] { --scene-accent: #736b90; --fg-width: min(43vw, 690px); --fg-bottom: -13%; --fg-opacity: 0.8; --bg-position: 50% 54%; }
 .archive-scene[data-scene="successors"] { --scene-accent: #755a48; --fg-width: min(35vw, 560px); --fg-bottom: -4%; --bg-position: 54% 50%; }
-.archive-scene[data-scene="selbet-war"] { --scene-accent: #9b352d; --fg-width: min(36vw, 580px); --fg-bottom: -5%; --bg-position: 51% 50%; }
+.archive-scene[data-scene="selbet-war"] { --scene-accent: #9b352d; --fg-width: min(50vw, 790px); --fg-bottom: -12%; --fg-opacity: 0.94; --bg-position: 51% 50%; }
 .archive-scene[data-scene="resettlement"] { --scene-accent: #587359; --fg-width: min(24vw, 380px); --fg-bottom: -3%; --fg-inline: clamp(32px, 8vw, 130px); --bg-position: 50% 50%; }
 .archive-scene[data-scene="tartaria"] { --scene-accent: #977941; --fg-width: min(40vw, 640px); --fg-bottom: -8%; --bg-position: 50% 50%; }
 .archive-scene[data-scene="hidden-war"] { --scene-accent: #73503f; --fg-width: min(24vw, 380px); --fg-bottom: -2%; --fg-inline: clamp(38px, 8vw, 130px); --bg-position: 54% 50%; }
@@ -1161,9 +1212,8 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .history-orbit {
-    animation: none !important;
-  }
+  .history-hero-background,
+  .history-hero-fog { transform: none !important; will-change: auto !important; }
 
   .archive-scene,
   .timeline-dossier-icon {

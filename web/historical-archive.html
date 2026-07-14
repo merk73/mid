@@ -6,7 +6,7 @@
     <meta name="description" content="Исторический архив THE MIDGAS — каноническая хронология происхождения Земли, древних цивилизаций и утраченного евразийского контура." />
     <meta name="theme-color" content="#080808" />
     <title>Исторический архив — THE MIDGAS</title>
-    <link rel="stylesheet" href="styles.css?v=43" />
+    <link rel="stylesheet" href="styles.css?v=45" />
   </head>
   <body class="history-page">
     <div class="site-shell history-shell">
@@ -35,6 +35,11 @@
 
       <main id="history-top">
         <section class="history-hero" aria-labelledby="history-title">
+          <div class="history-hero-media" aria-hidden="true">
+            <img class="history-hero-background" src="assets/historical-archive/hero-archive-background.png" alt="" width="1672" height="941" decoding="async" fetchpriority="high" data-hero-parallax="background" />
+          <img class="history-hero-fog" src="assets/historical-archive/hero-archive-fog.png" alt="" width="1536" height="864" decoding="async" fetchpriority="high" data-hero-parallax="fog" />
+            <div class="history-hero-shade"></div>
+          </div>
           <div class="history-hero-meta">
             <span>ARCHIVE / H-0001</span>
             <span>ФУНДАМЕНТАЛЬНАЯ РЕДАКЦИЯ / 1.0</span>
@@ -47,7 +52,6 @@
               <a href="#timeline">НАЧАТЬ ХРОНОЛОГИЮ ↓</a>
             </div>
           </div>
-          <div class="history-orbit" aria-hidden="true"><span></span><span></span><span></span></div>
         </section>
 
         <section class="history-notice" aria-label="Редакционный протокол">
@@ -387,7 +391,7 @@
               <div class="archive-scene-media" aria-hidden="true">
                 <div class="archive-scene-stage">
                   <img class="archive-scene-background" src="assets/historical-archive/bg-08.webp" alt="" width="1672" height="941" loading="lazy" decoding="async" data-parallax="background" />
-                  <img class="archive-scene-cutout archive-scene-cutout--right" src="assets/historical-archive/fg-08.webp" alt="" width="1254" height="1254" loading="lazy" decoding="async" data-parallax="cutout" />
+                  <img class="archive-scene-cutout archive-scene-cutout--right" src="assets/historical-archive/fg-08-explosion.png" alt="" width="1280" height="1280" loading="lazy" decoding="async" data-parallax="cutout" />
                   <div class="archive-scene-vignette"></div>
                 </div>
               </div>
@@ -720,6 +724,6 @@
     <script src="supabase-config.js?v=1"></script>
     <script src="editor-session.js?v=2"></script>
     <script src="app.js?v=22"></script>
-    <script src="historical-archive.js?v=5"></script>
+    <script src="historical-archive.js?v=6"></script>
   </body>
 </html>

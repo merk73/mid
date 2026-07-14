@@ -6,6 +6,8 @@ const historyProgressBar = document.querySelector(".timeline-progress");
 const historyRail = document.querySelector(".timeline-rail");
 const historyRailLinks = [...document.querySelectorAll(".timeline-rail a")];
 const historyDossiers = [...document.querySelectorAll(".timeline-dossier")];
+const historyHero = document.querySelector(".history-hero");
+const historyHeroLayers = [...document.querySelectorAll("[data-hero-parallax]")];
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const coarsePointer = window.matchMedia("(pointer: coarse)");
@@ -146,10 +148,26 @@ function updateParallax() {
   });
 }
 
+function updateHeroParallax() {
+  if (!historyHero || !historyHeroLayers.length) return;
+  const rect = historyHero.getBoundingClientRect();
+  const progress = Math.max(0, Math.min(1, -rect.top / Math.max(rect.height, 1)));
+  const enabled = !reduceMotion.matches && !saveData;
+
+  historyHeroLayers.forEach((layer) => {
+    const isFog = layer.dataset.heroParallax === "fog";
+    const y = enabled ? progress * (isFog ? 138 : 72) : 0;
+    const x = enabled && isFog ? progress * 38 : 0;
+    layer.style.setProperty("--hero-parallax-y", `${y.toFixed(2)}px`);
+    layer.style.setProperty("--hero-parallax-x", `${x.toFixed(2)}px`);
+  });
+}
+
 function renderArchiveFrame() {
   frameRequested = false;
   updateHistoryProgress();
   updateActiveEntry();
+  updateHeroParallax();
   updateParallax();
 }
 
