@@ -2791,12 +2791,14 @@ button {
 
 .lore-section {
   display: grid;
-  grid-template-columns: 0.45fr 2.55fr;
-  gap: 34px;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1200px) minmax(0, 1fr);
+  gap: 0;
   min-height: 220px;
   padding: 46px var(--side) 54px;
   border-bottom: 1px solid var(--ink);
 }
+
+.lore-section > div { grid-column: 2; }
 
 .lore-number {
   color: var(--muted);
@@ -3205,6 +3207,8 @@ button {
   .lore-editorial-note {
     grid-template-columns: 1fr;
   }
+
+  .lore-section > div { grid-column: auto; }
 
   .lore-media-grid,
   .related-record-list {
