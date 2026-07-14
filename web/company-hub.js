@@ -15,6 +15,12 @@
   const loginDialog = document.querySelector("#editor-login-dialog");
   const loginOpen = document.querySelector("[data-editor-login-open]");
   const loginClose = document.querySelector("[data-editor-login-close]");
+  const passwordDialog = document.querySelector("#editor-password-dialog");
+  const passwordForm = document.querySelector("#editor-password-form");
+  const passwordOpen = document.querySelector("[data-editor-password-open]");
+  const passwordClose = document.querySelector("[data-editor-password-close]");
+  const passwordStatus = document.querySelector("[data-password-status]");
+  const passwordSubmit = document.querySelector("[data-password-submit]");
   const editorLocked = document.querySelector("[data-editor-locked]");
   const editorHome = document.querySelector("[data-editor-home]");
   const accountEmail = document.querySelector("[data-account-email]");
@@ -75,6 +81,32 @@
     if (typeof loginDialog.showModal === "function") loginDialog.showModal();
     else loginDialog.setAttribute("open", "");
     window.setTimeout(() => accountForm?.elements.namedItem("email")?.focus({ preventScroll: true }), 40);
+  }
+
+  function closePasswordDialog() {
+    if (!passwordDialog) return;
+    if (typeof passwordDialog.close === "function") passwordDialog.close();
+    else passwordDialog.removeAttribute("open");
+    passwordForm?.reset();
+    if (passwordStatus) passwordStatus.textContent = "";
+  }
+
+  function openPasswordDialog() {
+    if (!sessionApi?.isEditor?.()) {
+      openLoginDialog();
+      return;
+    }
+    passwordForm?.reset();
+    if (passwordStatus) passwordStatus.textContent = "";
+    if (typeof passwordDialog?.showModal === "function") passwordDialog.showModal();
+    else passwordDialog?.setAttribute("open", "");
+    window.setTimeout(() => passwordForm?.elements.namedItem("currentPassword")?.focus({ preventScroll: true }), 40);
+  }
+
+  function setPasswordBusy(busy) {
+    if (passwordSubmit) passwordSubmit.disabled = busy;
+    if (passwordClose) passwordClose.disabled = busy;
+    passwordForm?.querySelectorAll("input").forEach((input) => { input.disabled = busy; });
   }
 
   function showEditorPanel(panel) {
@@ -223,10 +255,39 @@
     }
   });
 
+  passwordForm?.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    if (!passwordForm.reportValidity()) return;
+    const values = new FormData(passwordForm);
+    setPasswordBusy(true);
+    if (passwordStatus) passwordStatus.textContent = "ПРОВЕРЯЕМ ТЕКУЩИЙ ПАРОЛЬ…";
+    try {
+      const session = await sessionApi?.changePassword?.({
+        currentPassword: values.get("currentPassword"),
+        newPassword: values.get("newPassword"),
+        confirmation: values.get("confirmation"),
+      });
+      if (!session) throw new Error("Модуль смены пароля Supabase недоступен.");
+      passwordForm.reset();
+      if (passwordStatus) passwordStatus.textContent = "ПАРОЛЬ ИЗМЕНЁН. ОСТАЛЬНЫЕ СЕАНСЫ ЗАВЕРШЕНЫ.";
+      renderAccount(session, "ПАРОЛЬ АККАУНТА ИЗМЕНЁН. ТЕКУЩИЙ РЕДАКЦИОННЫЙ СЕАНС СОХРАНЁН.");
+      window.setTimeout(closePasswordDialog, 1200);
+    } catch (error) {
+      const message = error.message || "НЕ УДАЛОСЬ ИЗМЕНИТЬ ПАРОЛЬ.";
+      if (passwordStatus) passwordStatus.textContent = message;
+      if (accountStatus) accountStatus.textContent = message;
+    } finally {
+      setPasswordBusy(false);
+    }
+  });
+
   loginOpen?.addEventListener("click", openLoginDialog);
   loginClose?.addEventListener("click", closeLoginDialog);
+  passwordOpen?.addEventListener("click", openPasswordDialog);
+  passwordClose?.addEventListener("click", closePasswordDialog);
   authModeToggle?.addEventListener("click", () => setAuthMode(authMode === "sign-in" ? "sign-up" : "sign-in"));
   loginDialog?.addEventListener("click", (event) => { if (event.target === loginDialog) closeLoginDialog(); });
+  passwordDialog?.addEventListener("click", (event) => { if (event.target === passwordDialog) closePasswordDialog(); });
   createOpen?.addEventListener("click", () => {
     resetCreateWizard();
     showEditorPanel(createPanel);

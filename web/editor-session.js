@@ -48,6 +48,17 @@
     return { email: normalizedEmail, password: String(password) };
   }
 
+  function validatePasswordChange({ currentPassword, newPassword, confirmation } = {}) {
+    const current = String(currentPassword || "");
+    const next = String(newPassword || "");
+    const repeated = String(confirmation || "");
+    if (!current) throw new Error("Введите текущий пароль.");
+    if (next.length < 8) throw new Error("Новый пароль должен содержать не менее 8 символов.");
+    if (next !== repeated) throw new Error("Новые пароли не совпадают.");
+    if (next === current) throw new Error("Новый пароль должен отличаться от текущего.");
+    return { currentPassword: current, newPassword: next };
+  }
+
   function friendlyError(error) {
     const message = String(error?.message || "");
     const normalized = message.toLocaleLowerCase("en");
@@ -163,6 +174,33 @@
     return null;
   }
 
+  async function changePassword(values = {}) {
+    if (!client) throw new Error("Модуль Supabase не загружен.");
+    if (!cachedSession?.authenticated || !cachedSession.email) {
+      throw new Error("Сначала войдите в аккаунт редактора.");
+    }
+
+    const { currentPassword, newPassword } = validatePasswordChange(values);
+    const verification = await client.auth.signInWithPassword({
+      email: cachedSession.email,
+      password: currentPassword,
+    });
+    if (verification.error) throw new Error("Текущий пароль указан неверно.");
+
+    authSession = verification.data.session || authSession;
+    const { error } = await client.auth.updateUser({
+      password: newPassword,
+      current_password: currentPassword,
+    });
+    if (error) throw friendlyError(error);
+
+    const otherSessions = await client.auth.signOut({ scope: "others" });
+    if (otherSessions.error) throw friendlyError(otherSessions.error);
+    const { data: sessionData, error: sessionError } = await client.auth.getSession();
+    if (sessionError) throw friendlyError(sessionError);
+    return hydrate(sessionData.session || authSession, "password-changed");
+  }
+
   async function refresh() {
     if (!client) return null;
     if (authSession?.user) return hydrate(authSession, "membership-refreshed");
@@ -211,6 +249,7 @@
     signIn,
     signUp,
     signOut,
+    changePassword,
     refresh,
   });
 })();

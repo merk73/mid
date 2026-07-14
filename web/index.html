@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="THE MIDGAS — исследовательский архив клиентов, аномалий и инцидентов." />
     <title>THE MIDGAS — Research Archive</title>
-    <link rel="stylesheet" href="styles.css?v=43" />
+    <link rel="stylesheet" href="styles.css?v=44" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -595,28 +595,28 @@
             <header class="company-module-heading company-reveal">
               <div class="company-section-label"><span>06</span><p>РЕДАКЦИОННЫЙ ДОСТУП</p></div>
               <div><span>EDITOR MODE / SUPABASE AUTH</span><h3 id="company-account-title">РЕЖИМ<br />РЕДАКТОРА</h3></div>
-              <p>Создание, исправление, скрытие и восстановление досье собраны в одном рабочем контуре.</p>
+              <p>Один защищённый кабинет для создания карточек, восстановления версий и управления доступом.</p>
             </header>
 
             <div class="editor-mode-card company-reveal">
               <div class="editor-mode-topline"><span>MIDGAS / EDITOR</span><i data-account-indicator>ДОСТУП ЗАКРЫТ</i></div>
               <section class="editor-mode-locked" data-editor-locked>
-                <span>РЕДАКЦИОННЫЙ КОНТУР D4</span>
-                <h4>У ВАС НЕТ ДОСТУПА К РЕДАКТОРУ</h4>
-                <p>Войдите в одобренный аккаунт или отправьте заявку на редакционный доступ.</p>
-                <button type="button" data-editor-login-open>ВОЙТИ ИЛИ СОЗДАТЬ АККАУНТ</button>
+                <span>ЗАЩИЩЁННЫЙ ДОСТУП</span>
+                <h4>РЕДАКТОР ЗАКРЫТ</h4>
+                <p>Войдите в аккаунт модератора. Инструменты появятся после проверки редакционной роли.</p>
+                <button type="button" data-editor-login-open>ВОЙТИ В АККАУНТ</button>
               </section>
               <section class="editor-mode-home" data-editor-home hidden aria-live="polite">
                 <div class="editor-mode-identity">
-                  <span data-account-session-label>ВХОД ВЫПОЛНЕН</span>
-                  <strong data-account-email>editor@midgas.archive</strong>
+                  <div><span data-account-session-label>ВХОД ВЫПОЛНЕН</span><strong data-account-email>editor@midgas.archive</strong></div>
                   <p data-account-session-copy>Редакционные операции разрешены вашей ролью Supabase.</p>
                 </div>
                 <nav class="editor-mode-actions" data-editor-actions>
                   <button type="button" data-editor-create-open><span>01</span><strong>СОЗДАТЬ КАРТОЧКУ</strong><small>Клиент, аномалия или инцидент</small></button>
                   <button type="button" data-editor-recovery-open><span>02</span><strong>ВОССТАНОВИТЬ КАРТОЧКУ</strong><small>Удалённые и изменённые версии</small></button>
+                  <button type="button" data-editor-password-open><span>03</span><strong>ИЗМЕНИТЬ ПАРОЛЬ</strong><small>Защита аккаунта и завершение других входов</small></button>
                 </nav>
-                <button class="editor-mode-logout" type="button" data-account-logout>ВЫЙТИ ИЗ РЕЖИМА РЕДАКТОРА</button>
+                <div class="editor-mode-session-actions"><span>ТЕКУЩИЙ СЕАНС ЗАЩИЩЁН SUPABASE AUTH</span><button class="editor-mode-logout" type="button" data-account-logout>ВЫЙТИ</button></div>
               </section>
               <p class="company-account-status" data-account-status role="status" aria-live="polite"></p>
             </div>
@@ -758,6 +758,22 @@
       </form>
     </dialog>
 
+    <dialog class="editor-login-dialog editor-password-dialog" id="editor-password-dialog" aria-labelledby="editor-password-title">
+      <form id="editor-password-form" novalidate>
+        <header><span>MIDGAS / ACCOUNT SECURITY</span><button type="button" data-editor-password-close aria-label="Закрыть смену пароля">×</button></header>
+        <div class="editor-login-copy">
+          <span>БЕЗ ПОДТВЕРЖДЕНИЯ ПОЧТЫ</span>
+          <h2 id="editor-password-title">ИЗМЕНИТЬ<br />ПАРОЛЬ</h2>
+          <p>Сначала Supabase проверит текущий пароль. После изменения остальные входы в аккаунт будут завершены, а этот редактор останется открыт.</p>
+        </div>
+        <label class="editor-password-current"><span>ТЕКУЩИЙ ПАРОЛЬ</span><input type="password" name="currentPassword" required autocomplete="current-password" placeholder="••••••••" /></label>
+        <label><span>НОВЫЙ ПАРОЛЬ</span><input type="password" name="newPassword" required minlength="8" maxlength="72" autocomplete="new-password" placeholder="НЕ МЕНЕЕ 8 СИМВОЛОВ" /></label>
+        <label><span>ПОВТОРИТЕ НОВЫЙ ПАРОЛЬ</span><input type="password" name="confirmation" required minlength="8" maxlength="72" autocomplete="new-password" placeholder="ПОВТОРИТЕ ПАРОЛЬ" /></label>
+        <p class="editor-auth-status" data-password-status role="status" aria-live="polite"></p>
+        <button type="submit" data-password-submit>ИЗМЕНИТЬ ПАРОЛЬ</button>
+      </form>
+    </dialog>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
     <script src="supabase-config.js?v=1"></script>
     <script src="data.js"></script>
@@ -766,11 +782,11 @@
     <script src="incident-updates.js?v=1"></script>
     <script src="site-completion.js?v=1"></script>
     <script src="krovolunanie-research.js?v=1"></script>
-    <script src="editor-session.js?v=2"></script>
+    <script src="editor-session.js?v=3"></script>
     <script src="supabase-data.js?v=1"></script>
     <script src="editor-storage.js?v=6"></script>
     <script src="relations-data.js?v=1"></script>
-    <script src="company-hub.js?v=12"></script>
+    <script src="company-hub.js?v=13"></script>
     <script src="investigation-board.js?v=9"></script>
     <script src="app.js?v=22"></script>
   </body>

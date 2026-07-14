@@ -9289,16 +9289,22 @@ body.record-editor-open { overflow: hidden; }
 .company-editor-hub {
   padding: clamp(78px, 9vw, 150px) var(--side);
   color: var(--paper);
-  background: #0b0b0b;
+  background:
+    radial-gradient(circle at 82% 12%, rgba(255, 255, 255, 0.055), transparent 26%),
+    #0b0b0b;
 }
 
-.company-editor-hub > .company-module-heading { color: var(--paper); }
+.company-editor-hub > .company-module-heading {
+  min-height: 0;
+  color: var(--paper);
+}
 .company-editor-hub > .company-module-heading p { color: #aaa9a3; }
 
 .editor-mode-card {
   margin-top: clamp(34px, 5vw, 72px);
   border: 1px solid #5a5a56;
-  background: #111;
+  background: #101010;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.24);
 }
 
 .editor-mode-topline {
@@ -9331,11 +9337,11 @@ body.record-editor-open { overflow: hidden; }
 
 .editor-mode-locked,
 .editor-mode-home {
-  padding: clamp(28px, 5vw, 68px);
+  padding: clamp(28px, 4vw, 54px);
 }
 
 .editor-mode-locked > span,
-.editor-mode-identity > span,
+.editor-mode-identity span,
 .editor-work-heading span,
 .editor-login-copy > span {
   color: #8d8c86;
@@ -9344,10 +9350,10 @@ body.record-editor-open { overflow: hidden; }
 }
 
 .editor-mode-locked h4 {
-  max-width: 820px;
+  max-width: 720px;
   margin: 18px 0 12px;
   font-family: var(--display);
-  font-size: clamp(44px, 7vw, 92px);
+  font-size: clamp(42px, 6vw, 76px);
   font-weight: 500;
   line-height: 0.84;
   letter-spacing: -0.045em;
@@ -9376,27 +9382,29 @@ body.record-editor-open { overflow: hidden; }
 .editor-mode-locked > button:hover { color: var(--paper); background: var(--company-red); border-color: var(--company-red); }
 
 .editor-mode-identity {
-  display: grid;
-  grid-template-columns: minmax(150px, 0.3fr) minmax(0, 1fr);
-  gap: 12px 24px;
-  align-items: end;
-  padding-bottom: 32px;
+  display: flex;
+  gap: 28px;
+  align-items: flex-end;
+  justify-content: space-between;
+  padding-bottom: 26px;
   border-bottom: 1px solid #51514d;
 }
+
+.editor-mode-identity > div { display: flex; min-width: 0; flex-direction: column; gap: 10px; }
 
 .editor-mode-identity strong {
   overflow-wrap: anywhere;
   font-family: var(--display);
-  font-size: clamp(28px, 4vw, 54px);
+  font-size: clamp(25px, 3vw, 43px);
   font-weight: 500;
   line-height: 0.9;
 }
 
-.editor-mode-identity p { grid-column: 2; }
+.editor-mode-identity p { max-width: 410px; text-align: right; }
 
 .editor-mode-actions {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   margin-top: 24px;
   border-top: 1px solid #5a5a56;
   border-left: 1px solid #5a5a56;
@@ -9406,7 +9414,7 @@ body.record-editor-open { overflow: hidden; }
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr);
   gap: 8px 14px;
-  min-height: 148px;
+  min-height: 126px;
   align-content: center;
   padding: 24px;
   color: var(--paper);
@@ -9425,17 +9433,30 @@ body.record-editor-open { overflow: hidden; }
 .editor-mode-actions small { color: #8d8c86; font-size: 7px; line-height: 1.45; letter-spacing: 0.05em; }
 .editor-mode-actions button:hover small { color: #62615c; }
 
+.editor-mode-session-actions {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  color: #777670;
+  border-top: 1px solid #3d3d3a;
+  font-size: 7px;
+  letter-spacing: 0.08em;
+}
+
 .editor-mode-logout {
-  margin-top: 18px;
-  padding: 10px 0;
+  align-self: stretch;
+  min-width: 92px;
+  padding: 0 14px;
   color: #8d8c86;
   background: transparent;
   border: 0;
-  border-bottom: 1px solid #555550;
+  border-left: 1px solid #3d3d3a;
   cursor: pointer;
   font-size: 7px;
 }
-.editor-mode-logout:hover { color: var(--paper); border-color: var(--paper); }
+.editor-mode-logout:hover { color: var(--ink); background: var(--paper); }
 
 .company-editor-hub .company-account-status {
   min-height: 38px;
@@ -9546,6 +9567,11 @@ body.record-editor-open { overflow: hidden; }
 .editor-login-dialog button:disabled,
 .editor-login-dialog input:disabled { cursor: wait; opacity: 0.55; }
 
+.editor-password-dialog { width: min(620px, calc(100vw - 24px)); }
+.editor-password-dialog .editor-password-current { grid-column: 1 / -1; padding-right: 28px; }
+.editor-password-dialog input::placeholder { color: #666560; font-size: 8px; letter-spacing: 0.06em; }
+.editor-password-dialog [data-password-status]:not(:empty) { color: var(--paper); }
+
 /* The change log is an editor utility now, not a standalone landing section. */
 .company-editor-hub .company-journal--editor {
   width: 100%;
@@ -9583,9 +9609,12 @@ body.record-editor-open { overflow: hidden; }
   .editor-mode-locked h4 { font-size: clamp(42px, 13vw, 64px); }
   .editor-mode-locked > button { width: 100%; min-width: 0; }
   .editor-mode-identity { grid-template-columns: 1fr; }
-  .editor-mode-identity p { grid-column: auto; }
+  .editor-mode-identity { align-items: flex-start; flex-direction: column; }
+  .editor-mode-identity p { max-width: none; text-align: left; }
   .editor-mode-actions { grid-template-columns: 1fr; }
-  .editor-mode-actions button { min-height: 118px; padding: 18px; }
+  .editor-mode-actions button { min-height: 104px; padding: 18px; }
+  .editor-mode-session-actions { align-items: stretch; }
+  .editor-mode-session-actions > span { display: flex; align-items: center; padding-right: 12px; line-height: 1.5; }
   .editor-work-panel,
   .company-editor.editor-work-panel,
   .company-restore.editor-work-panel { margin-top: 12px; }
@@ -9600,6 +9629,7 @@ body.record-editor-open { overflow: hidden; }
   .editor-login-copy,
   .editor-login-dialog label,
   .editor-login-dialog label + label { grid-column: 1; padding-right: 18px; padding-left: 18px; }
+  .editor-password-dialog .editor-password-current { grid-column: 1; padding-right: 18px; }
   .editor-auth-status { grid-column: 1; padding-right: 18px; padding-left: 18px; }
   .editor-login-dialog form > button[type="submit"],
   .editor-auth-toggle { grid-column: 1; }
