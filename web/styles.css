@@ -2791,7 +2791,7 @@ button {
 
 .lore-section {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1200px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1080px) minmax(0, 1fr);
   gap: 0;
   min-height: 220px;
   padding: 46px var(--side) 54px;
