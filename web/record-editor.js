@@ -130,19 +130,26 @@
     imageCaption.type = "text";
     imageCaption.maxLength = 180;
     imageCaption.placeholder = "Подпись к фотографии";
+    imageCaption.dataset.recordEditorImageCaption = "";
     imageCaption.setAttribute("aria-label", "Подпись к фотографии раздела");
+    const imageCaptionField = document.createElement("label");
+    imageCaptionField.className = "record-editor-section-caption";
+    const imageCaptionLabel = document.createElement("span");
+    imageCaptionLabel.textContent = "ПОДПИСЬ ПОД ФОТОГРАФИЕЙ";
+    imageCaptionField.append(imageCaptionLabel, imageCaption);
     const imagePreview = document.createElement("img");
     imagePreview.alt = row._sectionImage?.alt || source.title || "Фотография раздела";
     const imageActions = document.createElement("div");
-    const addImage = makeButton("ДОБАВИТЬ ФОТО", "record-editor-section-image-add", () => imageInput.click());
+    const addImage = makeButton("+ ДОБАВИТЬ ФОТО К РАЗДЕЛУ", "record-editor-section-image-add", () => imageInput.click());
     const removeImage = makeButton("УДАЛИТЬ", "record-editor-section-image-remove", () => {
       row._sectionImage = null;
       imagePreview.removeAttribute("src");
       imagePreview.hidden = true;
       imageCaption.value = "";
       imageCaption.hidden = true;
+      imageCaptionField.hidden = true;
       removeImage.hidden = true;
-      addImage.textContent = "ДОБАВИТЬ ФОТО";
+      addImage.textContent = "+ ДОБАВИТЬ ФОТО К РАЗДЕЛУ";
       imageNote.textContent = "ФОТО НЕ ПРИКРЕПЛЕНО";
     });
     const imageInput = document.createElement("input");
@@ -157,8 +164,9 @@
       imageNote.textContent = hasImage ? "ФОТО ПРИКРЕПЛЕНО К РАЗДЕЛУ" : "ФОТО НЕ ПРИКРЕПЛЕНО";
       imagePreview.hidden = !hasImage;
       imageCaption.hidden = !hasImage;
+      imageCaptionField.hidden = !hasImage;
       removeImage.hidden = !hasImage;
-      addImage.textContent = hasImage ? "ЗАМЕНИТЬ ФОТО" : "ДОБАВИТЬ ФОТО";
+      addImage.textContent = hasImage ? "ЗАМЕНИТЬ ФОТО" : "+ ДОБАВИТЬ ФОТО К РАЗДЕЛУ";
       if (hasImage) {
         imagePreview.src = current.src;
         imagePreview.alt = current.alt || source.title || "Фотография раздела";
@@ -172,7 +180,7 @@
       addImage.disabled = true;
       setSectionImageBusy(1, "ПОДГОТАВЛИВАЮ ФОТОГРАФИЮ РАЗДЕЛА…");
       try {
-        const src = await prepareImage(file, { maximumSide: 1100, targetBytes: 260 * 1024 });
+        const src = await prepareImage(file, { maximumSide: 960, targetBytes: 220 * 1024 });
         row._sectionImage = {
           src,
           alt: source.title || "Фотография раздела",
@@ -193,7 +201,7 @@
 
     imageCopy.append(imageLabel, imageNote);
     imageActions.append(addImage, removeImage, imageInput);
-    imagePanel.append(imageCopy, imagePreview, imageCaption, imageActions);
+    imagePanel.append(imageCopy, imagePreview, imageCaptionField, imageActions);
     inputs.append(titleInput, paragraphsInput, imagePanel);
     const remove = makeButton("УДАЛИТЬ РАЗДЕЛ", "record-editor-remove-section", () => {
       row.remove();
@@ -472,7 +480,7 @@
         paragraphs,
       };
       if (row._sectionImage?.src) {
-        const caption = row.querySelector(".record-editor-section-image > input[type=\"text\"]")?.value.trim() || "ФОТОМАТЕРИАЛ MIDGAS";
+        const caption = row.querySelector("[data-record-editor-image-caption]")?.value.trim() || "ФОТОМАТЕРИАЛ MIDGAS";
         section.image = { ...clone(row._sectionImage), caption, alt: caption };
       } else {
         delete section.image;

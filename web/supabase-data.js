@@ -346,6 +346,17 @@
     }
   }
 
+  async function loadChangeFeed(limit = 300) {
+    if (!isConfigured()) return [];
+    const client = requireClient();
+    const response = await client
+      .from("change_feed")
+      .select("id,action,record_type,record_code,record_name,details,occurred_at")
+      .order("occurred_at", { ascending: false })
+      .limit(Math.min(500, Math.max(1, Number(limit) || 300)));
+    return clone(checked(response, "загрузка журнала изменений") || []);
+  }
+
   function seedRequired(code) {
     return new MidgasSupabaseError(
       `Запись ${code} отсутствует в Supabase. Сначала выполните seed-миграцию базовых записей MIDGAS (RUN SEED MIGRATION), затем повторите операцию.`,
@@ -775,6 +786,7 @@
     getStatus: () => status,
     isNetworkError,
     loadPublicRecords,
+    loadChangeFeed,
     createRecord,
     updateRecord,
     upsertOverride: updateRecord,

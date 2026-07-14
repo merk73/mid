@@ -11,6 +11,7 @@
   };
 
   const sessionApi = window.MIDGAS_EDITOR_SESSION;
+  const siteGate = window.MIDGAS_SITE_GATE;
   const accountForm = document.querySelector("#company-account-form");
   const loginDialog = document.querySelector("#editor-login-dialog");
   const loginOpen = document.querySelector("[data-editor-login-open]");
@@ -44,7 +45,30 @@
   const modifiedList = document.querySelector("[data-restore-modified-list]");
   const deletedEmpty = document.querySelector("[data-restore-deleted-empty]");
   const modifiedEmpty = document.querySelector("[data-restore-modified-empty]");
+  const maintenanceToggle = document.querySelector("[data-maintenance-toggle]");
+  const maintenanceStatus = document.querySelector("[data-maintenance-status]");
   let authMode = "sign-in";
+  let maintenanceState = siteGate?.getState?.() || {};
+
+  function renderMaintenanceControls(nextState = {}) {
+    maintenanceState = { ...maintenanceState, ...nextState };
+    const isOwner = Boolean(maintenanceState.owner);
+    if (maintenanceToggle) {
+      maintenanceToggle.hidden = !isOwner;
+      const title = maintenanceToggle.querySelector("strong");
+      const copy = maintenanceToggle.querySelector("small");
+      if (title) title.textContent = maintenanceState.enabled ? "ОТКРЫТЬ САЙТ" : "ЗАКРЫТЬ САЙТ";
+      if (copy) copy.textContent = maintenanceState.enabled
+        ? "Вернуть публичный доступ для всех посетителей"
+        : "Оставить доступ только подтверждённым редакторам";
+    }
+    if (maintenanceStatus) {
+      maintenanceStatus.hidden = !isOwner;
+      maintenanceStatus.textContent = maintenanceState.enabled
+        ? "САЙТ ЗАКРЫТ. ПОДТВЕРЖДЁННЫЕ РЕДАКТОРЫ СОХРАНЯЮТ ДОСТУП."
+        : "САЙТ ОТКРЫТ ДЛЯ ВСЕХ ПОСЕТИТЕЛЕЙ.";
+    }
+  }
 
   function setAuthMode(mode) {
     authMode = mode === "sign-up" ? "sign-up" : "sign-in";
@@ -208,7 +232,11 @@
   }
 
   renderAccount(sessionApi?.read?.() || null, "ПРОВЕРЯЕМ СОХРАНЁННЫЙ СЕАНС SUPABASE…");
-  sessionApi?.ready?.then((session) => renderAccount(session || null));
+  sessionApi?.ready?.then((session) => {
+    renderAccount(session || null);
+    siteGate?.refresh?.();
+  });
+  siteGate?.ready?.then(renderMaintenanceControls);
   setAuthMode("sign-in");
 
   accountForm?.addEventListener("submit", async (event) => {
@@ -316,6 +344,26 @@
 
   window.addEventListener(sessionApi?.eventName || "midgas:editor-session", (event) => {
     renderAccount(event.detail?.session || null);
+    siteGate?.refresh?.();
+  });
+
+  window.addEventListener("midgas:maintenance-ready", (event) => {
+    renderMaintenanceControls(event.detail || {});
+  });
+
+  maintenanceToggle?.addEventListener("click", async () => {
+    maintenanceToggle.disabled = true;
+    try {
+      const state = await siteGate?.setMaintenance?.(!maintenanceState.enabled);
+      renderMaintenanceControls(state || {});
+      if (accountStatus) accountStatus.textContent = state?.enabled
+        ? "САЙТ ЗАКРЫТ НА ТЕХНИЧЕСКОЕ ОБСЛУЖИВАНИЕ."
+        : "САЙТ СНОВА ОТКРЫТ ДЛЯ ВСЕХ ПОСЕТИТЕЛЕЙ.";
+    } catch (error) {
+      if (accountStatus) accountStatus.textContent = error.message || "НЕ УДАЛОСЬ ИЗМЕНИТЬ РЕЖИМ САЙТА.";
+    } finally {
+      maintenanceToggle.disabled = false;
+    }
   });
 
   window.addEventListener("midgas:record-mutated", renderRecoveryLists);
@@ -370,6 +418,7 @@
   updateRegistryMetadata();
 
   const journalList = document.querySelector("#company-journal-list");
+  let remoteJournalEvents = [];
   const journalDateFormatter = new Intl.DateTimeFormat("ru-RU", {
     day: "2-digit",
     month: "2-digit",
@@ -438,9 +487,11 @@
       });
     });
 
-    (window.MIDGAS_EDITOR_STORE?.audit?.() || [])
-      .filter((event) => ["update", "delete", "restore"].includes(event.action) && event.at)
-      .forEach(addEvent);
+    const events = remoteJournalEvents.length
+      ? remoteJournalEvents
+      : (window.MIDGAS_EDITOR_STORE?.audit?.() || [])
+        .filter((event) => ["update", "delete", "restore", "reset"].includes(event.action) && event.at);
+    events.forEach(addEvent);
 
     return [...days.values()]
       .filter((day) => day.events.length || types.some((type) => day.records[type].length))
@@ -473,6 +524,8 @@
     if (eventCounts.delete) statements.push(`скрыто ${eventCounts.delete}`);
     if (eventCounts.restore) statements.push(`восстановлено ${eventCounts.restore}`);
     if (eventCounts.reset) statements.push(`возвращено к исходной версии ${eventCounts.reset}`);
+    if (eventCounts.link) statements.push(`добавлено связей ${eventCounts.link}`);
+    if (eventCounts.unlink) statements.push(`удалено связей ${eventCounts.unlink}`);
     const todayPrefix = day.date === journalDateKey(new Date()) ? "Сегодня: " : "";
     title.textContent = `${todayPrefix}${statements.join("; ")}.`;
     const action = document.createElement("span");
@@ -508,7 +561,14 @@
     });
 
     if (day.events?.length) {
-      const eventLabels = { update: "ОБНОВЛЕНО", delete: "СКРЫТО", restore: "ВОССТАНОВЛЕНО", reset: "ИСХОДНАЯ ВЕРСИЯ" };
+      const eventLabels = {
+        update: "ОБНОВЛЕНО",
+        delete: "СКРЫТО",
+        restore: "ВОССТАНОВЛЕНО",
+        reset: "ИСХОДНАЯ ВЕРСИЯ",
+        link: "СВЯЗЬ ДОБАВЛЕНА",
+        unlink: "СВЯЗЬ УДАЛЕНА",
+      };
       const group = document.createElement("section");
       group.className = "company-journal-events";
       const heading = document.createElement("h5");
@@ -544,7 +604,39 @@
     journalList.replaceChildren(...timeline.map((day, index) => createJournalDay(day, timeline.length - index)));
   }
 
+  async function loadRemoteJournal() {
+    try {
+      await window.MIDGAS_SUPABASE_DATA?.ready;
+      const rows = await window.MIDGAS_SUPABASE_DATA?.loadChangeFeed?.(300);
+      remoteJournalEvents = (rows || []).flatMap((row) => {
+        const action = {
+          record_updated: "update",
+          record_soft_deleted: "delete",
+          record_restored: "restore",
+          relationship_created: "link",
+          relationship_deleted: "unlink",
+        }[row.action];
+        if (!action || !row.occurred_at) return [];
+        const relationCode = [row.details?.source, row.details?.target].filter(Boolean).join(" ↔ ");
+        return [{
+          action,
+          at: row.occurred_at,
+          type: row.record_type,
+          id: relationCode || row.record_code || "ЗАПИСЬ",
+          name: action === "link" || action === "unlink" ? "Связь карточек" : (row.record_name || row.record_code),
+        }];
+      });
+      renderJournal();
+    } catch (error) {
+      console.warn("MIDGAS: общий журнал временно недоступен", error);
+    }
+  }
+
   renderJournal();
+  loadRemoteJournal();
+  window.setInterval(() => {
+    if (!document.hidden) loadRemoteJournal();
+  }, 30000);
 
   const quotes = [
     ["Я целый месяц жил на Урале. Там была строительная площадка. Волшебный город для сериала. Там и играл в пинг-понг. Ещё приезжал на КАМАЗе Баста.", "СЛУЧАЙНАЯ ЗАПИСЬ / 01"],
@@ -942,7 +1034,10 @@
   window.addEventListener("midgas:record-created", () => {
     updateRegistryMetadata();
     renderJournal();
+    loadRemoteJournal();
   });
+
+  window.addEventListener("midgas:record-mutated", loadRemoteJournal);
 
   const revealElements = [...document.querySelectorAll(".company-reveal")];
   if (reducedMotion || !("IntersectionObserver" in window)) {

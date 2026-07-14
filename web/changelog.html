@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#090909" />
+    <title>MIDGAS — расширенный журнал изменений</title>
+    <link rel="stylesheet" href="styles.css?v=47" />
+  </head>
+  <body class="deploy-log-page">
+    <main class="deploy-log" id="deploy-log-top">
+      <header class="deploy-log-hero">
+        <a href="index.html#company-hub">← ВЕРНУТЬСЯ НА САЙТ</a>
+        <span>MIDGAS / PUBLIC DEPLOYMENT LEDGER</span>
+        <h1>РАСШИРЕННЫЙ<br />ЖУРНАЛ ИЗМЕНЕНИЙ</h1>
+        <p>Полная публичная хронология обновлений сайта. Новая запись создаётся автоматически при каждом деплое основной ветки.</p>
+        <div><strong data-deploy-count>00</strong><small>ЗАФИКСИРОВАННЫХ РЕВИЗИЙ</small></div>
+      </header>
+      <section class="deploy-log-list" data-deploy-list aria-live="polite"></section>
+    </main>
+    <footer class="site-footer deploy-log-footer"><span>THE MIDGAS © 2026</span><span>PUBLIC DEPLOYMENT LEDGER</span><a href="#deploy-log-top">НАВЕРХ ↑</a></footer>
+    <script src="deploy-history.js"></script>
+    <script src="changelog.js?v=1"></script>
+  </body>
+</html>

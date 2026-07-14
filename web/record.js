@@ -136,31 +136,35 @@ if (!record) {
         if (trailingMedia.length) body.append(createMediaGrid(trailingMedia));
       }
 
-      const relationItems = (explicitRelations ? (index === 0 ? explicitRelations : []) : (section.relatedRecords || []))
-        .filter((item) => window.MIDGAS_RECORDS?.[item.type]?.[item.id]);
-      if (relationItems.length) {
-        const related = document.createElement("div");
-        related.className = "related-records";
-        const relatedLabel = document.createElement("strong");
-        relatedLabel.textContent = "СВЯЗАННЫЕ ЗАПИСИ";
-        const relatedList = document.createElement("div");
-        relatedList.className = "related-record-list";
-
-        relationItems.forEach((item) => {
-          const link = document.createElement("a");
-          link.href = `record.html?type=${encodeURIComponent(item.type)}&id=${encodeURIComponent(item.id)}`;
-          link.textContent = item.label || item.id;
-          relatedList.append(link);
-        });
-
-        related.append(relatedLabel, relatedList);
-        body.append(related);
-      }
-
       article.append(number, body);
       sections.append(article);
     });
     window.renderMidgasResearch?.(record, sections);
+
+    const relationSource = explicitRelations || record.sections.flatMap((section) => section.relatedRecords || []);
+    const relationKeys = new Set();
+    const relationItems = relationSource.filter((item) => {
+      const key = `${item.type}:${item.id}`;
+      if (!window.MIDGAS_RECORDS?.[item.type]?.[item.id] || relationKeys.has(key)) return false;
+      relationKeys.add(key);
+      return true;
+    });
+    if (relationItems.length) {
+      const related = document.createElement("section");
+      related.className = "related-records related-records--final";
+      const relatedLabel = document.createElement("strong");
+      relatedLabel.textContent = "СВЯЗАННЫЕ ЗАПИСИ";
+      const relatedList = document.createElement("div");
+      relatedList.className = "related-record-list";
+      relationItems.forEach((item) => {
+        const link = document.createElement("a");
+        link.href = `record.html?type=${encodeURIComponent(item.type)}&id=${encodeURIComponent(item.id)}`;
+        link.textContent = item.label || item.id;
+        relatedList.append(link);
+      });
+      related.append(relatedLabel, relatedList);
+      sections.append(related);
+    }
   } else {
     const pending = document.createElement("div");
     pending.className = "lore-pending";
