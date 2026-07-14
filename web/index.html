@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="THE MIDGAS — исследовательский архив клиентов, аномалий и инцидентов." />
     <title>THE MIDGAS — Research Archive</title>
-    <link rel="stylesheet" href="styles.css?v=51" />
+    <link rel="stylesheet" href="styles.css?v=52" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -564,6 +564,7 @@
                 <div class="company-board-editor-tools" data-board-editor-tools hidden>
                   <button type="button" data-board-add-edge>ДОБАВИТЬ СВЯЗЬ</button>
                   <button type="button" data-board-add-node>ДОБАВИТЬ УЗЕЛ</button>
+                  <button type="button" data-board-move-nodes>ИЗМЕНИТЬ ПОЛОЖЕНИЕ</button>
                   <button type="button" data-board-edit-close aria-label="Закрыть режим редактора">✕</button>
                 </div>
                 <span data-board-edit-status></span>
@@ -582,18 +583,23 @@
                   <p data-board-summary>Загрузка текущего досье…</p>
                   <dl><div><dt>ID</dt><dd data-board-id>MID-A-0001</dd></div></dl>
                   <a data-board-link href="record.html?type=anomaly&amp;id=MID-A-0001">ОТКРЫТЬ ДОСЬЕ →</a>
+                  <div class="company-board-node-actions" data-board-node-actions hidden>
+                    <button type="button" data-board-node-edit>РЕДАКТИРОВАТЬ УЗЕЛ</button>
+                    <button type="button" data-board-node-delete>УДАЛИТЬ УЗЕЛ</button>
+                  </div>
                 </aside>
               </div>
 
               <dialog class="company-board-node-dialog" data-board-node-dialog aria-labelledby="board-node-dialog-title">
                 <form data-board-node-form>
                   <header><span>НОВЫЙ УЗЕЛ</span><button type="button" data-board-node-cancel aria-label="Закрыть">✕</button></header>
-                  <h4 id="board-node-dialog-title">ДОБАВИТЬ НА ДОСКУ</h4>
+                  <h4 id="board-node-dialog-title" data-board-node-dialog-title>ДОБАВИТЬ НА ДОСКУ</h4>
+                  <input type="hidden" name="nodeId" />
                   <fieldset><legend>ТИП УЗЛА</legend><label><input type="radio" name="nodeType" value="LOC" required /><span>LOC<br /><small>ЛОКАЦИЯ</small></span></label><label><input type="radio" name="nodeType" value="SUB" required /><span>SUB<br /><small>СУБЪЕКТ</small></span></label></fieldset>
                   <label><span>НАЗВАНИЕ</span><input name="title" maxlength="120" required autocomplete="off" /></label>
                   <label><span>ОПИСАНИЕ</span><textarea name="description" maxlength="1200" rows="5" required></textarea></label>
                   <p data-board-node-error role="alert"></p>
-                  <button type="submit">ДОБАВИТЬ УЗЕЛ</button>
+                  <button type="submit" data-board-node-submit>ДОБАВИТЬ УЗЕЛ</button>
                 </form>
               </dialog>
 
@@ -801,7 +807,7 @@
     <script src="editor-storage.js?v=6"></script>
     <script src="relations-data.js?v=1"></script>
     <script src="company-hub.js?v=14"></script>
-    <script src="investigation-board.js?v=11"></script>
+    <script src="investigation-board.js?v=12"></script>
     <script src="app.js?v=22"></script>
   </body>
 </html>

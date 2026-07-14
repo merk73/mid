@@ -23,13 +23,23 @@ create table public.board_edges (
   constraint board_edges_pair_unique unique (source_key, target_key)
 );
 
+create table public.board_positions (
+  node_key text primary key,
+  position_x numeric(10,2) not null,
+  position_y numeric(10,2) not null,
+  updated_by uuid not null default auth.uid() references auth.users(id),
+  updated_at timestamptz not null default now()
+);
+
 create index board_nodes_created_at_idx on public.board_nodes (created_at desc);
 create index board_edges_created_at_idx on public.board_edges (created_at desc);
 create index board_nodes_created_by_idx on public.board_nodes (created_by);
 create index board_edges_created_by_idx on public.board_edges (created_by);
+create index board_positions_updated_by_idx on public.board_positions (updated_by);
 
 alter table public.board_nodes enable row level security;
 alter table public.board_edges enable row level security;
+alter table public.board_positions enable row level security;
 
 create policy board_nodes_public_read on public.board_nodes
 for select to anon, authenticated using (true);
@@ -53,10 +63,26 @@ create policy board_edges_editor_delete on public.board_edges
 for delete to authenticated
 using ((select midgas_private.has_editor_role('editor')));
 
+create policy board_positions_public_read on public.board_positions
+for select to anon, authenticated using (true);
+create policy board_positions_editor_insert on public.board_positions
+for insert to authenticated
+with check ((select midgas_private.has_editor_role('editor')) and updated_by = (select auth.uid()));
+create policy board_positions_editor_update on public.board_positions
+for update to authenticated
+using ((select midgas_private.has_editor_role('editor')))
+with check ((select midgas_private.has_editor_role('editor')) and updated_by = (select auth.uid()));
+create policy board_positions_editor_delete on public.board_positions
+for delete to authenticated
+using ((select midgas_private.has_editor_role('editor')));
+
 grant select on public.board_nodes, public.board_edges to anon, authenticated;
 grant insert, update, delete on public.board_nodes to authenticated;
 grant insert, delete on public.board_edges to authenticated;
+grant select on public.board_positions to anon, authenticated;
+grant insert, update, delete on public.board_positions to authenticated;
 grant usage, select on all sequences in schema public to authenticated;
 
 alter publication supabase_realtime add table public.board_nodes;
 alter publication supabase_realtime add table public.board_edges;
+alter publication supabase_realtime add table public.board_positions;

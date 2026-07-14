@@ -169,7 +169,7 @@
     root: document.querySelector("[data-board-inspector]"), image: document.querySelector("[data-board-image]"),
     kind: document.querySelector("[data-board-kind-label]"), title: document.querySelector("[data-board-title]"),
     summary: document.querySelector("[data-board-summary]"), id: document.querySelector("[data-board-id]"),
-    link: document.querySelector("[data-board-link]"),
+    link: document.querySelector("[data-board-link]"), actions: document.querySelector("[data-board-node-actions]"),
   };
 
   function connectedKeys(key) {
@@ -208,21 +208,24 @@
       inspector.link.hidden = !typeOrder.includes(node.kind);
       if (typeOrder.includes(node.kind)) inspector.link.href = `record.html?type=${node.kind}&id=${encodeURIComponent(node.id)}`;
     }
+    if (inspector.actions) inspector.actions.hidden = !(editorMode && node.remote);
     if (focus) element.focus({ preventScroll: true });
   }
 
   async function fetchRemoteBoard() {
     if (!supabase) return { nodeRows: [], edgeRows: [] };
-    const [nodesResponse, edgesResponse] = await Promise.all([
+    const [nodesResponse, edgesResponse, positionsResponse] = await Promise.all([
       supabase.from("board_nodes").select("id,node_no,node_code,node_type,title,description,position_x,position_y,created_at").order("node_no"),
       supabase.from("board_edges").select("id,source_key,target_key,created_at").order("created_at"),
+      supabase.from("board_positions").select("node_key,position_x,position_y,updated_at"),
     ]);
     if (nodesResponse.error) throw nodesResponse.error;
     if (edgesResponse.error) throw edgesResponse.error;
-    return { nodeRows: nodesResponse.data || [], edgeRows: edgesResponse.data || [] };
+    if (positionsResponse.error) throw positionsResponse.error;
+    return { nodeRows: nodesResponse.data || [], edgeRows: edgesResponse.data || [], positionRows: positionsResponse.data || [] };
   }
 
-  function mergeRemoteBoard(nodeRows, edgeRows) {
+  function mergeRemoteBoard(nodeRows, edgeRows, positionRows = []) {
     remoteEdgeIds.forEach((id) => edgeMap.delete(id));
     remoteEdgeIds.clear();
     remoteNodeKeys.forEach((key) => { nodeElements.get(key)?.remove(); nodeElements.delete(key); nodeMap.delete(key); });
@@ -230,6 +233,13 @@
     remoteNodeKeys.clear();
     nodeRows.map(nodeFromRow).forEach((node) => {
       nodes.push(node); nodeMap.set(node.key, node); remoteNodeKeys.add(node.key); createNodeElement(node);
+    });
+    positionRows.forEach((row) => {
+      const node = nodeMap.get(row.node_key);
+      const element = nodeElements.get(row.node_key);
+      if (!node || !element) return;
+      node.x = Number(row.position_x); node.y = Number(row.position_y);
+      element.style.left = `${node.x.toFixed(1)}px`; element.style.top = `${node.y.toFixed(1)}px`;
     });
     edgeRows.forEach((row) => addEdge(row.source_key, row.target_key, "remote", row.id));
     renderThreads();
@@ -239,7 +249,7 @@
   }
 
   async function reloadRemoteBoard() {
-    try { const data = await fetchRemoteBoard(); mergeRemoteBoard(data.nodeRows, data.edgeRows); }
+    try { const data = await fetchRemoteBoard(); mergeRemoteBoard(data.nodeRows, data.edgeRows, data.positionRows); }
     catch (error) { console.warn("MIDGAS board sync:", error); }
   }
 
@@ -254,6 +264,8 @@
   let isFullscreen = false;
   let editorMode = false;
   let linkMode = false;
+  let positionMode = false;
+  let movingNode = null;
   let firstLinkKey = "";
   let draftGroup = null;
 
@@ -297,8 +309,8 @@
     requestAnimationFrame(() => centerOn(activeKey, true));
   }
   function closeBoard() {
-    isFullscreen = false; editorMode = false; linkMode = false; firstLinkKey = ""; removeDraft();
-    stage.classList.remove("is-fullscreen", "is-editor-mode");
+    isFullscreen = false; editorMode = false; linkMode = false; positionMode = false; movingNode = null; firstLinkKey = ""; removeDraft();
+    stage.classList.remove("is-fullscreen", "is-editor-mode", "is-position-mode");
     document.documentElement.classList.remove("board-fullscreen-open");
     document.querySelector("[data-board-editor-tools]").hidden = true;
     document.querySelector("[data-board-edit]").hidden = !sessionApi?.isEditor?.();
@@ -318,12 +330,24 @@
     document.querySelector("[data-board-edit]").hidden = true;
     document.querySelector("[data-board-editor-tools]").hidden = false;
     setEditStatus("РЕЖИМ РЕДАКТОРА");
+    selectNode(activeKey);
   }
   function leaveEditor() {
-    editorMode = false; linkMode = false; firstLinkKey = ""; removeDraft();
-    stage.classList.remove("is-editor-mode");
+    editorMode = false; linkMode = false; positionMode = false; movingNode = null; firstLinkKey = ""; removeDraft();
+    stage.classList.remove("is-editor-mode", "is-position-mode");
     document.querySelector("[data-board-editor-tools]").hidden = true;
-    updateEditorAccess(); setEditStatus("");
+    updateEditorAccess(); setEditStatus(""); selectNode(activeKey);
+  }
+
+  async function persistNodePosition(node) {
+    const userId = sessionApi?.read?.()?.userId;
+    if (!userId || !node) return;
+    const { error } = await supabase.from("board_positions").upsert({
+      node_key: node.key, position_x: Number(node.x.toFixed(2)), position_y: Number(node.y.toFixed(2)),
+      updated_by: userId, updated_at: new Date().toISOString(),
+    }, { onConflict: "node_key" });
+    if (error) setEditStatus(error.message || "НЕ УДАЛОСЬ СОХРАНИТЬ ПОЛОЖЕНИЕ");
+    else setEditStatus("ПОЛОЖЕНИЕ СОХРАНЕНО / МОЖНО ДВИГАТЬ ДАЛЬШЕ");
   }
 
   function ensureDraft() {
@@ -373,6 +397,14 @@
     const targetNode = event.target.closest("[data-board-node]");
     pointers.set(event.pointerId, { id: event.pointerId, x: event.clientX, y: event.clientY, targetKey: targetNode?.dataset.boardNode || "" });
     try { viewport.setPointerCapture(event.pointerId); } catch { /* best effort */ }
+    if (positionMode && targetNode) {
+      movingNode = nodeMap.get(targetNode.dataset.boardNode) || null;
+      if (movingNode) {
+        gesture = { mode: "node", pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, startNodeX: movingNode.x, startNodeY: movingNode.y, moved: false };
+        targetNode.classList.add("is-positioning");
+        return;
+      }
+    }
     if (pointers.size === 1) gesture = { mode: "pending", pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, startPanX: panX, startPanY: panY, moved: false };
     if (pointers.size === 2) {
       const [a, b] = [...pointers.values()];
@@ -385,6 +417,16 @@
     const pointer = pointers.get(event.pointerId);
     if (!pointer) return;
     pointer.x = event.clientX; pointer.y = event.clientY;
+    if (gesture?.mode === "node" && gesture.pointerId === event.pointerId && movingNode) {
+      const dx = (event.clientX - gesture.startX) / scale;
+      const dy = (event.clientY - gesture.startY) / scale;
+      if (Math.hypot(dx, dy) > 2) gesture.moved = true;
+      movingNode.x = Math.max(100, Math.min(width - 100, gesture.startNodeX + dx));
+      movingNode.y = Math.max(90, Math.min(height - 90, gesture.startNodeY + dy));
+      const movingElement = nodeElements.get(movingNode.key);
+      if (movingElement) { movingElement.style.left = `${movingNode.x.toFixed(1)}px`; movingElement.style.top = `${movingNode.y.toFixed(1)}px`; }
+      renderThreads(); selectNode(movingNode.key); event.preventDefault(); return;
+    }
     if (gesture?.mode === "pinch" && pointers.size >= 2) {
       const [a, b] = [...pointers.values()].slice(0, 2);
       const midpoint = localPoint((a.x + b.x) / 2, (a.y + b.y) / 2);
@@ -401,10 +443,13 @@
   function finishPointer(event) {
     const pointer = pointers.get(event.pointerId);
     const tappedKey = !gesture?.moved && pointers.size === 1 ? pointer?.targetKey : "";
+    const movedNode = gesture?.mode === "node" && gesture.moved ? movingNode : null;
+    if (movingNode) nodeElements.get(movingNode.key)?.classList.remove("is-positioning");
     pointers.delete(event.pointerId);
     try { if (viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId); } catch { /* best effort */ }
     if (tappedKey) handleNodeTap(tappedKey);
-    if (pointers.size === 0) { gesture = null; viewport.classList.remove("is-dragging"); }
+    if (movedNode) void persistNodePosition(movedNode);
+    if (pointers.size === 0) { gesture = null; movingNode = null; viewport.classList.remove("is-dragging"); }
   }
   viewport.addEventListener("pointerup", finishPointer);
   viewport.addEventListener("pointercancel", finishPointer);
@@ -420,7 +465,24 @@
   const nodeDialog = document.querySelector("[data-board-node-dialog]");
   const nodeForm = document.querySelector("[data-board-node-form]");
   const nodeError = document.querySelector("[data-board-node-error]");
-  function openNodeDialog() { nodeForm?.reset(); if (nodeError) nodeError.textContent = ""; nodeDialog?.showModal?.(); }
+  const nodeDialogTitle = document.querySelector("[data-board-node-dialog-title]");
+  const nodeSubmit = document.querySelector("[data-board-node-submit]");
+  function openNodeDialog(node = null) {
+    nodeForm?.reset(); if (nodeError) nodeError.textContent = "";
+    if (nodeForm) {
+      nodeForm.elements.nodeId.value = node?.row?.id || "";
+      if (node?.remote) {
+        const type = node.kind === "subject" ? "SUB" : "LOC";
+        const typeInput = nodeForm.querySelector(`[name="nodeType"][value="${type}"]`);
+        if (typeInput) typeInput.checked = true;
+        nodeForm.elements.title.value = node.title;
+        nodeForm.elements.description.value = node.summary;
+      }
+    }
+    if (nodeDialogTitle) nodeDialogTitle.textContent = node ? "РЕДАКТИРОВАТЬ УЗЕЛ" : "ДОБАВИТЬ НА ДОСКУ";
+    if (nodeSubmit) nodeSubmit.textContent = node ? "СОХРАНИТЬ ИЗМЕНЕНИЯ" : "ДОБАВИТЬ УЗЕЛ";
+    nodeDialog?.showModal?.();
+  }
   function closeNodeDialog() { nodeDialog?.close?.(); }
   nodeForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
@@ -428,17 +490,24 @@
     const submit = nodeForm.querySelector('[type="submit"]'); submit.disabled = true;
     try {
       const values = new FormData(nodeForm);
+      const editingId = String(values.get("nodeId") || "");
       const center = worldPoint(viewport.getBoundingClientRect().left + viewport.clientWidth / 2, viewport.getBoundingClientRect().top + viewport.clientHeight / 2);
       const payload = {
         node_type: values.get("nodeType"), title: String(values.get("title") || "").trim(),
-        description: String(values.get("description") || "").trim(),
-        position_x: Math.max(180, Math.min(width - 180, center.x + 120)),
-        position_y: Math.max(140, Math.min(height - 140, center.y + 90)),
+        description: String(values.get("description") || "").trim(), updated_at: new Date().toISOString(),
       };
-      const { data, error } = await supabase.from("board_nodes").insert(payload).select("id,node_no,node_code,node_type,title,description,position_x,position_y,created_at").single();
+      if (!editingId) {
+        payload.position_x = Math.max(180, Math.min(width - 180, center.x + 120));
+        payload.position_y = Math.max(140, Math.min(height - 140, center.y + 90));
+      }
+      const request = editingId
+        ? supabase.from("board_nodes").update(payload).eq("id", editingId)
+        : supabase.from("board_nodes").insert(payload);
+      const { data, error } = await request.select("id,node_no,node_code,node_type,title,description,position_x,position_y,created_at").single();
       if (error) throw error;
       closeNodeDialog(); await reloadRemoteBoard();
-      const key = `board:${data.id}`; selectNode(key); centerOn(key); setEditStatus("УЗЕЛ ДОБАВЛЕН / МОЖНО СОЗДАТЬ СВЯЗЬ");
+      const key = `board:${data.id}`; selectNode(key); centerOn(key);
+      setEditStatus(editingId ? "ИЗМЕНЕНИЯ УЗЛА СОХРАНЕНЫ" : "УЗЕЛ ДОБАВЛЕН / МОЖНО СОЗДАТЬ СВЯЗЬ");
     } catch (error) { if (nodeError) nodeError.textContent = error.message || "НЕ УДАЛОСЬ ДОБАВИТЬ УЗЕЛ"; }
     finally { submit.disabled = false; }
   });
@@ -453,9 +522,30 @@
   document.querySelector("[data-board-edit]")?.addEventListener("click", enterEditor);
   document.querySelector("[data-board-edit-close]")?.addEventListener("click", leaveEditor);
   document.querySelector("[data-board-add-edge]")?.addEventListener("click", () => {
-    linkMode = true; firstLinkKey = ""; removeDraft(); setEditStatus("ВЫБЕРИТЕ ПЕРВЫЙ УЗЕЛ");
+    linkMode = true; positionMode = false; movingNode = null; firstLinkKey = ""; removeDraft();
+    stage.classList.remove("is-position-mode"); setEditStatus("ВЫБЕРИТЕ ПЕРВЫЙ УЗЕЛ");
   });
-  document.querySelector("[data-board-add-node]")?.addEventListener("click", openNodeDialog);
+  document.querySelector("[data-board-add-node]")?.addEventListener("click", () => openNodeDialog());
+  document.querySelector("[data-board-move-nodes]")?.addEventListener("click", () => {
+    positionMode = !positionMode; linkMode = false; firstLinkKey = ""; removeDraft();
+    stage.classList.toggle("is-position-mode", positionMode);
+    setEditStatus(positionMode ? "ПЕРЕТАСКИВАЙТЕ КАРТОЧКИ / ПОЛОЖЕНИЕ СОХРАНЯЕТСЯ" : "РЕЖИМ РЕДАКТОРА");
+  });
+  document.querySelector("[data-board-node-edit]")?.addEventListener("click", () => {
+    const node = nodeMap.get(activeKey); if (node?.remote) openNodeDialog(node);
+  });
+  document.querySelector("[data-board-node-delete]")?.addEventListener("click", async () => {
+    const node = nodeMap.get(activeKey);
+    if (!node?.remote || !window.confirm(`Удалить узел «${node.title}» и его связи?`)) return;
+    const key = node.key;
+    setEditStatus("УДАЛЯЕМ УЗЕЛ…");
+    const edgeResult = await supabase.from("board_edges").delete().or(`source_key.eq.${key},target_key.eq.${key}`);
+    if (edgeResult.error) { setEditStatus(edgeResult.error.message); return; }
+    await supabase.from("board_positions").delete().eq("node_key", key);
+    const { error } = await supabase.from("board_nodes").delete().eq("id", node.row.id);
+    if (error) { setEditStatus(error.message); return; }
+    await reloadRemoteBoard(); setEditStatus("УЗЕЛ УДАЛЁН");
+  });
   document.querySelector("[data-board-node-cancel]")?.addEventListener("click", closeNodeDialog);
   document.querySelector("[data-board-inspector-toggle]")?.addEventListener("click", () => inspector.root?.classList.toggle("is-expanded"));
   window.addEventListener("keydown", (event) => { if (event.key === "Escape" && isFullscreen && !nodeDialog?.open) closeBoard(); });
@@ -470,6 +560,7 @@
     supabase.channel("midgas-board-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "board_nodes" }, reloadRemoteBoard)
       .on("postgres_changes", { event: "*", schema: "public", table: "board_edges" }, reloadRemoteBoard)
+      .on("postgres_changes", { event: "*", schema: "public", table: "board_positions" }, reloadRemoteBoard)
       .subscribe();
   }
 
