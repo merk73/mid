@@ -10572,11 +10572,12 @@ html.site-maintenance-locked body { overflow: hidden !important; background: #05
 }
 
 @media (max-width: 760px) {
-  .editor-page .editor-site-header,
+  .editor-page .editor-site-header { grid-template-columns: 46px 54px minmax(0, 1fr); }
   .board-page .site-header { grid-template-columns: 46px minmax(0, 1fr); }
   .editor-page .editor-site-header .header-back-button,
   .board-page .site-header .header-back-button { width: 46px; min-height: 54px; }
-  .editor-page .editor-site-header .mobile-wordmark,
+  .editor-page .editor-site-header .menu-toggle { grid-column: 2; grid-row: 1; }
+  .editor-page .editor-site-header .mobile-wordmark { grid-column: 3; grid-row: 1; }
   .board-page .site-header .mobile-wordmark { grid-column: 2; grid-row: 1; }
   .editor-page .editor-site-header .main-navigation,
   .board-page .site-header .main-navigation { grid-column: 1 / -1; grid-row: 2; }
