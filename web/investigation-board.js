@@ -567,6 +567,19 @@
   requestAnimationFrame(() => centerOn(activeKey, true));
   if (new URLSearchParams(window.location.search).get("board") === "open") openBoard();
 
+  let previewParallaxFrame = 0;
+  function updatePreviewParallax() {
+    previewParallaxFrame = 0;
+    if (isFullscreen) return;
+    const rect = stage.getBoundingClientRect();
+    const shift = Math.max(-70, Math.min(70, (window.innerHeight / 2 - rect.top - rect.height / 2) * 0.1));
+    stage.style.setProperty("--board-preview-parallax", `${shift.toFixed(1)}px`);
+  }
+  window.addEventListener("scroll", () => {
+    if (!previewParallaxFrame) previewParallaxFrame = requestAnimationFrame(updatePreviewParallax);
+  }, { passive: true });
+  updatePreviewParallax();
+
   if (supabase) {
     supabase.channel("midgas-board-live")
       .on("postgres_changes", { event: "*", schema: "public", table: "board_nodes" }, reloadRemoteBoard)
