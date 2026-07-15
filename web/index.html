@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="THE MIDGAS — исследовательский архив клиентов, аномалий и инцидентов." />
     <title>THE MIDGAS — Research Archive</title>
-    <link rel="stylesheet" href="styles.css?v=52" />
+    <link rel="stylesheet" href="styles.css?v=53" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -19,13 +19,13 @@
             <a href="registry.html?type=client">Клиенты</a>
             <a href="registry.html?type=anomaly">Аномалии</a>
             <a href="registry.html?type=incident">Инциденты</a>
-            <a href="#historical-archive">Архив</a>
+            <a href="historical-archive.html">Архив</a>
           </div>
           <a class="wordmark" href="#top" aria-label="THE MIDGAS — на главную">THE MIDGAS</a>
           <div class="nav-group nav-group-right">
             <a href="#glossary">Глоссарий</a>
             <a href="#company-materials">Материалы</a>
-            <a href="#company-board">Доска</a>
+            <a href="index.html?board=open#company-board">Доска</a>
             <a href="#company-account">Редактор</a>
           </div>
         </nav>
@@ -577,7 +577,11 @@
                   </div>
                 </div>
                 <aside class="company-board-inspector" data-board-inspector aria-live="polite">
-                  <button class="company-board-inspector-toggle" type="button" data-board-inspector-toggle>ВЫБРАННЫЙ УЗЕЛ <span>↑</span></button>
+                  <button class="company-board-inspector-toggle" type="button" data-board-inspector-toggle>
+                    <img data-board-mobile-image src="assets/anomalies/mid-a-0001/andreevka-overview.webp" alt="" />
+                    <span><small data-board-mobile-id>MID-A-0001</small><strong data-board-mobile-title>АНДРЕЕВСКАЯ АНОМАЛИЯ</strong></span>
+                    <i aria-hidden="true">↑</i>
+                  </button>
                   <img data-board-image src="assets/anomalies/mid-a-0001/andreevka-overview.webp" alt="" />
                   <div><em data-board-kind-label>АНОМАЛИЯ</em><strong data-board-title>АНДРЕЕВСКАЯ АНОМАЛИЯ</strong></div>
                   <p data-board-summary>Загрузка текущего досье…</p>
@@ -807,7 +811,7 @@
     <script src="editor-storage.js?v=6"></script>
     <script src="relations-data.js?v=1"></script>
     <script src="company-hub.js?v=14"></script>
-    <script src="investigation-board.js?v=12"></script>
+    <script src="investigation-board.js?v=13"></script>
     <script src="app.js?v=22"></script>
   </body>
 </html>

@@ -170,6 +170,8 @@
     kind: document.querySelector("[data-board-kind-label]"), title: document.querySelector("[data-board-title]"),
     summary: document.querySelector("[data-board-summary]"), id: document.querySelector("[data-board-id]"),
     link: document.querySelector("[data-board-link]"), actions: document.querySelector("[data-board-node-actions]"),
+    mobileImage: document.querySelector("[data-board-mobile-image]"), mobileTitle: document.querySelector("[data-board-mobile-title]"),
+    mobileId: document.querySelector("[data-board-mobile-id]"),
   };
 
   function connectedKeys(key) {
@@ -200,6 +202,12 @@
       inspector.image.hidden = !node.image;
       if (node.image) { inspector.image.src = node.image; inspector.image.alt = node.title; }
     }
+    if (inspector.mobileImage) {
+      inspector.mobileImage.hidden = !node.image;
+      if (node.image) { inspector.mobileImage.src = node.image; inspector.mobileImage.alt = node.title; }
+    }
+    if (inspector.mobileTitle) inspector.mobileTitle.textContent = node.title;
+    if (inspector.mobileId) inspector.mobileId.textContent = node.id;
     if (inspector.kind) inspector.kind.textContent = typeLabels[node.kind];
     if (inspector.title) inspector.title.textContent = node.title;
     if (inspector.summary) inspector.summary.textContent = node.summary;
@@ -315,6 +323,7 @@
     document.querySelector("[data-board-editor-tools]").hidden = true;
     document.querySelector("[data-board-edit]").hidden = !sessionApi?.isEditor?.();
     inspector.root?.classList.remove("is-expanded");
+    stage.classList.remove("has-board-selection");
     requestAnimationFrame(() => centerOn(activeKey, true));
   }
 
@@ -382,6 +391,7 @@
   }
 
   async function handleNodeTap(key) {
+    stage.classList.add("has-board-selection");
     if (!linkMode) { selectNode(key); return; }
     if (!firstLinkKey) {
       firstLinkKey = key; selectNode(key); setEditStatus("ВЫБЕРИТЕ ВТОРОЙ УЗЕЛ"); return;
@@ -555,6 +565,7 @@
   await reloadRemoteBoard();
   renderThreads(); updateCounter(); selectNode(activeKey);
   requestAnimationFrame(() => centerOn(activeKey, true));
+  if (new URLSearchParams(window.location.search).get("board") === "open") openBoard();
 
   if (supabase) {
     supabase.channel("midgas-board-live")
