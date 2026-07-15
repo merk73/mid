@@ -8,7 +8,8 @@
   const supabase = window.MIDGAS_SUPABASE_CLIENT;
   const sessionApi = window.MIDGAS_EDITOR_SESSION;
   const remoteData = window.MIDGAS_SUPABASE_DATA;
-  try { await remoteData?.ready; } catch { /* Built-in data remains available offline. */ }
+  const remoteReady = Promise.resolve(remoteData?.ready).catch(() => null);
+  if (document.body.classList.contains("board-page")) stage.classList.add("is-visible");
 
   const registry = window.MIDGAS_RECORDS || { client: {}, anomaly: {}, incident: {} };
   const width = 3600;
@@ -589,10 +590,12 @@
   window.addEventListener(sessionApi?.eventName || "midgas:editor-session", updateEditorAccess);
   sessionApi?.ready?.then(updateEditorAccess);
 
-  await reloadRemoteBoard();
   renderThreads(); updateCounter(); selectNode(activeKey);
   requestAnimationFrame(() => centerOn(activeKey, true));
   if (new URLSearchParams(window.location.search).get("board") === "open") openBoard();
+
+  await remoteReady;
+  await reloadRemoteBoard();
 
   let previewParallaxFrame = 0;
   function updatePreviewParallax() {

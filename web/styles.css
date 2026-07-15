@@ -7770,6 +7770,7 @@ button {
 }
 
 .company-board-preview-cover > span { margin-bottom: 18px; color: #a4a39d; font-size: 8px; letter-spacing: .14em; }
+.company-board-preview-cover h1,
 .company-board-preview-cover h3 { margin: 0 0 34px; font-family: var(--display); font-size: clamp(54px, 8vw, 108px); font-weight: 500; line-height: .82; }
 .company-board-preview-cover button {
   min-width: 220px;
@@ -7911,6 +7912,7 @@ button {
   .company-board { padding: 18px 10px; }
   .company-board-stage { width: 100%; aspect-ratio: 1 / 1; }
   .company-board-preview-cover { padding: 22px; }
+  .company-board-preview-cover h1,
   .company-board-preview-cover h3 { max-width: 290px; font-size: clamp(50px, 17vw, 76px); }
   .company-board-preview-cover button { min-width: 190px; min-height: 52px; }
   .company-board-stage.is-fullscreen .company-board-workspace { display: block; }
@@ -10160,6 +10162,7 @@ html.site-maintenance-locked body { overflow: hidden !important; background: #05
 .company-board-preview-cover > span,
 .company-board-preview-meta { display: none; }
 
+.company-board-preview-cover h1,
 .company-board-preview-cover h3 { margin-bottom: 24px; }
 
 .company-board-node-actions {
@@ -10283,8 +10286,10 @@ html.site-maintenance-locked body { overflow: hidden !important; background: #05
   background: transparent;
 }
 
+.company-board-preview-cover h1,
 .company-board-preview-cover h3,
 .company-board-preview-cover button { position: relative; z-index: 2; }
+.company-board-preview-cover h1,
 .company-board-preview-cover h3 {
   max-width: none;
   margin: 0 0 18px;
@@ -10306,101 +10311,12 @@ html.site-maintenance-locked body { overflow: hidden !important; background: #05
   transform: translateY(-2px);
 }
 
-/* Client portraits use two independent layers: concrete backdrop and transparent PNG. */
-.client-card-media {
-  position: relative;
-  width: 100%;
-  aspect-ratio: 4 / 3;
-  display: block;
-  overflow: hidden;
-  border-bottom: 1px solid var(--ink);
-  background: #d7d6d1;
-}
-
-.client-card-media > img {
-  position: absolute;
-  z-index: 1;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  display: block;
-  object-fit: cover;
-  object-position: center 35%;
-  border: 0;
-  transition: transform 420ms cubic-bezier(0.2, 0.75, 0.2, 1), filter 180ms ease;
-}
-
-.client-card-media.is-client-portrait > img {
-  object-fit: cover;
-  object-position: center center;
-  transform-origin: center bottom;
-  background: transparent !important;
-}
-
-.workspace-directory {
-  border-top: 1px solid var(--ink);
-  border-bottom: 1px solid var(--ink);
-}
-
-.workspace-directory > header {
-  display: grid;
-  grid-template-columns: .42fr 1.1fr .9fr;
-  gap: 28px;
-  align-items: end;
-  padding: clamp(62px, 9vw, 132px) var(--side) clamp(46px, 6vw, 84px);
-}
-
-.workspace-directory h2 { margin: 0; font-size: clamp(54px, 8vw, 128px); line-height: .82; }
-.workspace-directory header p { max-width: 42ch; margin: 0; color: var(--muted); font-size: 12px; line-height: 1.6; }
-.workspace-directory nav { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 1px solid var(--ink); }
-.workspace-directory nav a { min-height: 260px; display: grid; grid-template-rows: auto 1fr auto; padding: 24px; border-right: 1px solid var(--ink); transition: color 180ms ease, background 180ms ease; }
-.workspace-directory nav a:last-child { border-right: 0; }
-.workspace-directory nav span { color: var(--muted); font-size: 10px; }
-.workspace-directory nav strong { align-self: center; font-family: var(--display); font-size: clamp(24px, 2.7vw, 42px); line-height: .95; }
-.workspace-directory nav small { max-width: 26ch; color: var(--muted); font-size: 9px; line-height: 1.5; }
-.workspace-directory nav i { justify-self: end; align-self: end; font-style: normal; font-size: 24px; }
-.workspace-directory nav a:hover { color: var(--paper); background: var(--ink); }
-.workspace-directory nav a:hover span, .workspace-directory nav a:hover small { color: #bdbdb7; }
-
-@media (max-width: 760px) {
-  .workspace-directory > header { grid-template-columns: 1fr; }
-  .workspace-directory nav { grid-template-columns: 1fr 1fr; }
-  .workspace-directory nav a { min-height: 210px; border-bottom: 1px solid var(--ink); }
-  .workspace-directory nav a:nth-child(2n) { border-right: 0; }
-}
-
-.client-card-backdrop {
-  position: absolute;
-  z-index: 0;
-  inset: -8%;
-  background: #969590 url("assets/clients/concrete-background.jpg") center / cover no-repeat;
-  transform: scale(1.01);
-  transition: filter 420ms ease, transform 420ms cubic-bezier(0.2, 0.75, 0.2, 1);
-}
-
-.home-page .client-card-media { aspect-ratio: 1 / 1; }
-.registry-page .registry-card .client-card-media { aspect-ratio: 16 / 10; }
-
-@media (hover: hover) {
-  .client-card:hover .client-card-media.is-client-portrait > img,
-  .client-card:focus-visible .client-card-media.is-client-portrait > img {
-    transform: scale(1.055);
-    filter: saturate(1.02) contrast(1.03);
-  }
-
-  .client-card:hover .client-card-backdrop,
-  .client-card:focus-visible .client-card-backdrop {
-    filter: blur(7px) saturate(.78);
-    transform: scale(1.12);
-  }
-}
-
 @media (max-width: 760px) {
   .company-board { padding: 0 10px; }
   .company-board-stage { height: auto; aspect-ratio: 1 / 1; }
   .company-board-preview-cover::before { inset: -7%; background-position: center; }
-  .company-board-preview-cover h3 { font-size: clamp(34px, 11vw, 52px); }
-  .company-board-preview-cover h3 { margin-bottom: 14px; }
+  .company-board-preview-cover h1,
+  .company-board-preview-cover h3 { font-size: clamp(34px, 11vw, 52px); margin-bottom: 14px; }
   .company-board-preview-cover button { min-width: 170px; min-height: 48px; }
 }
 

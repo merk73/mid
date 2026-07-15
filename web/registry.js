@@ -40,9 +40,11 @@ function createRegistryCard(record) {
   card.dataset.status = record.sections?.length ? "lore" : "missing";
   card.href = `record.html?type=${encodeURIComponent(registryType)}&id=${encodeURIComponent(record.id)}`;
 
-  const media = window.MIDGAS_CREATE_CARD_MEDIA
-    ? window.MIDGAS_CREATE_CARD_MEDIA(record, registryType)
-    : document.createElement("span");
+  const image = document.createElement("img");
+  image.src = record.cardImage || record.image;
+  image.alt = record.name;
+  image.loading = "lazy";
+  if (record.imageFit) image.dataset.fit = record.imageFit;
 
   const data = document.createElement("div");
   data.className = "client-card-data";
@@ -54,7 +56,7 @@ function createRegistryCard(record) {
   heading.textContent = record.name;
   const type = document.createElement("p");
   type.textContent = record.cardType;
-  card.append(media, data, heading, type);
+  card.append(image, data, heading, type);
   return card;
 }
 

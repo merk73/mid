@@ -49,29 +49,6 @@ navigation?.addEventListener("click", (event) => {
 
 const clientGrid = document.querySelector("#client-grid");
 
-function createRecordCardMedia(record, recordType) {
-  const media = document.createElement("span");
-  media.className = "client-card-media";
-  if (recordType === "client") {
-    media.classList.add("is-client-portrait");
-    const backdrop = document.createElement("span");
-    backdrop.className = "client-card-backdrop";
-    backdrop.setAttribute("aria-hidden", "true");
-    media.append(backdrop);
-  }
-
-  const image = document.createElement("img");
-  image.src = record.cardImage || record.image;
-  image.alt = record.name;
-  image.loading = "lazy";
-  image.decoding = "async";
-  if (record.imageFit) image.dataset.fit = record.imageFit;
-  media.append(image);
-  return media;
-}
-
-window.MIDGAS_CREATE_CARD_MEDIA = createRecordCardMedia;
-
 function renderPreviewGrid(grid, records, recordType, limit) {
   if (!grid) return;
   grid.replaceChildren();
@@ -81,7 +58,11 @@ function renderPreviewGrid(grid, records, recordType, limit) {
     card.dataset.status = record.sections?.length ? "lore" : "missing";
     card.href = `record.html?type=${encodeURIComponent(recordType)}&id=${encodeURIComponent(record.id)}`;
 
-    const media = createRecordCardMedia(record, recordType);
+    const image = document.createElement("img");
+    image.src = record.cardImage || record.image;
+    image.alt = record.name;
+    image.loading = "lazy";
+    if (record.imageFit) image.dataset.fit = record.imageFit;
 
     const data = document.createElement("div");
     data.className = "client-card-data";
@@ -94,7 +75,7 @@ function renderPreviewGrid(grid, records, recordType, limit) {
     const type = document.createElement("p");
     type.textContent = record.cardType;
 
-    card.append(media, data, heading, type);
+    card.append(image, data, heading, type);
     grid.append(card);
   });
 

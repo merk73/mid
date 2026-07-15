@@ -479,10 +479,17 @@
     return { record, coverPath, uploadedPaths };
   }
 
+  async function removeStoredPaths(client, paths, context = "удаление изображения") {
+    const uniquePaths = [...new Set((paths || []).map((path) => String(path || "").trim()).filter(Boolean))];
+    if (!uniquePaths.length) return [];
+    const response = await client.storage.from(STORAGE_BUCKET).remove(uniquePaths);
+    return checked(response, context) || [];
+  }
+
   async function cleanupUploads(client, paths) {
     if (!paths?.length) return;
     try {
-      await client.storage.from(STORAGE_BUCKET).remove(paths);
+      await removeStoredPaths(client, paths, "очистка незавершённой загрузки");
     } catch {
       // A failed cleanup must not hide the database error that caused it.
     }
@@ -563,13 +570,23 @@
     return content;
   }
 
+  function preserveCurrentCover(snapshotContent, currentContent) {
+    const content = clone(snapshotContent || {});
+    const current = currentContent && typeof currentContent === "object" ? currentContent : {};
+    ["image", "cardImage", "imageFit"].forEach((key) => {
+      if (Object.prototype.hasOwnProperty.call(current, key)) content[key] = clone(current[key]);
+      else delete content[key];
+    });
+    return content;
+  }
+
   function publicationRecord(row) {
     const snapshot = row?.publication_snapshot;
     if (!snapshot || typeof snapshot !== "object") return null;
     return rowToRecord({
       ...row,
-      content: snapshot.content || {},
-      cover_path: snapshot.cover_path ?? row.cover_path,
+      content: preserveCurrentCover(snapshot.content, row?.content),
+      cover_path: row?.cover_path ?? null,
     });
   }
 
@@ -672,6 +689,16 @@
           .select(RECORD_SELECT)
           .single();
         row = checked(update, `обновление ${code}`);
+        if (prepared.coverPath && existingRow.cover_path && prepared.coverPath !== existingRow.cover_path) {
+          try {
+            await removeStoredPaths(client, [existingRow.cover_path], `удаление старой фотографии ${code}`);
+          } catch (cause) {
+            throw new MidgasSupabaseError(
+              `Новая фотография ${code} сохранена, но Supabase не подтвердил удаление старого файла. Повторите замену фотографии.`,
+              { code: "REMOTE_PARTIAL_WRITE", cause, remoteCommitted: true },
+            );
+          }
+        }
         if (relationList) {
           try {
             await syncRelationships(client, row, relationList, targets);
@@ -744,9 +771,10 @@
           status: 409,
         });
       }
+      const resetContent = preserveCurrentCover(snapshot.content, existingRow.content);
       const response = await client
         .from(RECORDS_TABLE)
-        .update({ content: snapshot.content, cover_path: snapshot.cover_path ?? null, deleted_at: null })
+        .update({ content: resetContent, cover_path: existingRow.cover_path ?? null, deleted_at: null })
         .eq("id", existingRow.id)
         .select(RECORD_SELECT)
         .single();
