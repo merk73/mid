@@ -950,13 +950,15 @@
       const scale = Math.min(1, maximumSide / Math.max(source.naturalWidth, source.naturalHeight));
       let width = Math.max(1, Math.round(source.naturalWidth * scale));
       let height = Math.max(1, Math.round(source.naturalHeight * scale));
+      const preserveTransparency = file.type === "image/png";
+      const outputType = preserveTransparency ? "image/png" : "image/webp";
       let canvas = document.createElement("canvas");
       canvas.width = width;
       canvas.height = height;
-      canvas.getContext("2d", { alpha: false }).drawImage(source, 0, 0, width, height);
+      canvas.getContext("2d", { alpha: preserveTransparency }).drawImage(source, 0, 0, width, height);
 
       let quality = 0.92;
-      let blob = await canvasBlob(canvas, "image/webp", quality);
+      let blob = await canvasBlob(canvas, outputType, quality);
       for (let attempt = 0; blob && blob.size > 2 * 1024 * 1024 && attempt < 3; attempt += 1) {
         quality = Math.max(0.82, quality - 0.035);
         width = Math.max(960, Math.round(width * 0.94));
@@ -964,11 +966,11 @@
         const resized = document.createElement("canvas");
         resized.width = width;
         resized.height = height;
-        resized.getContext("2d", { alpha: false }).drawImage(canvas, 0, 0, width, height);
+        resized.getContext("2d", { alpha: preserveTransparency }).drawImage(canvas, 0, 0, width, height);
         canvas = resized;
-        blob = await canvasBlob(canvas, "image/webp", quality);
+        blob = await canvasBlob(canvas, outputType, quality);
       }
-      if (!blob) blob = await canvasBlob(canvas, "image/jpeg", 0.9);
+      if (!blob && !preserveTransparency) blob = await canvasBlob(canvas, "image/jpeg", 0.9);
       if (!blob) throw new Error("Браузер не смог подготовить изображение.");
       return blobDataUrl(blob);
     } finally {

@@ -10306,6 +10306,63 @@ html.site-maintenance-locked body { overflow: hidden !important; background: #05
   transform: translateY(-2px);
 }
 
+/* Client portraits use two independent layers: concrete backdrop and transparent PNG. */
+.client-card-media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  display: block;
+  overflow: hidden;
+  border-bottom: 1px solid var(--ink);
+  background: #d7d6d1;
+}
+
+.client-card-media > img {
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center 35%;
+  border: 0;
+  transition: transform 420ms cubic-bezier(0.2, 0.75, 0.2, 1), filter 180ms ease;
+}
+
+.client-card-media.is-client-portrait > img {
+  object-fit: contain;
+  object-position: center bottom;
+  transform-origin: center bottom;
+  background: transparent !important;
+}
+
+.client-card-backdrop {
+  position: absolute;
+  z-index: 0;
+  inset: -8%;
+  background: #969590 url("assets/clients/concrete-background.jpg") center / cover no-repeat;
+  transform: scale(1.01);
+  transition: filter 420ms ease, transform 420ms cubic-bezier(0.2, 0.75, 0.2, 1);
+}
+
+.home-page .client-card-media { aspect-ratio: 1 / 1; }
+.registry-page .registry-card .client-card-media { aspect-ratio: 16 / 10; }
+
+@media (hover: hover) {
+  .client-card:hover .client-card-media.is-client-portrait > img,
+  .client-card:focus-visible .client-card-media.is-client-portrait > img {
+    transform: scale(1.055);
+    filter: saturate(1.02) contrast(1.03);
+  }
+
+  .client-card:hover .client-card-backdrop,
+  .client-card:focus-visible .client-card-backdrop {
+    filter: blur(7px) saturate(.78);
+    transform: scale(1.12);
+  }
+}
+
 @media (max-width: 760px) {
   .company-board { padding: 0 10px; }
   .company-board-stage { height: auto; aspect-ratio: 1 / 1; }
