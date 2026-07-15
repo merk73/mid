@@ -190,12 +190,7 @@
     const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
     group.classList.add("company-board-thread");
     group.dataset.source = edge.source; group.dataset.target = edge.target;
-    const threadSeed = hash(edge.id);
-    const tones = ["#8f1b16", "#a6241c", "#b82c21", "#7d1713", "#c13326"];
-    group.style.setProperty("--thread-tone", tones[threadSeed % tones.length]);
-    group.style.setProperty("--thread-width", `${(2.45 + (threadSeed % 5) * 0.12).toFixed(2)}px`);
-    group.style.setProperty("--thread-opacity", (0.86 + (threadSeed % 4) * 0.035).toFixed(3));
-    ["shadow", "base", "fiber"].forEach((layer) => {
+    ["shadow", "base"].forEach((layer) => {
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       path.setAttribute("d", pathData); path.classList.add(`company-board-thread-${layer}`); group.append(path);
     });
@@ -395,29 +390,18 @@
     if (editButton) editButton.hidden = !sessionApi?.isEditor?.() || editorMode;
   }
 
-  function updateToolStates() {
-    const linkButton = document.querySelector("[data-board-add-edge]");
-    const moveButton = document.querySelector("[data-board-move-nodes]");
-    linkButton?.classList.toggle("is-active", linkMode);
-    moveButton?.classList.toggle("is-active", positionMode);
-    linkButton?.setAttribute("aria-pressed", String(linkMode));
-    moveButton?.setAttribute("aria-pressed", String(positionMode));
-  }
-
   function setEditStatus(message = "") { const output = document.querySelector("[data-board-edit-status]"); if (output) output.textContent = message; }
   function enterEditor() {
     if (!sessionApi?.isEditor?.()) return;
     editorMode = true; stage.classList.add("is-editor-mode");
     document.querySelector("[data-board-edit]").hidden = true;
     document.querySelector("[data-board-editor-tools]").hidden = false;
-    updateToolStates();
     setEditStatus("РЕЖИМ РЕДАКТОРА");
     selectNode(activeKey);
   }
   function leaveEditor() {
     editorMode = false; linkMode = false; positionMode = false; movingNode = null; firstLinkKey = ""; removeDraft();
     stage.classList.remove("is-editor-mode", "is-position-mode");
-    updateToolStates();
     document.querySelector("[data-board-editor-tools]").hidden = true;
     updateEditorAccess(); setEditStatus(""); selectNode(activeKey);
   }
@@ -628,15 +612,13 @@
   document.querySelector("[data-board-edit]")?.addEventListener("click", enterEditor);
   document.querySelector("[data-board-edit-close]")?.addEventListener("click", leaveEditor);
   document.querySelector("[data-board-add-edge]")?.addEventListener("click", () => {
-    linkMode = !linkMode; positionMode = false; movingNode = null; firstLinkKey = ""; removeDraft();
-    stage.classList.remove("is-position-mode"); updateToolStates();
-    setEditStatus(linkMode ? "ВЫБЕРИТЕ ПЕРВЫЙ УЗЕЛ" : "РЕЖИМ РЕДАКТОРА");
+    linkMode = true; positionMode = false; movingNode = null; firstLinkKey = ""; removeDraft();
+    stage.classList.remove("is-position-mode"); setEditStatus("ВЫБЕРИТЕ ПЕРВЫЙ УЗЕЛ");
   });
   document.querySelector("[data-board-add-node]")?.addEventListener("click", () => openNodeDialog());
   document.querySelector("[data-board-move-nodes]")?.addEventListener("click", () => {
     positionMode = !positionMode; linkMode = false; firstLinkKey = ""; removeDraft();
     stage.classList.toggle("is-position-mode", positionMode);
-    updateToolStates();
     setEditStatus(positionMode ? "ПЕРЕТАСКИВАЙТЕ КАРТОЧКИ / ПОЛОЖЕНИЕ СОХРАНЯЕТСЯ" : "РЕЖИМ РЕДАКТОРА");
   });
   document.querySelector("[data-board-node-edit]")?.addEventListener("click", () => {

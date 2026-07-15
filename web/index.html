@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://skvwaovkkoxqfwkcpuvh.supabase.co" crossorigin />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <script src="site-access.js?v=2"></script>
-    <link rel="stylesheet" href="styles.css?v=63" />
+    <link rel="stylesheet" href="styles.css?v=65" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -614,14 +614,27 @@
             </div>
           </section>
 
-          <section class="company-account company-editor-hub" id="company-account" aria-labelledby="company-account-title">
-            <header class="company-module-heading company-reveal">
+          <section class="company-account company-editor-hub" id="company-account" aria-labelledby="home-editor-portal-title">
+            <section class="home-editor-portal company-reveal" aria-labelledby="home-editor-portal-title">
+              <div class="home-editor-portal-copy">
+                <span>06 / EDITOR CENTER</span>
+                <h3 id="home-editor-portal-title">ЦЕНТР<br />РЕДАКТОРА</h3>
+                <p>Создание и обновление досье, восстановление версий и управление доской находятся в отдельном защищённом кабинете.</p>
+              </div>
+              <div class="home-editor-portal-action">
+                <span>SUPABASE AUTH / PROTECTED</span>
+                <a href="editor.html">ПЕРЕЙТИ В РЕДАКТОР <b>→</b></a>
+                <small>Доступ разрешён только подтверждённым редакторам.</small>
+              </div>
+            </section>
+
+            <header class="company-module-heading company-reveal home-editor-legacy" hidden>
               <div class="company-section-label"><span>06</span><p>РЕДАКЦИОННЫЙ ДОСТУП</p></div>
               <div><span>EDITOR MODE / SUPABASE AUTH</span><h3 id="company-account-title">РЕЖИМ<br />РЕДАКТОРА</h3></div>
               <p>Один защищённый кабинет для создания карточек, восстановления версий и управления доступом.</p>
             </header>
 
-            <div class="editor-mode-card company-reveal">
+            <div class="editor-mode-card company-reveal home-editor-legacy" hidden>
               <div class="editor-mode-topline"><span>MIDGAS / EDITOR</span><i data-account-indicator>ДОСТУП ЗАКРЫТ</i></div>
               <section class="editor-mode-locked" data-editor-locked>
                 <span>ЗАЩИЩЁННЫЙ ДОСТУП</span>
