@@ -220,6 +220,8 @@
       accountIndicator.textContent = isEditor
         ? "ДОСТУП ОТКРЫТ"
         : (signedIn ? "ОЖИДАЕТ ОДОБРЕНИЯ" : "ДОСТУП ЗАКРЫТ");
+      accountIndicator.classList.toggle("is-active", isEditor);
+      accountIndicator.dataset.state = isEditor ? "active" : (signedIn ? "pending" : "locked");
     }
     if (accountStatus) {
       accountStatus.textContent = message || (session?.membershipError

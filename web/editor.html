@@ -6,7 +6,7 @@
     <meta name="description" content="Защищённый центр редактора THE MIDGAS." />
     <title>Центр редактора — THE MIDGAS</title>
     <script src="site-access.js?v=2"></script>
-    <link rel="stylesheet" href="styles.css?v=73" />
+    <link rel="stylesheet" href="styles.css?v=74" />
   </head>
   <body class="editor-page">
     <div class="site-shell">
@@ -23,24 +23,31 @@
       <main id="top">
         <section class="company-hub editor-page-hub" id="company-hub">
           <section class="company-account company-editor-hub" id="company-account" aria-labelledby="company-account-title">
-            <header class="editor-console-intro company-reveal"><div><span>EDITOR WORKSPACE / SUPABASE</span><h1 id="company-account-title">ЦЕНТР РЕДАКТОРА</h1></div><p>Единое рабочее пространство для управления сайтом, карточками и историей изменений.</p></header>
+            <header class="editor-console-intro company-reveal">
+              <div><span>ПАНЕЛЬ УПРАВЛЕНИЯ MIDGAS</span><h1 id="company-account-title">Центр редактора</h1><p>Карточки, доступ к сайту и история изменений — в одном рабочем пространстве.</p></div>
+              <div class="editor-console-state"><span>СОСТОЯНИЕ ДОСТУПА</span><i data-account-indicator>ДОСТУП ЗАКРЫТ</i></div>
+            </header>
             <div class="editor-mode-card company-reveal">
-              <div class="editor-mode-topline"><span>MIDGAS / EDITOR</span><i data-account-indicator>ДОСТУП ЗАКРЫТ</i></div>
-              <section class="editor-mode-locked" data-editor-locked><span>ЗАЩИЩЁННЫЙ ДОСТУП</span><h2>РЕДАКТОР ЗАКРЫТ</h2><p>Войдите в подтверждённый аккаунт модератора.</p><button type="button" data-editor-login-open>ВОЙТИ В АККАУНТ</button></section>
+              <section class="editor-mode-locked" data-editor-locked><span>ЗАЩИЩЁННЫЙ ДОСТУП</span><h2>Войдите в аккаунт редактора</h2><p>Управление публикациями доступно только подтверждённым модераторам.</p><button type="button" data-editor-login-open>Войти в аккаунт</button></section>
               <section class="editor-mode-home" data-editor-home hidden>
-                <section class="editor-console-account">
-                  <div class="editor-console-section-copy"><span>01 / АККАУНТ</span><h2>ПРОФИЛЬ РЕДАКТОРА</h2><p data-account-session-copy></p></div>
-                  <div class="editor-mode-identity"><span data-account-session-label>ВХОД ВЫПОЛНЕН</span><strong data-account-email></strong></div>
-                  <nav class="editor-account-actions"><button type="button" data-editor-password-open>ИЗМЕНИТЬ ПАРОЛЬ</button><button type="button" data-account-logout>ВЫЙТИ ИЗ АККАУНТА</button></nav>
+                <div class="editor-dashboard-grid">
+                  <section class="editor-console-account">
+                    <header class="editor-console-section-copy"><span>АККАУНТ</span><h2>Профиль редактора</h2><p data-account-session-copy></p></header>
+                    <div class="editor-mode-identity"><span data-account-session-label>ВХОД ВЫПОЛНЕН</span><strong data-account-email></strong></div>
+                    <nav class="editor-account-actions"><button type="button" data-editor-password-open>Изменить пароль</button><button type="button" data-account-logout>Выйти</button></nav>
+                  </section>
+                  <section class="editor-console-site">
+                    <header class="editor-console-section-copy"><span>САЙТ</span><h2>Публичный доступ</h2><p class="editor-maintenance-status" data-maintenance-status></p></header>
+                    <button class="editor-site-switch" type="button" data-maintenance-toggle hidden><span>СОСТОЯНИЕ</span><strong>ЗАКРЫТЬ САЙТ</strong><small>Техническое обслуживание</small></button>
+                  </section>
+                </div>
+                <section class="editor-command-center">
+                  <header><div><span>ОСНОВНЫЕ ДЕЙСТВИЯ</span><h2>Работа с карточками</h2></div><p>Создайте новую публикацию или верните удалённую версию.</p></header>
+                  <nav class="editor-mode-actions" data-editor-actions aria-label="Основные действия редактора">
+                    <button type="button" data-editor-create-open><span>＋</span><strong>Создать карточку</strong><small>Пошаговая форма публикации</small></button>
+                    <button type="button" data-editor-recovery-open><span>↺</span><strong>Восстановить</strong><small>Удалённые карточки и версии</small></button>
+                  </nav>
                 </section>
-                <section class="editor-console-site">
-                  <div class="editor-console-section-copy"><span>02 / НАСТРОЙКА САЙТА</span><h2>ПУБЛИЧНЫЙ ДОСТУП</h2><p class="editor-maintenance-status" data-maintenance-status></p></div>
-                  <button class="editor-site-switch" type="button" data-maintenance-toggle hidden><span>СОСТОЯНИЕ</span><strong>ЗАКРЫТЬ САЙТ</strong><small>Техническое обслуживание</small></button>
-                </section>
-                <nav class="editor-mode-actions" data-editor-actions aria-label="Основные действия редактора">
-                  <button type="button" data-editor-create-open><span>01</span><strong>СОЗДАТЬ КАРТОЧКУ</strong><small>Пошаговая форма публикации</small></button>
-                  <button type="button" data-editor-recovery-open><span>02</span><strong>ВОССТАНОВИТЬ</strong><small>Удалённые карточки и версии</small></button>
-                </nav>
               </section>
               <p class="company-account-status" data-account-status role="status"></p>
             </div>
@@ -62,10 +69,9 @@
             </section>
             <section class="company-restore editor-work-panel" data-editor-recovery-panel hidden><div class="editor-work-dialog"><header class="editor-work-heading"><div><span>ВОССТАНОВЛЕНИЕ</span><h2>ВЕРСИИ КАРТОЧЕК</h2></div><button type="button" data-editor-panel-close aria-label="Закрыть восстановление">×</button></header><div class="editor-recovery-grid"><section><header><span>01</span><div><strong>УДАЛЁННЫЕ</strong></div></header><div class="company-restore-list" data-restore-deleted-list><p data-restore-deleted-empty>УДАЛЁННЫХ КАРТОЧЕК НЕТ.</p></div></section><section><header><span>02</span><div><strong>ИЗМЕНЁННЫЕ</strong></div></header><div class="company-restore-list" data-restore-modified-list><p data-restore-modified-empty>ИЗМЕНЁННЫХ КАРТОЧЕК НЕТ.</p></div></section></div></div></section>
             <section class="company-journal company-journal--editor editor-console-journal" id="company-journal" aria-labelledby="company-journal-title">
-              <header class="company-module-heading company-module-heading--compact">
-                <div class="company-section-label"><span>02</span><p>РАБОЧАЯ ИСТОРИЯ</p></div>
-                <div><span>CHANGE LOG / SUPABASE</span><h2 id="company-journal-title">ЖУРНАЛ ИЗМЕНЕНИЙ</h2></div>
-                <p>Создание, редактирование, удаление и восстановление карточек. Журнал деплоев сюда не входит.</p>
+              <header class="editor-journal-header">
+                <div><span>ИСТОРИЯ РАБОТЫ</span><h2 id="company-journal-title">Журнал изменений</h2></div>
+                <p>Здесь собраны изменения карточек. Разверните запись, чтобы посмотреть детали или выполнить откат.</p>
               </header>
               <div class="company-journal-list" id="company-journal-list" aria-live="polite"></div>
             </section>
@@ -77,6 +83,6 @@
     <dialog class="editor-login-dialog" id="editor-login-dialog"><form id="company-account-form" novalidate><header><span>MIDGAS / MODERATOR ACCESS</span><button type="button" data-editor-login-close>×</button></header><div class="editor-login-copy"><span data-auth-mode-label>ЗАЩИЩЁННЫЙ ВХОД SUPABASE</span><h2 data-auth-title>ВХОД В РЕДАКТОР</h2><p data-auth-copy>Доступ откроется только для одобренной роли.</p></div><label><span>ЭЛЕКТРОННАЯ ПОЧТА</span><input type="email" name="email" required autocomplete="email"/></label><label><span>ПАРОЛЬ</span><input type="password" name="password" required minlength="6" autocomplete="current-password"/></label><p class="editor-auth-status" data-auth-status></p><button type="submit" data-auth-submit>ВОЙТИ</button><button class="editor-auth-toggle" type="button" data-auth-mode-toggle>НЕТ АККАУНТА? ЗАРЕГИСТРИРОВАТЬСЯ</button></form></dialog>
     <dialog class="editor-login-dialog editor-password-dialog" id="editor-password-dialog"><form id="editor-password-form" novalidate><header><span>MIDGAS / ACCOUNT SECURITY</span><button type="button" data-editor-password-close>×</button></header><div class="editor-login-copy"><span>ЗАЩИТА АККАУНТА</span><h2>ИЗМЕНИТЬ ПАРОЛЬ</h2></div><label><span>ТЕКУЩИЙ ПАРОЛЬ</span><input type="password" name="currentPassword" required/></label><label><span>НОВЫЙ ПАРОЛЬ</span><input type="password" name="newPassword" required minlength="8" maxlength="72"/></label><label><span>ПОВТОРИТЕ ПАРОЛЬ</span><input type="password" name="confirmation" required minlength="8" maxlength="72"/></label><p class="editor-auth-status" data-password-status></p><button type="submit" data-password-submit>ИЗМЕНИТЬ ПАРОЛЬ</button></form></dialog>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
-    <script src="supabase-config.js?v=1"></script><script src="data.js"></script><script src="featured-data.js?v=8"></script><script src="client-updates.js?v=3"></script><script src="incident-updates.js?v=1"></script><script src="site-completion.js?v=1"></script><script src="editor-session.js?v=3"></script><script src="site-gate.js?v=1"></script><script src="supabase-data.js?v=6"></script><script src="editor-storage.js?v=7"></script><script src="relations-data.js?v=1"></script><script src="company-hub.js?v=19"></script><script src="app.js?v=24"></script>
+    <script src="supabase-config.js?v=1"></script><script src="data.js"></script><script src="featured-data.js?v=8"></script><script src="client-updates.js?v=3"></script><script src="incident-updates.js?v=1"></script><script src="site-completion.js?v=1"></script><script src="editor-session.js?v=3"></script><script src="site-gate.js?v=1"></script><script src="supabase-data.js?v=6"></script><script src="editor-storage.js?v=7"></script><script src="relations-data.js?v=1"></script><script src="company-hub.js?v=20"></script><script src="app.js?v=24"></script>
   </body>
 </html>

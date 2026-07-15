@@ -586,7 +586,7 @@
       setStatus(result?.syncMessage || "ИЗМЕНЕНИЯ СОХРАНЕНЫ В SUPABASE.", "saved");
       window.setTimeout(() => window.location.reload(), 380);
     } catch (error) {
-      if (saveButton) { saveButton.disabled = false; saveButton.textContent = "СОХРАНИТЬ"; }
+      if (saveButton) { saveButton.disabled = false; saveButton.textContent = "СОХРАНИТЬ ИЗМЕНЕНИЯ"; }
       setStatus(error.message || "НЕ УДАЛОСЬ СОХРАНИТЬ КАРТОЧКУ.", "error");
     }
   }
