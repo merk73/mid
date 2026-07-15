@@ -486,6 +486,36 @@
     return checked(response, context) || [];
   }
 
+  function storedPathFromPublicUrl(value) {
+    const source = String(value || "").trim();
+    if (!source) return "";
+    const marker = `/storage/v1/object/public/${encodeURIComponent(STORAGE_BUCKET)}/`;
+    const markerIndex = source.indexOf(marker);
+    if (markerIndex < 0) return "";
+    const encodedPath = source.slice(markerIndex + marker.length).split(/[?#]/, 1)[0];
+    try {
+      return encodedPath.split("/").map(decodeURIComponent).join("/");
+    } catch {
+      return "";
+    }
+  }
+
+  function collectStoredPaths(value, result = new Set()) {
+    if (typeof value === "string") {
+      const path = storedPathFromPublicUrl(value);
+      if (path) result.add(path);
+      return result;
+    }
+    if (Array.isArray(value)) {
+      value.forEach((item) => collectStoredPaths(item, result));
+      return result;
+    }
+    if (value && typeof value === "object") {
+      Object.values(value).forEach((item) => collectStoredPaths(item, result));
+    }
+    return result;
+  }
+
   async function cleanupUploads(client, paths) {
     if (!paths?.length) return;
     try {
@@ -671,7 +701,14 @@
       delete safePatch.id;
       delete safePatch.type;
       delete safePatch.kind;
+      const removeCover = safePatch.removeCover === true
+        || (Object.prototype.hasOwnProperty.call(safePatch, "image") && !String(safePatch.image || "").trim());
+      delete safePatch.removeCover;
       const merged = { ...rowToRecord(existingRow), ...safePatch, id: code };
+      if (removeCover) {
+        merged.image = "";
+        merged.cardImage = "";
+      }
       const relationList = Object.prototype.hasOwnProperty.call(safePatch, "editorRelations")
         ? safePatch.editorRelations
         : null;
@@ -683,18 +720,23 @@
           .from(RECORDS_TABLE)
           .update({
             content: contentForDatabase(prepared.record),
-            cover_path: prepared.coverPath || existingRow.cover_path,
+            cover_path: removeCover ? null : (prepared.coverPath || existingRow.cover_path),
           })
           .eq("id", existingRow.id)
           .select(RECORD_SELECT)
           .single();
         row = checked(update, `обновление ${code}`);
-        if (prepared.coverPath && existingRow.cover_path && prepared.coverPath !== existingRow.cover_path) {
+        const previousPaths = collectStoredPaths(rowToRecord(existingRow));
+        if (existingRow.cover_path) previousPaths.add(existingRow.cover_path);
+        const currentPaths = collectStoredPaths(rowToRecord(row));
+        if (row.cover_path) currentPaths.add(row.cover_path);
+        const stalePaths = [...previousPaths].filter((path) => !currentPaths.has(path));
+        if (stalePaths.length) {
           try {
-            await removeStoredPaths(client, [existingRow.cover_path], `удаление старой фотографии ${code}`);
+            await removeStoredPaths(client, stalePaths, `удаление старых фотографий ${code}`);
           } catch (cause) {
             throw new MidgasSupabaseError(
-              `Новая фотография ${code} сохранена, но Supabase не подтвердил удаление старого файла. Повторите замену фотографии.`,
+              `Карточка ${code} сохранена, но Supabase не подтвердил удаление старых файлов. Повторите сохранение.`,
               { code: "REMOTE_PARTIAL_WRITE", cause, remoteCommitted: true },
             );
           }
