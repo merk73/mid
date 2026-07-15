@@ -321,7 +321,7 @@
 
   editButton?.addEventListener("click", () => {
     if (!isEditor()) {
-      window.location.href = "index.html#company-account";
+      window.location.href = "editor.html";
       return;
     }
     if (populateEditor()) openDialog(editorDialog);
@@ -540,7 +540,7 @@
 
   deleteButton?.addEventListener("click", () => {
     if (!isEditor()) {
-      window.location.href = "index.html#company-account";
+      window.location.href = "editor.html";
       return;
     }
     const deleteId = document.querySelector("[data-record-delete-id]");

@@ -61,7 +61,7 @@ function createRegistryCard(record) {
 function createRegistryAddCard() {
   const link = document.createElement("a");
   link.className = "registry-create-card";
-  link.href = `index.html?create=${encodeURIComponent(registryType)}#company-account`;
+  link.href = `editor.html?create=${encodeURIComponent(registryType)}`;
   const icon = document.createElement("span");
   icon.textContent = "+";
   const title = document.createElement("strong");

@@ -147,7 +147,7 @@
   async function signUp(credentials = {}) {
     if (!client) throw new Error("Модуль Supabase не загружен.");
     const { email, password } = validateCredentials(credentials);
-    const emailRedirectTo = new URL("index.html#company-account", window.location.href).href;
+    const emailRedirectTo = new URL("editor.html", window.location.href).href;
     const { data, error } = await client.auth.signUp({
       email,
       password,

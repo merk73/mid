@@ -317,6 +317,10 @@
     requestAnimationFrame(() => centerOn(activeKey, true));
   }
   function closeBoard() {
+    if (document.body.classList.contains("board-page")) {
+      window.location.href = "index.html";
+      return;
+    }
     isFullscreen = false; editorMode = false; linkMode = false; positionMode = false; movingNode = null; firstLinkKey = ""; removeDraft();
     stage.classList.remove("is-fullscreen", "is-editor-mode", "is-position-mode");
     document.documentElement.classList.remove("board-fullscreen-open");
@@ -520,7 +524,7 @@
       if (!editingId && typeOrder.includes(selectedType)) {
         closeNodeDialog();
         closeBoard();
-        window.location.href = `index.html?create=${encodeURIComponent(selectedType)}#company-account`;
+        window.location.href = `editor.html?create=${encodeURIComponent(selectedType)}`;
         return;
       }
       const center = worldPoint(viewport.getBoundingClientRect().left + viewport.clientWidth / 2, viewport.getBoundingClientRect().top + viewport.clientHeight / 2);

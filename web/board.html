@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Интерактивная доска связей THE MIDGAS." />
+    <title>Доска связей — THE MIDGAS</title>
+    <script src="site-access.js?v=2"></script>
+    <link rel="stylesheet" href="styles.css?v=60" />
+  </head>
+  <body class="board-page">
+    <div class="site-shell">
+      <header class="site-header">
+        <a class="header-back-button" href="index.html" aria-label="Вернуться на главную">←</a>
+        <a class="mobile-wordmark" href="index.html">THE MIDGAS</a>
+        <nav class="main-navigation" aria-label="Главная навигация">
+          <div class="nav-group nav-group-left"><a href="registry.html?type=client">Клиенты</a><a href="registry.html?type=anomaly">Аномалии</a><a href="registry.html?type=incident">Инциденты</a><a href="map.html">Карта</a></div>
+          <a class="wordmark" href="index.html">THE MIDGAS</a>
+          <div class="nav-group nav-group-right"><a href="materials.html">Материалы</a><a href="changelog.html">Журнал</a><a href="editor.html">Редактор</a></div>
+        </nav>
+      </header>
+      <main>
+        <section class="company-board" id="company-board" aria-labelledby="company-board-title">
+          <div class="company-board-stage company-reveal" data-board-stage>
+            <div class="company-board-preview-cover" data-board-preview-cover><span>MIDGAS / INTERACTIVE GRAPH</span><h1 id="company-board-title">ДОСКА СВЯЗЕЙ</h1><button type="button" data-board-open>ПЕРЕЙТИ</button></div>
+            <nav class="company-board-fullscreen-controls" data-board-controls aria-label="Управление доской">
+              <button class="company-board-tool-icon" type="button" data-board-close aria-label="Назад"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7M8 12h12" /></svg><span>НАЗАД</span></button>
+              <a class="company-board-tool-icon" href="map.html" aria-label="Открыть карту"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 6 6-3 6 3 6-3v15l-6 3-6-3-6 3Z"/><path d="M9 3v15M15 6v15"/></svg><span>КАРТА</span></a>
+              <button class="company-board-tool-icon" type="button" data-board-edit hidden aria-label="Редактировать доску"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z" /><path d="m14 7 3 3" /></svg><span>РЕДАКТИРОВАТЬ</span></button>
+              <div class="company-board-editor-tools" data-board-editor-tools hidden>
+                <button class="company-board-tool-icon" type="button" data-board-add-edge><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 14.5 14.5 9.5M7.2 16.8 5.5 18.5a2.8 2.8 0 0 1-4-4l3-3a2.8 2.8 0 0 1 4 0m8.3-4.3 1.7-1.7a2.8 2.8 0 0 1 4 4l-3 3a2.8 2.8 0 0 1-4 0"/></svg><span>НОВАЯ СВЯЗЬ</span></button>
+                <button class="company-board-tool-icon" type="button" data-board-add-node><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16"/><path d="M12 8v8M8 12h8"/></svg><span>НОВЫЙ УЗЕЛ</span></button>
+                <button class="company-board-tool-icon" type="button" data-board-move-nodes><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M2 12h20"/></svg><span>ПЕРЕМЕЩЕНИЕ</span></button>
+                <button class="company-board-tool-icon" type="button" data-board-edit-close><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 14 14M19 5 5 19"/></svg><span>ЗАКРЫТЬ</span></button>
+              </div><span data-board-edit-status></span>
+            </nav>
+            <div class="company-board-workspace">
+              <div class="company-board-canvas company-board-viewport" id="company-board-canvas" tabindex="0" aria-label="Перемещаемая карта связей"><div class="company-board-world" id="company-board-world"><svg class="company-board-lines" viewBox="0 0 3600 2400" aria-hidden="true"></svg></div></div>
+              <aside class="company-board-inspector" data-board-inspector aria-live="polite">
+                <button class="company-board-inspector-toggle" type="button" data-board-inspector-toggle><img data-board-mobile-image alt="" /><span><small data-board-mobile-id></small><strong data-board-mobile-title></strong></span><i>↑</i></button>
+                <img data-board-image alt="" /><div><em data-board-kind-label></em><strong data-board-title></strong></div><p data-board-summary></p><dl><div><dt>ID</dt><dd data-board-id></dd></div></dl><a data-board-link href="#">ОТКРЫТЬ ДОСЬЕ →</a>
+                <div class="company-board-node-actions" data-board-node-actions hidden><button type="button" data-board-node-edit>РЕДАКТИРОВАТЬ УЗЕЛ</button><button type="button" data-board-node-delete>УДАЛИТЬ УЗЕЛ</button></div>
+              </aside>
+            </div>
+            <dialog class="company-board-node-dialog" data-board-node-dialog aria-labelledby="board-node-dialog-title"><form data-board-node-form><header><span>НОВЫЙ УЗЕЛ</span><button type="button" data-board-node-cancel>✕</button></header><h4 id="board-node-dialog-title" data-board-node-dialog-title>ДОБАВИТЬ НА ДОСКУ</h4><input type="hidden" name="nodeId"/><fieldset><legend>ТИП УЗЛА</legend><label><input type="radio" name="nodeType" value="LOC" required/><span>LOC<br/><small>ЛОКАЦИЯ</small></span></label><label><input type="radio" name="nodeType" value="SUB" required/><span>SUB<br/><small>СУБЪЕКТ</small></span></label><label><input type="radio" name="nodeType" value="client" required/><span>CLI<br/><small>КЛИЕНТ</small></span></label><label><input type="radio" name="nodeType" value="anomaly" required/><span>ANO<br/><small>АНОМАЛИЯ</small></span></label><label><input type="radio" name="nodeType" value="incident" required/><span>INC<br/><small>ИНЦИДЕНТ</small></span></label></fieldset><label data-board-node-details><span>НАЗВАНИЕ</span><input name="title" maxlength="120" required/></label><label data-board-node-details><span>ОПИСАНИЕ</span><textarea name="description" maxlength="1200" rows="5" required></textarea></label><p data-board-node-error role="alert"></p><button type="submit" data-board-node-submit>ДОБАВИТЬ УЗЕЛ</button></form></dialog>
+            <div class="company-board-preview-meta"><span data-board-count>0 УЗЛОВ</span><span>КОЛЕСО / PINCH-TO-ZOOM</span></div>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
+    <script src="supabase-config.js?v=1"></script><script src="data.js"></script><script src="featured-data.js?v=8"></script><script src="client-updates.js?v=2"></script><script src="incident-updates.js?v=1"></script><script src="site-completion.js?v=1"></script><script src="editor-session.js?v=3"></script><script src="supabase-data.js?v=3"></script><script src="editor-storage.js?v=7"></script><script src="relations-data.js?v=1"></script><script src="investigation-board.js?v=16"></script><script src="app.js?v=23"></script>
+  </body>
+</html>

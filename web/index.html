@@ -5,8 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="THE MIDGAS — исследовательский архив клиентов, аномалий и инцидентов." />
     <title>THE MIDGAS — Research Archive</title>
+    <link rel="preconnect" href="https://skvwaovkkoxqfwkcpuvh.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <script src="site-access.js?v=2"></script>
-    <link rel="stylesheet" href="styles.css?v=59" />
+    <link rel="stylesheet" href="styles.css?v=60" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -25,9 +27,9 @@
           <a class="wordmark" href="#top" aria-label="THE MIDGAS — на главную">THE MIDGAS</a>
           <div class="nav-group nav-group-right">
             <a href="#glossary">Глоссарий</a>
-            <a href="#company-materials">Материалы</a>
-            <a href="index.html?board=open#company-board">Доска</a>
-            <a href="#company-account">Редактор</a>
+            <a href="materials.html">Материалы</a>
+            <a href="board.html?board=open">Доска</a>
+            <a href="editor.html">Редактор</a>
           </div>
         </nav>
       </header>
@@ -82,21 +84,21 @@
 
         <section class="current-topics" id="current-topics" aria-label="Актуальные темы">
           <a class="topic-strip" href="record.html?type=anomaly&amp;id=MID-A-0001&amp;from=topics">
-            <img src="assets/topics/andreevka-anomaly.webp" alt="Андреевка ночью" />
+            <img src="assets/topics/andreevka-anomaly.webp" alt="Андреевка ночью" loading="lazy" decoding="async" />
             <div class="topic-strip-copy">
               <h3>АНДРЕЕВСКАЯ АНОМАЛИЯ</h3>
               <p>Зона устойчивых мутаций и необъяснимых событий в районе исследовательской базы MIDGAS.</p>
             </div>
           </a>
           <a class="topic-strip" href="record.html?type=incident&amp;id=MID-I-0001&amp;from=topics">
-            <img src="assets/topics/strakhomakha-exe.webp" alt="Инцидент СТРАХОМАХА.EXE" />
+            <img src="assets/topics/strakhomakha-exe.webp" alt="Инцидент СТРАХОМАХА.EXE" loading="lazy" decoding="async" />
             <div class="topic-strip-copy">
               <h3>ИНЦИДЕНТ СТРАХОМАХА.EXE</h3>
               <p>Деструктивный вирус без требования выкупа. Более миллиона поражённых компьютеров.</p>
             </div>
           </a>
           <a class="topic-strip" href="record.html?type=client&amp;id=MID-C-0024&amp;from=topics">
-            <img src="assets/topics/anna-matskevich-topic.webp" alt="Анна Мацкевич" />
+            <img src="assets/topics/anna-matskevich-topic.webp" alt="Анна Мацкевич" loading="lazy" decoding="async" />
             <div class="topic-strip-copy">
               <h3>КЛИЕНТ АННА МАЦКЕВИЧ</h3>
               <p>Сверхопасный клиент, подвергшийся облучению в Андреевке.</p>
@@ -134,7 +136,7 @@
         </section>
 
         <section class="historical-archive-cover" id="historical-archive" aria-labelledby="historical-archive-title">
-          <img src="assets/images/historical-archive-cover.webp" alt="Каменные монолиты и фигуры у огня — обложка исторического архива" />
+          <img src="assets/images/historical-archive-cover.webp" alt="Каменные монолиты и фигуры у огня — обложка исторического архива" loading="lazy" decoding="async" />
           <div class="historical-archive-shade" aria-hidden="true"></div>
           <div class="historical-archive-heading">
             <span>THE MIDGAS / CHRONOLOGY UNIT</span>
@@ -231,12 +233,12 @@
                 <article class="glossary-entry" id="term-access" data-glossary-entry data-group="registry">
                   <div><span>06 / D1–D5</span><h4>УРОВЕНЬ ДОСТУПА</h4><em>ЛИЧНЫЙ ДОПУСК КЛИЕНТА</em></div>
                   <p>Личный уровень доступа самого клиента к сведениям и возможностям общей системы MIDGAS. D1 — очень низкий; D2 — низкий; D3 — средний; D4 — высокий; D5 — полный доступ. Шкала не обозначает публичность карточки и не ограничивает читателя сайта.</p>
-                  <a href="#company-account">РЕДАКТОР КАРТОЧЕК →</a>
+                  <a href="editor.html">РЕДАКТОР КАРТОЧЕК →</a>
                 </article>
                 <article class="glossary-entry" id="term-archive-revision" data-glossary-entry data-group="registry">
                   <div><span>19 / REV</span><h4>АРХИВНАЯ РЕВИЗИЯ</h4><em>ПРОТОКОЛ</em></div>
                   <p>Зафиксированная версия реестра, объединяющая состав записей, время сборки и контрольную подпись. Ревизия позволяет точно восстановить состояние архива до внесения последующих изменений.</p>
-                  <a href="#company-journal">ЖУРНАЛ ИЗМЕНЕНИЙ →</a>
+                  <a href="changelog.html">ЖУРНАЛ ИЗМЕНЕНИЙ →</a>
                 </article>
                 <article class="glossary-entry" id="term-control-snapshot" data-glossary-entry data-group="registry">
                   <div><span>20 / SNAP</span><h4>КОНТРОЛЬНЫЙ СНИМОК</h4><em>ФИКСАЦИЯ</em></div>
@@ -416,7 +418,17 @@
           </div>
         </section>
 
-        <section class="company-hub" id="company-hub" aria-labelledby="company-hub-title">
+        <section class="workspace-directory" aria-labelledby="workspace-directory-title">
+          <header><span class="section-index">08 / РАБОЧАЯ СИСТЕМА</span><h2 id="workspace-directory-title">ИНСТРУМЕНТЫ<br />АРХИВА</h2><p>Тяжёлые интерактивные модули вынесены с главной на отдельные страницы.</p></header>
+          <nav>
+            <a href="materials.html"><span>01</span><strong>МАТЕРИАЛЫ</strong><small>Документы, методы и источники</small><i>→</i></a>
+            <a href="board.html?board=open"><span>02</span><strong>ДОСКА СВЯЗЕЙ</strong><small>Интерактивный граф и редактор узлов</small><i>→</i></a>
+            <a href="editor.html"><span>03</span><strong>ЦЕНТР РЕДАКТОРА</strong><small>Карточки, версии и управление доступом</small><i>→</i></a>
+            <a href="changelog.html"><span>04</span><strong>ЖУРНАЛ</strong><small>История опубликованных обновлений</small><i>→</i></a>
+          </nav>
+        </section>
+
+        <section class="company-hub" id="company-hub" aria-labelledby="company-hub-title" hidden>
           <header class="company-hero" id="company-materials">
             <div class="company-hero-media" aria-hidden="true">
               <img class="company-hero-back" src="assets/historical-archive/bg-11.webp" alt="" data-company-parallax="-0.085" />
@@ -814,10 +826,6 @@
     <script src="editor-session.js?v=3"></script>
     <script src="site-gate.js?v=1"></script>
     <script src="supabase-data.js?v=3"></script>
-    <script src="editor-storage.js?v=7"></script>
-    <script src="relations-data.js?v=1"></script>
-    <script src="company-hub.js?v=16"></script>
-    <script src="investigation-board.js?v=15"></script>
     <script src="app.js?v=23"></script>
   </body>
 </html>
