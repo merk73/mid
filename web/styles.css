@@ -10658,9 +10658,12 @@ body .record-shell .record-portrait:has(> img[hidden])::before {
 .record-level small { color: #6c6b65; font-size: 7px; line-height: 1.35; letter-spacing: .08em; }
 .record-level strong { font-family: var(--display); font-size: 34px; font-weight: 500; line-height: .8; }
 .record-level-scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 14px 0 10px; }
-.record-level-scale i { height: 5px; background: #c3c1b9; }
-.record-level--threat .record-level-scale i.is-active { background: #c52d22; box-shadow: 0 0 7px rgba(197, 45, 34, .45); }
-.record-level--access .record-level-scale i.is-active { background: #277276; box-shadow: 0 0 7px rgba(39, 114, 118, .35); }
+.record-level-scale button { height: 7px; padding: 0; background: #c3c1b9; border: 0; border-radius: 0; opacity: 1; }
+.record-level-scale button:disabled { cursor: default; opacity: 1; }
+.record-level--threat .record-level-scale button.is-active { background: #c52d22; box-shadow: 0 0 7px rgba(197, 45, 34, .45); }
+.record-level--access .record-level-scale button.is-active { background: #277276; box-shadow: 0 0 7px rgba(39, 114, 118, .35); }
+body.is-record-inline-editing .record-level-scale button:not(:disabled) { cursor: pointer; }
+body.is-record-inline-editing .record-level-scale button:not(:disabled):hover { outline: 2px solid currentColor; outline-offset: 2px; transform: translateY(-1px); }
 .record-level--threat strong { color: #a9231b; }
 .record-level--access strong { color: #1f6266; }
 
@@ -10683,7 +10686,7 @@ body .record-shell .record-fields dd { font-size: 14px; line-height: 1.5; }
 
 .record-location {
   display: grid;
-  grid-template-columns: minmax(220px, .32fr) minmax(0, 1fr) minmax(230px, .3fr);
+  grid-template-columns: minmax(300px, .4fr) minmax(0, 1fr) minmax(240px, .32fr);
   min-height: 480px;
   color: #e9e7df;
   background: #141414;
@@ -10692,13 +10695,13 @@ body .record-shell .record-fields dd { font-size: 14px; line-height: 1.5; }
 .record-location[hidden] { display: none !important; }
 .record-location > header,
 .record-map-meta { padding: clamp(28px, 4vw, 52px); }
-.record-location > header { display: flex; flex-direction: column; justify-content: space-between; border-right: 1px solid #55544f; }
+.record-location > header { position: relative; z-index: 2; display: flex; min-width: 0; overflow: hidden; flex-direction: column; justify-content: space-between; border-right: 1px solid #55544f; }
 .record-location > header > span,
 .record-map-meta span,
 .record-map-editor span { color: #85847f; font-size: 7px; letter-spacing: .1em; }
-.record-location h2 { margin: auto 0 18px; font-family: var(--display); font-size: clamp(46px, 5vw, 74px); font-weight: 500; line-height: .82; }
+.record-location h2 { max-width: 100%; margin: auto 0 18px; overflow-wrap: anywhere; font-family: var(--display); font-size: clamp(38px, 4.1vw, 64px); font-weight: 500; line-height: .88; letter-spacing: -.045em; }
 .record-location header p { margin: 0; color: #aaa9a3; font-size: 10px; line-height: 1.65; }
-.record-map-shell { position: relative; min-width: 0; min-height: 480px; overflow: hidden; background: #242421; }
+.record-map-shell { position: relative; z-index: 0; min-width: 0; min-height: 480px; overflow: hidden; isolation: isolate; background: #242421; }
 .record-map { width: 100%; height: 100%; min-height: 480px; filter: grayscale(.8) contrast(1.08) brightness(.78); }
 .record-map-state {
   position: absolute;
@@ -11150,3 +11153,21 @@ body.editor-overlay-open { overflow: hidden; }
   .editor-page .company-journal-events li { grid-template-columns: 1fr; }
   .company-journal-rollback { min-height: 44px; border-top: 1px solid #454541; border-left: 0; }
 }
+
+/* Dossier paper is deliberately neutral white; keep maps and media dark. */
+body .record-shell,
+body .record-shell .record-page,
+body .record-shell .site-header,
+body .record-shell .record-identity,
+body .record-shell .record-heading,
+body .record-shell .record-overview,
+body .record-shell .record-summary,
+body .record-shell .record-fields,
+body .record-shell .record-fields > div,
+body .record-shell .record-section-heading,
+body .record-shell .record-lore,
+body .record-shell .lore-section,
+body .record-shell .record-relations,
+body .record-shell .record-related-list,
+body .record-shell .record-relations-editor,
+body .record-shell .record-empty { background-color: #fff !important; }

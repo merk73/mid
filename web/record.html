@@ -7,7 +7,7 @@
     <title>Запись реестра — THE MIDGAS</title>
     <script src="site-access.js?v=2"></script>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
-    <link rel="stylesheet" href="styles.css?v=68" />
+    <link rel="stylesheet" href="styles.css?v=70" />
   </head>
   <body>
     <div class="site-shell record-shell">
@@ -49,12 +49,12 @@
             <section class="record-clearance" data-record-clearance hidden aria-label="Уровни угрозы и доступа">
               <article class="record-level record-level--threat" data-record-threat>
                 <div><span>УРОВЕНЬ УГРОЗЫ</span><strong data-record-threat-code>—</strong></div>
-                <div class="record-level-scale" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+                <div class="record-level-scale" aria-label="Выбрать уровень угрозы"><button type="button" data-level="1" disabled></button><button type="button" data-level="2" disabled></button><button type="button" data-level="3" disabled></button><button type="button" data-level="4" disabled></button><button type="button" data-level="5" disabled></button></div>
                 <small data-record-threat-label>НЕ УКАЗАН</small>
               </article>
               <article class="record-level record-level--access" data-record-access>
                 <div><span>УРОВЕНЬ ДОСТУПА</span><strong data-record-access-code>—</strong></div>
-                <div class="record-level-scale" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+                <div class="record-level-scale" aria-label="Выбрать уровень доступа"><button type="button" data-level="1" disabled></button><button type="button" data-level="2" disabled></button><button type="button" data-level="3" disabled></button><button type="button" data-level="4" disabled></button><button type="button" data-level="5" disabled></button></div>
                 <small data-record-access-label>НЕ УКАЗАН</small>
               </article>
             </section>
@@ -157,9 +157,9 @@
     <script src="relations-data.js?v=1"></script>
     <script src="app.js?v=24"></script>
     <script src="research-charts.js?v=6"></script>
-    <script src="record.js?v=15"></script>
+    <script src="record.js?v=16"></script>
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="record-map.js?v=1"></script>
-    <script src="record-inline-editor.js?v=1"></script>
+    <script src="record-inline-editor.js?v=2"></script>
   </body>
 </html>

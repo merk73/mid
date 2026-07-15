@@ -25,9 +25,15 @@
   const deleteDialog = document.querySelector("#record-delete-dialog");
   const deleteForm = document.querySelector("#record-delete-form");
   const typeLabels = { client: "КЛИЕНТ", anomaly: "АНОМАЛИЯ", incident: "ИНЦИДЕНТ" };
+  const levelLabels = {
+    threat: ["", "T1 / низкий", "T2 / умеренный", "T3 / значительный", "T4 / высокий", "T5 / критический"],
+    access: ["", "D1 / очень низкий", "D2 / низкий", "D3 / средний", "D4 / высокий", "D5 / полный доступ"],
+  };
   let editing = false;
   let draft = null;
   let pendingImages = 0;
+  let selectedThreat = 0;
+  let selectedAccess = 0;
 
   if (!store || !id || !typeLabels[type]) return;
 
@@ -57,6 +63,65 @@
 
   function normalized(value) {
     return String(value || "").trim().toLocaleLowerCase("ru").replaceAll("ё", "е");
+  }
+
+  function levelFromFields(record, kind) {
+    const labels = kind === "threat"
+      ? ["уровень угрозы"]
+      : ["уровень доступа", "осведомленность клиента"];
+    const value = (record?.fields || []).find(([term]) => labels.includes(normalized(term)))?.[1] || "";
+    const prefix = kind === "threat" ? "T" : "D";
+    const code = String(value).match(new RegExp(`\\b${prefix}([1-5])\\b`, "i"));
+    if (code) return Number(code[1]);
+    const source = normalized(value);
+    if (kind === "threat") {
+      if (source.includes("критич")) return 5;
+      if (source.includes("высок")) return 4;
+      if (source.includes("значитель")) return 3;
+      if (source.includes("умерен")) return 2;
+      if (source.includes("низк")) return 1;
+    } else {
+      if (source.includes("полн") || source.includes("макс")) return 5;
+      if (source.includes("высок")) return 4;
+      if (source.includes("средн")) return 3;
+      if (source.includes("очень низк")) return 1;
+      if (source.includes("низк")) return 2;
+    }
+    return 0;
+  }
+
+  function renderSelectedLevel(kind, level) {
+    const root = document.querySelector(kind === "threat" ? "[data-record-threat]" : "[data-record-access]");
+    if (!root) return;
+    const value = levelLabels[kind][level] || "НЕ УКАЗАН";
+    root.dataset.level = String(level);
+    const code = root.querySelector("strong");
+    const copy = root.querySelector("small");
+    if (code) code.textContent = level ? `${kind === "threat" ? "T" : "D"}${level}` : "—";
+    if (copy) copy.textContent = value;
+    root.querySelectorAll(".record-level-scale button").forEach((button, index) => {
+      button.classList.toggle("is-active", index < level);
+      button.setAttribute("aria-pressed", String(index + 1 === level));
+    });
+  }
+
+  function setupLevelInputs() {
+    document.querySelectorAll("[data-record-threat] .record-level-scale button").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (!editing) return;
+        selectedThreat = Number(button.dataset.level) || 0;
+        renderSelectedLevel("threat", selectedThreat);
+        setStatus(`УРОВЕНЬ УГРОЗЫ: ${levelLabels.threat[selectedThreat].toUpperCase()}.`, "editing");
+      });
+    });
+    document.querySelectorAll("[data-record-access] .record-level-scale button").forEach((button) => {
+      button.addEventListener("click", () => {
+        if (!editing) return;
+        selectedAccess = Number(button.dataset.level) || 0;
+        renderSelectedLevel("access", selectedAccess);
+        setStatus(`УРОВЕНЬ ДОСТУПА: ${levelLabels.access[selectedAccess].toUpperCase()}.`, "editing");
+      });
+    });
   }
 
   function makeButton(label, className, handler) {
@@ -93,6 +158,7 @@
     if (cancelButton) cancelButton.hidden = !nextEditing;
     if (addSectionButton) addSectionButton.hidden = !nextEditing;
     if (coverTools) coverTools.hidden = !nextEditing;
+    document.querySelectorAll(".record-clearance .record-level-scale button").forEach((button) => { button.disabled = !nextEditing; });
   }
 
   function fieldLocationValue() {
@@ -411,7 +477,14 @@
     const fields = [...document.querySelectorAll("[data-record-field-row]")].map((row) => [
       text(row.querySelector("dt")),
       text(row.querySelector("dd")),
-    ]).filter(([term, value]) => term && value && normalized(term) !== "связанные записи");
+    ]).filter(([term, value]) => {
+      const label = normalized(term);
+      if (!term || !value || label === "связанные записи") return false;
+      if (type === "client" && ["уровень угрозы", "уровень доступа", "осведомленность клиента"].includes(label)) return false;
+      return true;
+    });
+    if (type === "client" && selectedThreat) fields.push(["Уровень угрозы", levelLabels.threat[selectedThreat]]);
+    if (type === "client" && selectedAccess) fields.push(["Уровень доступа", levelLabels.access[selectedAccess]]);
     if (relations.length) fields.push(["Связанные записи", relations.map((item) => item.id).join(", ")]);
     return fields;
   }
@@ -458,6 +531,10 @@
     if (!record || editing) return;
     editing = true;
     draft = clone(record);
+    selectedThreat = levelFromFields(draft, "threat");
+    selectedAccess = levelFromFields(draft, "access");
+    renderSelectedLevel("threat", selectedThreat);
+    renderSelectedLevel("access", selectedAccess);
     document.body.classList.add("is-record-inline-editing");
     setButtons(true);
     setEditable(document.querySelector("#record-name"), false);
@@ -553,6 +630,7 @@
   });
 
   setupCover();
+  setupLevelInputs();
   setButtons(false);
   renderAccess();
   window.addEventListener(session?.eventName || "midgas:editor-session", renderAccess);

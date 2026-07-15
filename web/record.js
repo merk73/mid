@@ -69,7 +69,10 @@ function renderLevel(root, value, prefix, kind) {
   root.dataset.level = String(level);
   root.querySelector("strong").textContent = level ? `${prefix}${level}` : "—";
   root.querySelector("small").textContent = value || "НЕ УКАЗАН";
-  root.querySelectorAll(".record-level-scale i").forEach((item, index) => item.classList.toggle("is-active", index < level));
+  root.querySelectorAll(".record-level-scale button").forEach((item, index) => {
+    item.classList.toggle("is-active", index < level);
+    item.setAttribute("aria-pressed", String(index + 1 === level));
+  });
   root.setAttribute("aria-label", `${kind === "threat" ? "Уровень угрозы" : "Уровень доступа"}: ${value || "не указан"}`);
 }
 
@@ -170,7 +173,12 @@ if (!record) {
   }
 
   const fields = document.querySelector("#record-fields");
-  record.fields.filter(([term]) => normalizedLabel(term) !== "связанные записи").forEach(([term, value]) => {
+  record.fields.filter(([term]) => {
+    const label = normalizedLabel(term);
+    if (label === "связанные записи") return false;
+    if (type === "client" && ["уровень угрозы", "уровень доступа", "осведомленность клиента"].includes(label)) return false;
+    return true;
+  }).forEach(([term, value]) => {
     const wrapper = document.createElement("div");
     wrapper.dataset.recordFieldRow = "";
     const dt = document.createElement("dt");
