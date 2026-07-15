@@ -10914,6 +10914,16 @@ body.is-record-inline-editing .record-fields > div { padding-right: 52px; }
 .editor-page .editor-site-header { color: #efeee9; background: rgba(8, 8, 8, .96); border-color: #363633; }
 .editor-page .editor-site-header a,
 .editor-page .editor-site-header button { color: inherit; }
+.editor-page .editor-site-header .header-back-button {
+  color: #efeee9;
+  background: #080808;
+  border-right-color: #363633;
+}
+.editor-page .editor-site-header .header-back-button:hover,
+.editor-page .editor-site-header .header-back-button:focus-visible {
+  color: #080808;
+  background: #efeee9;
+}
 .editor-page .company-editor-hub {
   width: min(1320px, calc(100% - 48px));
   margin: 0 auto;
