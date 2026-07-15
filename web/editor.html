@@ -6,11 +6,11 @@
     <meta name="description" content="Защищённый центр редактора THE MIDGAS." />
     <title>Центр редактора — THE MIDGAS</title>
     <script src="site-access.js?v=2"></script>
-    <link rel="stylesheet" href="styles.css?v=65" />
+    <link rel="stylesheet" href="styles.css?v=66" />
   </head>
   <body class="editor-page">
     <div class="site-shell">
-      <header class="site-header editor-site-header"><a class="header-back-button" href="index.html" aria-label="Вернуться на главную">←</a><a class="mobile-wordmark" href="index.html">THE MIDGAS</a><nav class="main-navigation" aria-label="Главная навигация"><div class="nav-group nav-group-left"><a href="registry.html?type=client">Клиенты</a><a href="registry.html?type=anomaly">Аномалии</a><a href="registry.html?type=incident">Инциденты</a><a href="historical-archive.html">Архив</a></div><a class="wordmark" href="index.html">THE MIDGAS</a><div class="nav-group nav-group-right"><a href="index.html#company-materials">Материалы</a><a href="board.html?board=open">Доска</a><a href="index.html#company-journal">Журнал</a></div></nav></header>
+      <header class="site-header editor-site-header"><a class="header-back-button" href="index.html" aria-label="Вернуться на главную">←</a><a class="mobile-wordmark" href="index.html">THE MIDGAS</a><nav class="main-navigation" aria-label="Главная навигация"><div class="nav-group nav-group-left"><a href="registry.html?type=client">Клиенты</a><a href="registry.html?type=anomaly">Аномалии</a><a href="registry.html?type=incident">Инциденты</a><a href="historical-archive.html">Архив</a></div><a class="wordmark" href="index.html">THE MIDGAS</a><div class="nav-group nav-group-right"><a href="index.html#company-materials">Материалы</a><a href="board.html?board=open">Доска</a><a href="#company-journal">Журнал</a></div></nav></header>
       <main id="top">
         <section class="company-hub editor-page-hub" id="company-hub">
           <section class="company-account company-editor-hub" id="company-account" aria-labelledby="company-account-title">
@@ -35,6 +35,14 @@
               </form>
             </section>
             <section class="company-restore editor-work-panel" data-editor-recovery-panel hidden><header class="editor-work-heading"><div><span>ВОССТАНОВЛЕНИЕ</span><h2>ВЕРСИИ КАРТОЧЕК</h2></div><button type="button" data-editor-panel-close>×</button></header><div class="editor-recovery-grid"><section><header><span>01</span><div><strong>УДАЛЁННЫЕ</strong></div></header><div class="company-restore-list" data-restore-deleted-list><p data-restore-deleted-empty>УДАЛЁННЫХ КАРТОЧЕК НЕТ.</p></div></section><section><header><span>02</span><div><strong>ИЗМЕНЁННЫЕ</strong></div></header><div class="company-restore-list" data-restore-modified-list><p data-restore-modified-empty>ИЗМЕНЁННЫХ КАРТОЧЕК НЕТ.</p></div></section></div></section>
+            <section class="company-journal company-journal--editor editor-console-journal" id="company-journal" aria-labelledby="company-journal-title">
+              <header class="company-module-heading company-module-heading--compact">
+                <div class="company-section-label"><span>02</span><p>РАБОЧАЯ ИСТОРИЯ</p></div>
+                <div><span>CHANGE LOG / SUPABASE</span><h2 id="company-journal-title">ЖУРНАЛ ИЗМЕНЕНИЙ</h2></div>
+                <p>Создание, редактирование, удаление и восстановление карточек. Журнал деплоев сюда не входит.</p>
+              </header>
+              <div class="company-journal-list" id="company-journal-list" aria-live="polite"></div>
+            </section>
           </section>
         </section>
       </main>

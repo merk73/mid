@@ -10457,6 +10457,7 @@ html.site-maintenance-locked body { overflow: hidden !important; background: #05
 
 /* Homepage editor portal: the tools themselves live only on editor.html. */
 .home-page .company-editor-hub > .home-editor-legacy[hidden] { display: none !important; }
+.home-page .home-editor-journal-legacy[hidden] { display: none !important; }
 
 .home-editor-portal {
   display: grid;
@@ -10539,6 +10540,27 @@ html.site-maintenance-locked body { overflow: hidden !important; background: #05
 .editor-page .editor-mode-actions button { min-height: 112px; padding: 18px; }
 .editor-page .editor-mode-actions strong { font-size: clamp(18px, 1.8vw, 26px); }
 .editor-page .editor-work-panel { margin-top: 16px; box-shadow: none; }
+.editor-page .editor-console-journal {
+  margin-top: 16px;
+  color: #111;
+  background: #e8e6df;
+  border-color: #4c4b47;
+}
+.editor-page .editor-console-journal .company-module-heading--compact {
+  grid-template-columns: 150px minmax(0, .8fr) minmax(280px, 1fr);
+  min-height: 128px;
+  background: #e8e6df;
+  border-bottom-color: #4c4b47;
+}
+.editor-page .editor-console-journal .company-module-heading--compact > * { padding: 20px 24px; }
+.editor-page .editor-console-journal .company-module-heading--compact > * + * { border-left: 1px solid #4c4b47; }
+.editor-page .editor-console-journal .company-module-heading--compact h2 {
+  margin: 7px 0 0;
+  font-family: var(--display);
+  font-size: clamp(30px, 4vw, 54px);
+  font-weight: 500;
+  line-height: .86;
+}
 
 @media (max-width: 900px) {
   .home-editor-portal { grid-template-columns: 1fr; }
@@ -10570,6 +10592,8 @@ html.site-maintenance-locked body { overflow: hidden !important; background: #05
   .editor-page .company-editor-hub > .company-module-heading .company-section-label { display: flex; }
   .editor-page .company-editor-hub > .company-module-heading h1 { font-size: clamp(48px, 17vw, 72px); }
   .editor-page .editor-mode-actions { grid-template-columns: 1fr; }
+  .editor-page .editor-console-journal .company-module-heading--compact { grid-template-columns: 1fr; }
+  .editor-page .editor-console-journal .company-module-heading--compact > * + * { border-top: 1px solid #4c4b47; border-left: 0; }
 }
 .record-awaiting-sync .record-portrait img {
   opacity: 0;
