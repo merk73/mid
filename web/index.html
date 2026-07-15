@@ -6,7 +6,7 @@
     <meta name="description" content="THE MIDGAS — исследовательский архив клиентов, аномалий и инцидентов." />
     <title>THE MIDGAS — Research Archive</title>
     <script src="site-access.js?v=1"></script>
-    <link rel="stylesheet" href="styles.css?v=55" />
+    <link rel="stylesheet" href="styles.css?v=57" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -560,13 +560,13 @@
               </div>
 
               <nav class="company-board-fullscreen-controls" data-board-controls aria-label="Управление полноэкранной доской">
-                <button type="button" data-board-close>← НАЗАД</button>
-                <button type="button" data-board-edit hidden>РЕДАКТИРОВАТЬ</button>
+                <button class="company-board-tool-icon" type="button" data-board-close aria-label="Назад" title="Назад"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7M8 12h12" /></svg><span>НАЗАД</span></button>
+                <button class="company-board-tool-icon" type="button" data-board-edit hidden aria-label="Редактировать доску" title="Редактировать"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z" /><path d="m14 7 3 3" /></svg><span>РЕДАКТИРОВАТЬ</span></button>
                 <div class="company-board-editor-tools" data-board-editor-tools hidden>
-                  <button type="button" data-board-add-edge>ДОБАВИТЬ СВЯЗЬ</button>
-                  <button type="button" data-board-add-node>ДОБАВИТЬ УЗЕЛ</button>
-                  <button type="button" data-board-move-nodes>ИЗМЕНИТЬ ПОЛОЖЕНИЕ</button>
-                  <button type="button" data-board-edit-close aria-label="Закрыть режим редактора">✕</button>
+                  <button class="company-board-tool-icon" type="button" data-board-add-edge aria-label="Новая связь" title="Новая связь"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 14.5 14.5 9.5" /><path d="M7.2 16.8 5.5 18.5a2.8 2.8 0 0 1-4-4l3-3a2.8 2.8 0 0 1 4 0" /><path d="m16.8 7.2 1.7-1.7a2.8 2.8 0 0 1 4 4l-3 3a2.8 2.8 0 0 1-4 0" /></svg><span>НОВАЯ СВЯЗЬ</span></button>
+                  <button class="company-board-tool-icon" type="button" data-board-add-node aria-label="Новый узел или карточка" title="Новый узел"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="1" /><path d="M12 8v8M8 12h8" /></svg><span>НОВЫЙ УЗЕЛ</span></button>
+                  <button class="company-board-tool-icon" type="button" data-board-move-nodes aria-label="Изменить положение карточек" title="Перемещение"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M2 12h20M12 2 9 5m3-3 3 3M12 22l-3-3m3 3 3-3M2 12l3-3m-3 3 3 3M22 12l-3-3m3 3-3 3" /></svg><span>ПЕРЕМЕЩЕНИЕ</span></button>
+                  <button class="company-board-tool-icon" type="button" data-board-edit-close aria-label="Закрыть режим редактора" title="Закрыть"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 14 14M19 5 5 19" /></svg><span>ЗАКРЫТЬ</span></button>
                 </div>
                 <span data-board-edit-status></span>
               </nav>
@@ -600,9 +600,9 @@
                   <header><span>НОВЫЙ УЗЕЛ</span><button type="button" data-board-node-cancel aria-label="Закрыть">✕</button></header>
                   <h4 id="board-node-dialog-title" data-board-node-dialog-title>ДОБАВИТЬ НА ДОСКУ</h4>
                   <input type="hidden" name="nodeId" />
-                  <fieldset><legend>ТИП УЗЛА</legend><label><input type="radio" name="nodeType" value="LOC" required /><span>LOC<br /><small>ЛОКАЦИЯ</small></span></label><label><input type="radio" name="nodeType" value="SUB" required /><span>SUB<br /><small>СУБЪЕКТ</small></span></label></fieldset>
-                  <label><span>НАЗВАНИЕ</span><input name="title" maxlength="120" required autocomplete="off" /></label>
-                  <label><span>ОПИСАНИЕ</span><textarea name="description" maxlength="1200" rows="5" required></textarea></label>
+                  <fieldset><legend>ТИП УЗЛА</legend><label><input type="radio" name="nodeType" value="LOC" required /><span>LOC<br /><small>ЛОКАЦИЯ</small></span></label><label><input type="radio" name="nodeType" value="SUB" required /><span>SUB<br /><small>СУБЪЕКТ</small></span></label><label><input type="radio" name="nodeType" value="client" required /><span>CLI<br /><small>КЛИЕНТ</small></span></label><label><input type="radio" name="nodeType" value="anomaly" required /><span>ANO<br /><small>АНОМАЛИЯ</small></span></label><label><input type="radio" name="nodeType" value="incident" required /><span>INC<br /><small>ИНЦИДЕНТ</small></span></label></fieldset>
+                  <label data-board-node-details><span>НАЗВАНИЕ</span><input name="title" maxlength="120" required autocomplete="off" /></label>
+                  <label data-board-node-details><span>ОПИСАНИЕ</span><textarea name="description" maxlength="1200" rows="5" required></textarea></label>
                   <p data-board-node-error role="alert"></p>
                   <button type="submit" data-board-node-submit>ДОБАВИТЬ УЗЕЛ</button>
                 </form>
@@ -677,6 +677,11 @@
                   </label>
                   <p>Фото автоматически уменьшается до веб-размера перед публикацией.</p>
                 </aside>
+
+                <section class="company-editor-sections-builder" data-create-step="fields" hidden>
+                  <header><div><span>03 / СТРУКТУРА ДОСЬЕ</span><strong>РАЗДЕЛЫ КАРТОЧКИ</strong><p>Добавьте нужное количество разделов. Пустая строка внутри текста создаёт новый абзац.</p></div><button type="button" data-editor-add-section>+ ДОБАВИТЬ РАЗДЕЛ</button></header>
+                  <div class="company-editor-sections-list" data-editor-sections-list></div>
+                </section>
 
                 <div class="company-editor-next" data-create-step="fields" hidden>
                   <p>Сначала заполните обязательные сведения и добавьте обложку.</p>
@@ -809,10 +814,10 @@
     <script src="editor-session.js?v=3"></script>
     <script src="site-gate.js?v=1"></script>
     <script src="supabase-data.js?v=3"></script>
-    <script src="editor-storage.js?v=6"></script>
+    <script src="editor-storage.js?v=7"></script>
     <script src="relations-data.js?v=1"></script>
-    <script src="company-hub.js?v=14"></script>
-    <script src="investigation-board.js?v=14"></script>
+    <script src="company-hub.js?v=15"></script>
+    <script src="investigation-board.js?v=15"></script>
     <script src="app.js?v=22"></script>
   </body>
 </html>

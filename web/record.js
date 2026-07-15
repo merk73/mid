@@ -37,6 +37,22 @@ function createMediaGrid(items) {
     mediaImage.src = item.src;
     mediaImage.alt = item.alt || "Архивный материал MIDGAS";
     mediaImage.loading = "lazy";
+    mediaImage.className = "lore-media-expandable";
+    mediaImage.tabIndex = 0;
+    mediaImage.setAttribute("role", "button");
+    mediaImage.setAttribute("aria-expanded", "false");
+    mediaImage.setAttribute("aria-label", "Показать фотографию целиком");
+    const toggleSourceSize = () => {
+      const expanded = figure.classList.toggle("is-source-expanded");
+      mediaImage.setAttribute("aria-expanded", String(expanded));
+      mediaImage.setAttribute("aria-label", expanded ? "Вернуть фотографию к формату раздела" : "Показать фотографию целиком");
+    };
+    mediaImage.addEventListener("click", toggleSourceSize);
+    mediaImage.addEventListener("keydown", (event) => {
+      if (event.key !== "Enter" && event.key !== " ") return;
+      event.preventDefault();
+      toggleSourceSize();
+    });
     const caption = document.createElement("figcaption");
     caption.textContent = item.caption || "АРХИВ MIDGAS";
     figure.append(mediaImage, caption);

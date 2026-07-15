@@ -739,12 +739,64 @@
   const editorRelationsSearch = document.querySelector("[data-editor-relations-search]");
   const editorRelationsCount = document.querySelector("[data-editor-relations-count]");
   const editorRelationsClear = document.querySelector("[data-editor-relations-clear]");
+  const editorSectionsList = document.querySelector("[data-editor-sections-list]");
+  const editorAddSection = document.querySelector("[data-editor-add-section]");
   const editorFieldsSteps = [...document.querySelectorAll('[data-create-step="fields"]')];
   const editorRelationsSteps = [...document.querySelectorAll('[data-create-step="relations"]')];
   const editorCreateNext = document.querySelector("[data-create-next]");
   let preparedImage = "";
   let preparedFile = "";
   let imagePreparing = false;
+
+  function renumberCreateSections() {
+    [...(editorSectionsList?.children || [])].forEach((row, index) => {
+      const marker = row.querySelector("[data-editor-create-section-number]");
+      if (marker) marker.textContent = String(index + 2).padStart(2, "0");
+    });
+  }
+
+  function addCreateSection(section = {}) {
+    if (!editorSectionsList) return;
+    const row = document.createElement("article");
+    row.className = "company-editor-section-row";
+    const marker = document.createElement("span");
+    marker.dataset.editorCreateSectionNumber = "";
+    const fields = document.createElement("div");
+    const title = document.createElement("input");
+    title.type = "text";
+    title.required = true;
+    title.maxLength = 180;
+    title.placeholder = "Название раздела";
+    title.value = String(section.title || "НОВЫЙ РАЗДЕЛ");
+    title.dataset.editorCreateSectionTitle = "";
+    const paragraphs = document.createElement("textarea");
+    paragraphs.required = true;
+    paragraphs.maxLength = 12000;
+    paragraphs.rows = 7;
+    paragraphs.placeholder = "Текст первого абзаца\n\nТекст второго абзаца";
+    paragraphs.value = Array.isArray(section.paragraphs) ? section.paragraphs.join("\n\n") : "";
+    paragraphs.dataset.editorCreateSectionParagraphs = "";
+    fields.append(title, paragraphs);
+    const remove = document.createElement("button");
+    remove.type = "button";
+    remove.className = "company-editor-section-remove";
+    remove.textContent = "УДАЛИТЬ";
+    remove.addEventListener("click", () => { row.remove(); renumberCreateSections(); });
+    row.append(marker, fields, remove);
+    editorSectionsList.append(row);
+    renumberCreateSections();
+    title.focus({ preventScroll: true });
+  }
+
+  function collectCreateSections() {
+    return [...(editorSectionsList?.children || [])].map((row) => ({
+      title: row.querySelector("[data-editor-create-section-title]")?.value.trim() || "НОВЫЙ РАЗДЕЛ",
+      paragraphs: String(row.querySelector("[data-editor-create-section-paragraphs]")?.value || "")
+        .split(/\n\s*\n/)
+        .map((paragraph) => paragraph.trim())
+        .filter(Boolean),
+    })).filter((section) => section.paragraphs.length);
+  }
 
   function setCreateStage(stage) {
     editorFieldsSteps.forEach((element) => { element.hidden = stage === "type"; });
@@ -769,6 +821,7 @@
     editorRelationsToggle?.setAttribute("aria-expanded", "false");
     editorRelationsList?.querySelectorAll('input[type="checkbox"]:checked').forEach((input) => { input.checked = false; });
     if (editorRelationsSearch) editorRelationsSearch.value = "";
+    if (editorSectionsList) editorSectionsList.replaceChildren();
     editorRelationsList?.querySelectorAll(".company-editor-relation-option").forEach((option) => { option.hidden = false; });
     if (editorResult) editorResult.hidden = true;
     if (editorSubmit) {
@@ -779,6 +832,27 @@
     updateRelationsCount();
     setCreateStage("type");
   }
+
+  editorAddSection?.addEventListener("click", () => addCreateSection());
+
+  function openRequestedCreatePanel() {
+    const requestedType = new URLSearchParams(window.location.search).get("create");
+    if (!["client", "anomaly", "incident"].includes(requestedType) || !sessionApi?.isEditor?.()) return;
+    resetCreateWizard();
+    showEditorPanel(createPanel);
+    const typeInput = editorForm?.querySelector(`input[name="type"][value="${requestedType}"]`);
+    if (typeInput) {
+      typeInput.checked = true;
+      typeInput.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+    const url = new URL(window.location.href);
+    url.searchParams.delete("create");
+    url.hash = "company-editor";
+    window.history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+  }
+
+  sessionApi?.ready?.then(openRequestedCreatePanel);
+  window.addEventListener(sessionApi?.eventName || "midgas:editor-session", openRequestedCreatePanel);
 
   function updateRelationsCount() {
     if (!editorRelationsCount || !editorRelationsList) return;
@@ -1003,6 +1077,7 @@
         location: formData.get("location"),
         summary: formData.get("summary"),
         description: formData.get("description"),
+        sections: collectCreateSections(),
         image: preparedImage,
         relations,
       });

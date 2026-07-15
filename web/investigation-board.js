@@ -477,9 +477,23 @@
   const nodeError = document.querySelector("[data-board-node-error]");
   const nodeDialogTitle = document.querySelector("[data-board-node-dialog-title]");
   const nodeSubmit = document.querySelector("[data-board-node-submit]");
+  const nodeDetailFields = [...document.querySelectorAll("[data-board-node-details]")];
+  function updateNodeDialogMode() {
+    const selectedType = nodeForm?.querySelector('[name="nodeType"]:checked')?.value || "";
+    const opensRecordCreator = typeOrder.includes(selectedType);
+    nodeDetailFields.forEach((field) => {
+      field.hidden = opensRecordCreator;
+      field.querySelectorAll("input, textarea").forEach((control) => { control.required = !opensRecordCreator; });
+    });
+    if (nodeSubmit && !nodeForm?.elements.nodeId?.value) nodeSubmit.textContent = opensRecordCreator ? "ПЕРЕЙТИ К СОЗДАНИЮ КАРТОЧКИ" : "ДОБАВИТЬ УЗЕЛ";
+  }
   function openNodeDialog(node = null) {
     nodeForm?.reset(); if (nodeError) nodeError.textContent = "";
     if (nodeForm) {
+      nodeForm.querySelectorAll('[name="nodeType"]').forEach((input) => {
+        input.disabled = Boolean(node) && typeOrder.includes(input.value);
+        input.closest("label")?.toggleAttribute("hidden", input.disabled);
+      });
       nodeForm.elements.nodeId.value = node?.row?.id || "";
       if (node?.remote) {
         const type = node.kind === "subject" ? "SUB" : "LOC";
@@ -491,6 +505,7 @@
     }
     if (nodeDialogTitle) nodeDialogTitle.textContent = node ? "РЕДАКТИРОВАТЬ УЗЕЛ" : "ДОБАВИТЬ НА ДОСКУ";
     if (nodeSubmit) nodeSubmit.textContent = node ? "СОХРАНИТЬ ИЗМЕНЕНИЯ" : "ДОБАВИТЬ УЗЕЛ";
+    updateNodeDialogMode();
     nodeDialog?.showModal?.();
   }
   function closeNodeDialog() { nodeDialog?.close?.(); }
@@ -501,6 +516,13 @@
     try {
       const values = new FormData(nodeForm);
       const editingId = String(values.get("nodeId") || "");
+      const selectedType = String(values.get("nodeType") || "");
+      if (!editingId && typeOrder.includes(selectedType)) {
+        closeNodeDialog();
+        closeBoard();
+        window.location.href = `index.html?create=${encodeURIComponent(selectedType)}#company-account`;
+        return;
+      }
       const center = worldPoint(viewport.getBoundingClientRect().left + viewport.clientWidth / 2, viewport.getBoundingClientRect().top + viewport.clientHeight / 2);
       const payload = {
         node_type: values.get("nodeType"), title: String(values.get("title") || "").trim(),
@@ -557,6 +579,7 @@
     await reloadRemoteBoard(); setEditStatus("УЗЕЛ УДАЛЁН");
   });
   document.querySelector("[data-board-node-cancel]")?.addEventListener("click", closeNodeDialog);
+  nodeForm?.querySelectorAll('[name="nodeType"]').forEach((input) => input.addEventListener("change", updateNodeDialogMode));
   document.querySelector("[data-board-inspector-toggle]")?.addEventListener("click", () => inspector.root?.classList.toggle("is-expanded"));
   window.addEventListener("keydown", (event) => { if (event.key === "Escape" && isFullscreen && !nodeDialog?.open) closeBoard(); });
   window.addEventListener(sessionApi?.eventName || "midgas:editor-session", updateEditorAccess);

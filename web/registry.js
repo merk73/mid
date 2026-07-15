@@ -60,7 +60,22 @@ function createRegistryCard(record) {
   return card;
 }
 
+function createRegistryAddCard() {
+  const link = document.createElement("a");
+  link.className = "registry-create-card";
+  link.href = `index.html?create=${encodeURIComponent(registryType)}#company-account`;
+  const icon = document.createElement("span");
+  icon.textContent = "+";
+  const title = document.createElement("strong");
+  title.textContent = "НОВАЯ КАРТОЧКА";
+  const note = document.createElement("small");
+  note.textContent = registryType === "client" ? "ДОБАВИТЬ КЛИЕНТА" : registryType === "anomaly" ? "ДОБАВИТЬ АНОМАЛИЮ" : "ДОБАВИТЬ ИНЦИДЕНТ";
+  link.append(icon, title, note);
+  return link;
+}
+
 registryRecords.forEach((record) => registryGrid.append(createRegistryCard(record)));
+registryGrid.append(createRegistryAddCard());
 registryEmpty.hidden = registryRecords.length > 0;
 
 if (registryType === "client") {
@@ -91,7 +106,7 @@ if (registryType === "client") {
 function refreshRegistryFromSource() {
   const records = Object.values(window.MIDGAS_RECORDS?.[registryType] || {})
     .sort((left, right) => left.id.localeCompare(right.id, "ru"));
-  registryGrid.replaceChildren(...records.map(createRegistryCard));
+  registryGrid.replaceChildren(...records.map(createRegistryCard), createRegistryAddCard());
   registryEmpty.hidden = records.length > 0;
   document.querySelector("#catalog-count").textContent = `${String(records.length).padStart(4, "0")} ЗАПИСЕЙ`;
   if (registryType !== "client") return;

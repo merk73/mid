@@ -495,6 +495,20 @@
     return bridge?.isConfigured?.() ? bridge : null;
   }
 
+  function buildCreatedSections(sections, description, relations) {
+    const additional = (Array.isArray(sections) ? sections : []).map((section) => ({
+      title: String(section?.title || "НОВЫЙ РАЗДЕЛ").trim() || "НОВЫЙ РАЗДЕЛ",
+      paragraphs: (Array.isArray(section?.paragraphs) ? section.paragraphs : [])
+        .map((paragraph) => String(paragraph || "").trim())
+        .filter(Boolean),
+    })).filter((section) => section.paragraphs.length);
+    return [{
+      title: "ПЕРВИЧНАЯ РЕГИСТРАЦИЯ",
+      paragraphs: [description],
+      relatedRecords: relations,
+    }, ...additional];
+  }
+
   function remoteCreateDraft(payload, type) {
     const now = new Date().toISOString();
     const cardType = String(payload.cardType || TYPE_META[type].defaultCardType).trim();
@@ -532,11 +546,7 @@
         editorRelations: relations,
         editorRelationsVersion: 1,
         fields,
-        sections: [{
-          title: "ПЕРВИЧНАЯ РЕГИСТРАЦИЯ",
-          paragraphs: [description],
-          relatedRecords: relations,
-        }],
+        sections: buildCreatedSections(payload.sections, description, relations),
       }),
     };
   }
@@ -633,11 +643,7 @@
       editorRelations: relations,
       editorRelationsVersion: 1,
       fields,
-      sections: [{
-        title: "ПЕРВИЧНАЯ РЕГИСТРАЦИЯ",
-        paragraphs: [description],
-        relatedRecords: relations,
-      }],
+      sections: buildCreatedSections(payload.sections, description, relations),
     });
 
     next.lastIssued[type] = numericId(type, id);
