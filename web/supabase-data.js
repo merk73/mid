@@ -610,6 +610,25 @@
     return content;
   }
 
+  function preserveCurrentMedia(snapshotContent, currentContent) {
+    const content = preserveCurrentCover(snapshotContent, currentContent);
+    const current = currentContent && typeof currentContent === "object" ? currentContent : {};
+    if (!Array.isArray(content.sections)) return content;
+    const currentSections = Array.isArray(current.sections) ? current.sections : [];
+    content.sections = content.sections.map((section, index) => {
+      const next = clone(section || {});
+      const currentSection = currentSections[index] && typeof currentSections[index] === "object"
+        ? currentSections[index]
+        : {};
+      ["image", "media"].forEach((key) => {
+        if (Object.prototype.hasOwnProperty.call(currentSection, key)) next[key] = clone(currentSection[key]);
+        else delete next[key];
+      });
+      return next;
+    });
+    return content;
+  }
+
   function publicationRecord(row) {
     const snapshot = row?.publication_snapshot;
     if (!snapshot || typeof snapshot !== "object") return null;
@@ -835,6 +854,94 @@
     });
   }
 
+  async function rollbackRecordVersion(type, code, fromVersion) {
+    if (!RECORD_TYPES.includes(type)) throw new MidgasSupabaseError("Неизвестный тип записи.", { code: "INVALID_RECORD_TYPE" });
+    const version = Number(fromVersion);
+    if (!Number.isInteger(version) || version <= 1) {
+      throw new MidgasSupabaseError("Для этого изменения нет предыдущей версии.", { code: "VERSION_NOT_ROLLBACKABLE", status: 409 });
+    }
+    return remoteOperation(`Откат ${code} перед версией ${version}`, async () => {
+      const { client } = await ensureApprovedEditor();
+      const existingRow = await findRowByCode(client, code);
+      if (existingRow.record_type !== type) {
+        throw new MidgasSupabaseError(`Тип записи ${code} не совпадает с данными Supabase.`, { code: "RECORD_TYPE_MISMATCH", status: 409 });
+      }
+      const versionQuery = client
+        .from("record_versions")
+        .select("version,snapshot,change_kind,changed_at")
+        .eq("record_id", existingRow.id)
+        .lt("version", version)
+        .order("version", { ascending: false })
+        .limit(1);
+      const response = typeof versionQuery.maybeSingle === "function" ? await versionQuery.maybeSingle() : await versionQuery.single();
+      const archived = checked(response, `чтение версии ${code}`);
+      if (!archived?.snapshot?.content) {
+        throw new MidgasSupabaseError(`Предыдущая версия ${code} не найдена.`, { code: "VERSION_NOT_FOUND", status: 404 });
+      }
+      const content = preserveCurrentMedia(archived.snapshot.content, existingRow.content);
+      const update = await client
+        .from(RECORDS_TABLE)
+        .update({
+          content,
+          cover_path: existingRow.cover_path || null,
+          deleted_at: archived.snapshot.deleted_at || null,
+        })
+        .eq("id", existingRow.id)
+        .select(RECORD_SELECT)
+        .single();
+      const row = checked(update, `откат ${code}`);
+      const previousPaths = collectStoredPaths(rowToRecord(existingRow));
+      const currentPaths = collectStoredPaths(rowToRecord(row));
+      const stalePaths = [...previousPaths].filter((path) => !currentPaths.has(path));
+      if (stalePaths.length) await removeStoredPaths(client, stalePaths, `удаление файлов после отката ${code}`);
+      if (Array.isArray(content.editorRelations)) {
+        await syncRelationships(client, row, content.editorRelations);
+      }
+      const record = rowToRecord(row);
+      applyRow(row, row.deleted_at ? "delete" : "update");
+      return {
+        type,
+        row: clone(row),
+        record,
+        publicationRecord: publicationRecord(row),
+        rolledBackFrom: version,
+        restoredVersion: archived.version,
+      };
+    });
+  }
+
+  async function rollbackRelationship(action, sourceCode, targetCode) {
+    return remoteOperation("Откат связи карточек", async () => {
+      const { client } = await ensureApprovedEditor();
+      const source = await findRowByCode(client, sourceCode);
+      const target = await findRowByCode(client, targetCode);
+      const [forward, reverse] = await Promise.all([
+        client.from(RELATIONSHIPS_TABLE).select("id").eq("source_id", source.id).eq("target_id", target.id),
+        client.from(RELATIONSHIPS_TABLE).select("id").eq("source_id", target.id).eq("target_id", source.id),
+      ]);
+      const existing = [...(checked(forward, "чтение связи") || []), ...(checked(reverse, "чтение связи") || [])];
+      if (action === "link" && existing.length) {
+        checked(await client.from(RELATIONSHIPS_TABLE).delete().in("id", existing.map((item) => item.id)), "откат добавления связи");
+      } else if (action === "unlink" && !existing.length) {
+        checked(await client.from(RELATIONSHIPS_TABLE).insert({ source_id: source.id, target_id: target.id }), "откат удаления связи");
+      }
+      await loadPublicRecords({ throwOnError: true });
+      return { source: sourceCode, target: targetCode, action };
+    });
+  }
+
+  async function rollbackChange(change = {}) {
+    const action = String(change.action || "");
+    if (action === "create") return softDeleteRecord(change.type, change.id);
+    if (["update", "delete", "restore", "reset"].includes(action)) {
+      return rollbackRecordVersion(change.type, change.id, change.version);
+    }
+    if (["link", "unlink"].includes(action)) {
+      return rollbackRelationship(action, change.source, change.target);
+    }
+    throw new MidgasSupabaseError("Это изменение нельзя откатить автоматически.", { code: "CHANGE_NOT_ROLLBACKABLE", status: 409 });
+  }
+
   function markLocalFallback(operation, cause) {
     const error = readableError(cause, operation);
     setStatus(
@@ -857,6 +964,8 @@
     isNetworkError,
     loadPublicRecords,
     loadChangeFeed,
+    rollbackChange,
+    rollbackRecordVersion,
     createRecord,
     updateRecord,
     upsertOverride: updateRecord,

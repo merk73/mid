@@ -141,8 +141,9 @@
     [createPanel, recoveryPanel].forEach((candidate) => {
       if (candidate) candidate.hidden = candidate !== panel;
     });
+    document.body.classList.toggle("editor-overlay-open", Boolean(panel));
     if (panel === recoveryPanel) renderRecoveryLists();
-    panel?.scrollIntoView({ behavior: "smooth", block: "start" });
+    panel?.querySelector(".editor-work-dialog")?.scrollTo?.({ top: 0 });
   }
 
   function makeRecoveryEntry(entry, actionLabel, action) {
@@ -207,6 +208,7 @@
     if (editorHome) editorHome.hidden = !signedIn;
     if (editorActions) editorActions.hidden = !isEditor;
     if (!isEditor) [createPanel, recoveryPanel].forEach((panel) => { if (panel) panel.hidden = true; });
+    if (!isEditor) document.body.classList.remove("editor-overlay-open");
     if (accountEmail) accountEmail.textContent = session?.email || "";
     if (accountSessionLabel) accountSessionLabel.textContent = isEditor ? "ВХОД ВЫПОЛНЕН" : "ЗАЯВКА ОЖИДАЕТ ОДОБРЕНИЯ";
     if (accountSessionCopy) {
@@ -325,9 +327,14 @@
     button.addEventListener("click", () => {
       const panel = button.closest("[data-editor-create-panel], [data-editor-recovery-panel]");
       if (panel) panel.hidden = true;
-      document.querySelector("#company-account")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      document.body.classList.remove("editor-overlay-open");
     });
   });
+  [createPanel, recoveryPanel].forEach((panel) => panel?.addEventListener("click", (event) => {
+    if (event.target !== panel) return;
+    panel.hidden = true;
+    document.body.classList.remove("editor-overlay-open");
+  }));
 
   accountLogout.forEach((button) => button.addEventListener("click", async () => {
     button.disabled = true;
@@ -520,6 +527,7 @@
     }, {});
     const statements = [];
     if (changes.length) statements.push(`Добавлено ${changes.join(", ")}`);
+    if (eventCounts.create && !changes.length) statements.push(`создано карточек ${eventCounts.create}`);
     if (eventCounts.update) statements.push(`обновлено ${eventCounts.update}`);
     if (eventCounts.delete) statements.push(`скрыто ${eventCounts.delete}`);
     if (eventCounts.restore) statements.push(`восстановлено ${eventCounts.restore}`);
@@ -562,6 +570,7 @@
 
     if (day.events?.length) {
       const eventLabels = {
+        create: "СОЗДАНО",
         update: "ОБНОВЛЕНО",
         delete: "СКРЫТО",
         restore: "ВОССТАНОВЛЕНО",
@@ -585,6 +594,32 @@
         name.textContent = event.name || event.id;
         wrapper.append(code, name);
         item.append(wrapper);
+        const canRollback = sessionApi?.isEditor?.() && (
+          event.action === "create"
+          || (["update", "delete", "restore", "reset"].includes(event.action) && Number(event.version) > 1)
+          || (["link", "unlink"].includes(event.action) && event.source && event.target)
+        );
+        if (canRollback) {
+          const rollback = document.createElement("button");
+          rollback.type = "button";
+          rollback.className = "company-journal-rollback";
+          rollback.textContent = "СДЕЛАТЬ ОТКАТ";
+          rollback.addEventListener("click", async () => {
+            rollback.disabled = true;
+            rollback.textContent = "ОТКАТЫВАЮ…";
+            try {
+              const result = await window.MIDGAS_SUPABASE_DATA?.rollbackChange?.(event);
+              if (!result) throw new Error("Модуль отката Supabase недоступен.");
+              if (accountStatus) accountStatus.textContent = `${event.id}: ИЗМЕНЕНИЕ ОТКАЧЕНО. ОБНОВЛЯЮ ЖУРНАЛ…`;
+              window.setTimeout(() => window.location.reload(), 420);
+            } catch (error) {
+              rollback.disabled = false;
+              rollback.textContent = "СДЕЛАТЬ ОТКАТ";
+              if (accountStatus) accountStatus.textContent = error.message || "НЕ УДАЛОСЬ ВЫПОЛНИТЬ ОТКАТ.";
+            }
+          });
+          item.append(rollback);
+        }
         list.append(item);
       });
       group.append(heading, list);
@@ -610,6 +645,7 @@
       const rows = await window.MIDGAS_SUPABASE_DATA?.loadChangeFeed?.(300);
       remoteJournalEvents = (rows || []).flatMap((row) => {
         const action = {
+          record_created: "create",
           record_updated: "update",
           record_soft_deleted: "delete",
           record_restored: "restore",
@@ -624,6 +660,9 @@
           type: row.record_type,
           id: relationCode || row.record_code || "ЗАПИСЬ",
           name: action === "link" || action === "unlink" ? "Связь карточек" : (row.record_name || row.record_code),
+          version: Number(row.details?.version) || null,
+          source: row.details?.source || "",
+          target: row.details?.target || "",
         }];
       });
       renderJournal();
@@ -743,7 +782,14 @@
   const editorAddSection = document.querySelector("[data-editor-add-section]");
   const editorFieldsSteps = [...document.querySelectorAll('[data-create-step="fields"]')];
   const editorRelationsSteps = [...document.querySelectorAll('[data-create-step="relations"]')];
+  const editorWizardStages = [...document.querySelectorAll("[data-wizard-stage]")];
+  const editorWizardProgress = [...document.querySelectorAll("[data-wizard-progress]")];
+  const editorWizardBack = document.querySelector("[data-wizard-back]");
+  const editorWizardCounter = document.querySelector("[data-wizard-counter]");
+  const editorWizardNavigation = document.querySelector("[data-wizard-navigation]");
   const editorCreateNext = document.querySelector("[data-create-next]");
+  const editorStageOrder = ["type", "details", "media", "sections", "relations", "publish"];
+  let editorStage = "type";
   let preparedImage = "";
   let preparedFile = "";
   let imagePreparing = false;
@@ -799,6 +845,25 @@
   }
 
   function setCreateStage(stage) {
+    if (editorWizardStages.length) {
+      editorStage = editorStageOrder.includes(stage) ? stage : "type";
+      const index = editorStageOrder.indexOf(editorStage);
+      editorWizardStages.forEach((element) => { element.hidden = element.dataset.wizardStage !== editorStage; });
+      editorWizardProgress.forEach((element, progressIndex) => {
+        element.classList.toggle("is-current", progressIndex === index);
+        element.classList.toggle("is-complete", progressIndex < index);
+      });
+      if (editorWizardBack) editorWizardBack.hidden = index === 0;
+      if (editorCreateNext) {
+        editorCreateNext.hidden = index === editorStageOrder.length - 1;
+        editorCreateNext.textContent = index === editorStageOrder.length - 2 ? "К ПУБЛИКАЦИИ →" : "ДАЛЕЕ →";
+      }
+      if (editorWizardCounter) editorWizardCounter.textContent = `ШАГ ${index + 1} ИЗ ${editorStageOrder.length}`;
+      if (editorWizardNavigation) editorWizardNavigation.hidden = false;
+      clearEditorError();
+      document.querySelector(`[data-wizard-stage="${editorStage}"] input:not([type="hidden"]), [data-wizard-stage="${editorStage}"] textarea, [data-wizard-stage="${editorStage}"] select`)?.focus?.({ preventScroll: true });
+      return;
+    }
     editorFieldsSteps.forEach((element) => { element.hidden = stage === "type"; });
     editorRelationsSteps.forEach((element) => { element.hidden = stage !== "relations"; });
   }
@@ -824,6 +889,7 @@
     if (editorSectionsList) editorSectionsList.replaceChildren();
     editorRelationsList?.querySelectorAll(".company-editor-relation-option").forEach((option) => { option.hidden = false; });
     if (editorResult) editorResult.hidden = true;
+    if (editorWizardProgress.length) editorWizardProgress.forEach((item) => { item.hidden = false; });
     if (editorSubmit) {
       editorSubmit.disabled = false;
       editorSubmit.textContent = "ОПУБЛИКОВАТЬ";
@@ -865,6 +931,9 @@
 
   function buildRelationsList() {
     if (!editorRelationsList) return;
+    const selectedBeforeRefresh = new Set([...editorRelationsList.querySelectorAll('input[type="checkbox"]:checked')]
+      .map((input) => `${input.dataset.relationType}:${input.dataset.relationId}`));
+    editorRelationsList.replaceChildren();
     const relationRecords = registrySnapshot().records;
     types.forEach((type) => {
       relationRecords[type]
@@ -879,6 +948,7 @@
           input.dataset.relationType = type;
           input.dataset.relationId = record.id;
           input.dataset.relationLabel = record.name || record.alias || record.id;
+          input.checked = selectedBeforeRefresh.has(`${type}:${record.id}`);
           const copy = document.createElement("span");
           const meta = document.createElement("small");
           const name = document.createElement("strong");
@@ -889,11 +959,12 @@
           editorRelationsList.append(label);
         });
     });
-    editorRelationsList.addEventListener("change", updateRelationsCount);
     updateRelationsCount();
   }
 
+  editorRelationsList?.addEventListener("change", updateRelationsCount);
   buildRelationsList();
+  window.addEventListener("midgas:records-ready", buildRelationsList);
 
   editorRelationsToggle?.addEventListener("click", () => {
     if (!editorRelationsPanel) return;
@@ -995,12 +1066,34 @@
       if (editorClientAccessField) editorClientAccessField.hidden = !isClient;
       const accessSelect = editorClientAccessField?.querySelector("select");
       if (accessSelect) accessSelect.disabled = !isClient;
-      setCreateStage("fields");
+      if (!editorWizardStages.length) setCreateStage("fields");
     });
   });
 
   editorCreateNext?.addEventListener("click", () => {
     clearEditorError();
+    if (editorWizardStages.length) {
+      const current = document.querySelector(`[data-wizard-stage="${editorStage}"]`);
+      const required = [...(current?.querySelectorAll("input[required], select[required], textarea[required]") || [])];
+      const invalid = required.find((control) => !control.checkValidity());
+      if (invalid) {
+        invalid.reportValidity();
+        return;
+      }
+      if (editorStage === "media") {
+        if (imagePreparing) {
+          showEditorError("Дождитесь завершения оптимизации изображения.");
+          return;
+        }
+        if (!preparedImage) {
+          showEditorError("Загрузите обложку карточки.");
+          return;
+        }
+      }
+      const index = editorStageOrder.indexOf(editorStage);
+      setCreateStage(editorStageOrder[Math.min(editorStageOrder.length - 1, index + 1)]);
+      return;
+    }
     const required = editorFieldsSteps.flatMap((element) => [...element.querySelectorAll("input[required], select[required], textarea[required]")]);
     const invalid = required.find((control) => !control.checkValidity());
     if (invalid) {
@@ -1016,6 +1109,11 @@
       return;
     }
     setCreateStage("relations");
+  });
+
+  editorWizardBack?.addEventListener("click", () => {
+    const index = editorStageOrder.indexOf(editorStage);
+    if (index > 0) setCreateStage(editorStageOrder[index - 1]);
   });
 
   editorFile?.addEventListener("change", async () => {
@@ -1099,6 +1197,9 @@
         editorResult.hidden = false;
         editorResult.scrollIntoView({ behavior: reducedMotion ? "auto" : "smooth", block: "nearest" });
       }
+      if (editorWizardStages.length) editorWizardStages.forEach((stage) => { stage.hidden = true; });
+      if (editorWizardNavigation) editorWizardNavigation.hidden = true;
+      editorWizardProgress.forEach((item) => { item.hidden = true; });
       if (editorSubmit) editorSubmit.textContent = "ОПУБЛИКОВАНО";
     } catch (error) {
       showEditorError(error.message || "Не удалось создать карточку.");
