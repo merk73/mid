@@ -21,11 +21,15 @@ headerBackButton?.addEventListener("click", () => {
 
 function updateHeaderMode() {
   if (!siteHeader || !coverHero) return;
-  const switchPoint = Math.max(0, coverHero.offsetHeight - siteHeader.offsetHeight);
-  siteHeader.classList.toggle("is-scrolled", window.scrollY >= switchPoint);
+  const heroBottom = coverHero.getBoundingClientRect().bottom;
+  const hasLeftHero = window.scrollY > 1 && heroBottom <= siteHeader.offsetHeight + 1;
+  siteHeader.classList.toggle("is-scrolled", hasLeftHero);
 }
 
 updateHeaderMode();
+window.requestAnimationFrame(updateHeaderMode);
+window.addEventListener("load", updateHeaderMode);
+window.addEventListener("pageshow", updateHeaderMode);
 window.addEventListener("scroll", updateHeaderMode, { passive: true });
 window.addEventListener("resize", updateHeaderMode);
 
