@@ -944,7 +944,9 @@
     const sourceUrl = URL.createObjectURL(file);
     try {
       const source = await loadImage(sourceUrl);
-      const maximumSide = 1200;
+      // Keep enough source detail for dossier covers and high-density displays.
+      // The previous 1200px / 560KB ceiling visibly softened portraits.
+      const maximumSide = 2400;
       const scale = Math.min(1, maximumSide / Math.max(source.naturalWidth, source.naturalHeight));
       let width = Math.max(1, Math.round(source.naturalWidth * scale));
       let height = Math.max(1, Math.round(source.naturalHeight * scale));
@@ -953,12 +955,12 @@
       canvas.height = height;
       canvas.getContext("2d", { alpha: false }).drawImage(source, 0, 0, width, height);
 
-      let quality = 0.82;
+      let quality = 0.92;
       let blob = await canvasBlob(canvas, "image/webp", quality);
-      for (let attempt = 0; blob && blob.size > 560 * 1024 && attempt < 6; attempt += 1) {
-        quality = Math.max(0.52, quality - 0.09);
-        width = Math.max(420, Math.round(width * 0.86));
-        height = Math.max(280, Math.round(height * 0.86));
+      for (let attempt = 0; blob && blob.size > 2 * 1024 * 1024 && attempt < 3; attempt += 1) {
+        quality = Math.max(0.82, quality - 0.035);
+        width = Math.max(960, Math.round(width * 0.94));
+        height = Math.max(640, Math.round(height * 0.94));
         const resized = document.createElement("canvas");
         resized.width = width;
         resized.height = height;
@@ -966,7 +968,7 @@
         canvas = resized;
         blob = await canvasBlob(canvas, "image/webp", quality);
       }
-      if (!blob) blob = await canvasBlob(canvas, "image/jpeg", 0.76);
+      if (!blob) blob = await canvasBlob(canvas, "image/jpeg", 0.9);
       if (!blob) throw new Error("Браузер не смог подготовить изображение.");
       return blobDataUrl(blob);
     } finally {

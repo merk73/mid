@@ -180,7 +180,7 @@
       addImage.disabled = true;
       setSectionImageBusy(1, "ПОДГОТАВЛИВАЮ ФОТОГРАФИЮ РАЗДЕЛА…");
       try {
-        const src = await prepareImage(file, { maximumSide: 960, targetBytes: 220 * 1024 });
+        const src = await prepareImage(file, { maximumSide: 2000, targetBytes: 1400 * 1024 });
         row._sectionImage = {
           src,
           alt: source.title || "Фотография раздела",
@@ -382,7 +382,7 @@
     const sourceUrl = URL.createObjectURL(file);
     try {
       const source = await loadImage(sourceUrl);
-      const maximumSide = Number(options.maximumSide) || 1200;
+      const maximumSide = Number(options.maximumSide) || 2400;
       const scale = Math.min(1, maximumSide / Math.max(source.naturalWidth, source.naturalHeight));
       let width = Math.max(1, Math.round(source.naturalWidth * scale));
       let height = Math.max(1, Math.round(source.naturalHeight * scale));
@@ -390,13 +390,13 @@
       canvas.width = width;
       canvas.height = height;
       canvas.getContext("2d", { alpha: false }).drawImage(source, 0, 0, width, height);
-      let quality = 0.82;
+      let quality = 0.92;
       let blob = await canvasBlob(canvas, "image/webp", quality);
-      const targetBytes = Number(options.targetBytes) || 480 * 1024;
-      for (let attempt = 0; blob && blob.size > targetBytes && attempt < 6; attempt += 1) {
-        quality = Math.max(0.5, quality - 0.08);
-        width = Math.max(1, Math.round(width * 0.86));
-        height = Math.max(1, Math.round(height * 0.86));
+      const targetBytes = Number(options.targetBytes) || 2 * 1024 * 1024;
+      for (let attempt = 0; blob && blob.size > targetBytes && attempt < 3; attempt += 1) {
+        quality = Math.max(0.82, quality - 0.035);
+        width = Math.max(1, Math.round(width * 0.94));
+        height = Math.max(1, Math.round(height * 0.94));
         const resized = document.createElement("canvas");
         resized.width = width;
         resized.height = height;
