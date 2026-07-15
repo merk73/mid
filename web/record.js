@@ -4,6 +4,8 @@ const id = params.get("id") || "";
 const source = params.get("from") || "";
 const records = window.MIDGAS_RECORDS?.[type] || {};
 let record = records[id];
+const waitsForRemoteRecord = Boolean(window.MIDGAS_SUPABASE_CONFIG?.url);
+if (waitsForRemoteRecord) document.documentElement.classList.add("record-awaiting-sync");
 
 const backLink = document.querySelector("#record-back");
 if (backLink) {
@@ -199,6 +201,23 @@ if (!record) {
 }
 
 renderRecord(record);
+
+function revealSyncedRecord() {
+  const image = document.querySelector("#record-image");
+  const reveal = () => document.documentElement.classList.remove("record-awaiting-sync");
+  if (!image?.src || image.complete) {
+    window.requestAnimationFrame(reveal);
+    return;
+  }
+  image.addEventListener("load", reveal, { once: true });
+  image.addEventListener("error", reveal, { once: true });
+}
+
 window.addEventListener("midgas:records-ready", () => {
   renderRecord(window.MIDGAS_RECORDS?.[type]?.[id] || null);
-});
+  revealSyncedRecord();
+}, { once: true });
+
+// If Supabase is temporarily unavailable, fall back to the bundled dossier
+// instead of leaving the portrait hidden indefinitely.
+if (waitsForRemoteRecord) window.setTimeout(revealSyncedRecord, 5000);

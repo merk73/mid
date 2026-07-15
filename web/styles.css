@@ -10440,3 +10440,10 @@ html.site-maintenance-locked body { overflow: hidden !important; background: #05
   .company-editor-section-remove { grid-column: 1 / -1; min-height: 46px; border-top: 1px solid #4e4e4e; border-left: 0; }
   .record-editor-collection { margin: 10px; }
 }
+.record-awaiting-sync .record-portrait img {
+  opacity: 0;
+}
+
+.record-portrait img {
+  transition: opacity 180ms ease-out;
+}
