@@ -11171,3 +11171,51 @@ body .record-shell .record-relations,
 body .record-shell .record-related-list,
 body .record-shell .record-relations-editor,
 body .record-shell .record-empty { background-color: #fff !important; }
+
+@media (max-width: 760px) {
+  .home-page .company-editor-hub {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    margin: 0;
+    padding-right: 12px;
+    padding-left: 12px;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+  .home-page .home-editor-portal {
+    grid-template-columns: minmax(0, 1fr);
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+  .home-page .home-editor-portal-copy,
+  .home-page .home-editor-portal-action {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    padding: 26px 16px;
+    box-sizing: border-box;
+  }
+  .home-page .home-editor-portal h3 {
+    max-width: 100%;
+    margin-top: 30px;
+    overflow-wrap: anywhere;
+    font-size: clamp(42px, 16vw, 66px);
+    line-height: .82;
+  }
+  .home-page .home-editor-portal p,
+  .home-page .home-editor-portal small { max-width: 100%; overflow-wrap: anywhere; }
+  .home-page .home-editor-portal-action { min-height: 190px; }
+  .home-page .home-editor-portal-action a {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+    gap: 12px;
+    padding: 0 14px;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    box-sizing: border-box;
+  }
+  .home-page .home-editor-portal-action a b { flex: 0 0 auto; }
+}
