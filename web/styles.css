@@ -10331,8 +10331,8 @@ html.site-maintenance-locked body { overflow: hidden !important; background: #05
 }
 
 .client-card-media.is-client-portrait > img {
-  object-fit: contain;
-  object-position: center bottom;
+  object-fit: cover;
+  object-position: center center;
   transform-origin: center bottom;
   background: transparent !important;
 }
