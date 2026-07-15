@@ -6,7 +6,8 @@
     <meta name="description" content="Детальная запись реестра THE MIDGAS." />
     <title>Запись реестра — THE MIDGAS</title>
     <script src="site-access.js?v=2"></script>
-    <link rel="stylesheet" href="styles.css?v=62" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
+    <link rel="stylesheet" href="styles.css?v=68" />
   </head>
   <body>
     <div class="site-shell record-shell">
@@ -42,11 +43,26 @@
             <div class="record-editor-actions" data-record-editor-actions hidden>
               <button type="button" data-record-edit>РЕДАКТИРОВАТЬ</button>
               <button type="button" data-record-delete>УДАЛИТЬ КАРТОЧКУ</button>
+              <button type="button" data-record-save hidden>СОХРАНИТЬ</button>
+              <button type="button" data-record-cancel hidden>ОТМЕНИТЬ</button>
             </div>
+            <section class="record-clearance" data-record-clearance hidden aria-label="Уровни угрозы и доступа">
+              <article class="record-level record-level--threat" data-record-threat>
+                <div><span>УРОВЕНЬ УГРОЗЫ</span><strong data-record-threat-code>—</strong></div>
+                <div class="record-level-scale" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+                <small data-record-threat-label>НЕ УКАЗАН</small>
+              </article>
+              <article class="record-level record-level--access" data-record-access>
+                <div><span>УРОВЕНЬ ДОСТУПА</span><strong data-record-access-code>—</strong></div>
+                <div class="record-level-scale" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+                <small data-record-access-label>НЕ УКАЗАН</small>
+              </article>
+            </section>
           </div>
-          <figure class="record-portrait">
+          <figure class="record-portrait" data-record-cover-figure>
             <img id="record-image" src="" alt="" />
             <figcaption><span id="record-image-id"></span> / DOCUMENTARY IMAGE</figcaption>
+            <div class="record-inline-photo-tools" data-record-cover-tools hidden><input type="file" data-record-cover-file accept="image/png,image/jpeg,image/webp" /><button type="button" data-record-cover-replace>ЗАМЕНИТЬ ФОТО</button><button type="button" data-record-cover-remove>УДАЛИТЬ ФОТО</button></div>
           </figure>
         </section>
 
@@ -58,12 +74,46 @@
           <dl class="record-fields" id="record-fields"></dl>
         </section>
 
+        <section class="record-location" id="record-location" data-record-location hidden aria-labelledby="record-location-title">
+          <header>
+            <span>ГЕОГРАФИЯ ДОСЬЕ</span>
+            <h2 id="record-location-title">ЛОКАЦИЯ</h2>
+            <p data-record-location-label></p>
+          </header>
+          <div class="record-map-shell">
+            <div class="record-map" id="record-map" data-record-map aria-label="Карта местоположения"></div>
+            <div class="record-map-state" data-record-map-state>ОПРЕДЕЛЯЮ КООРДИНАТЫ…</div>
+          </div>
+          <aside class="record-map-meta">
+            <div><span>КООРДИНАТЫ</span><strong data-record-map-coordinates>—</strong></div>
+            <a data-record-map-open href="https://www.openstreetmap.org" target="_blank" rel="noopener">ОТКРЫТЬ В OPENSTREETMAP ↗</a>
+            <div class="record-map-editor" data-record-map-editor hidden>
+              <label><span>ПОИСК ЛОКАЦИИ</span><input type="search" data-record-map-query autocomplete="off" /></label>
+              <button type="button" data-record-map-search>НАЙТИ НА КАРТЕ</button>
+              <small>Можно также поставить точку кликом по карте.</small>
+            </div>
+          </aside>
+        </section>
+
         <section class="record-lore" id="record-lore" hidden>
           <div class="section-heading record-section-heading">
             <span class="section-index">ПОЛНЫЙ ЛОР</span>
+            <button class="record-inline-add-section" type="button" data-record-add-section hidden>+ ДОБАВИТЬ РАЗДЕЛ</button>
           </div>
           <div id="record-sections"></div>
         </section>
+
+        <section class="record-relations" id="record-relations" data-record-relations hidden aria-labelledby="record-relations-title">
+          <header><span>ГРАФ ДОСЬЕ</span><h2 id="record-relations-title">СВЯЗИ</h2><p>Связанные клиенты, аномалии и инциденты.</p></header>
+          <div class="record-related-list" data-record-related-list></div>
+          <div class="record-relations-editor" data-record-relations-editor hidden>
+            <label><span>ПОИСК ПО РЕЕСТРУ</span><input type="search" data-record-relations-search autocomplete="off" placeholder="Имя, номер или тип" /></label>
+            <strong data-record-relations-count>ВЫБРАНО: 0</strong>
+            <div data-record-relations-options></div>
+          </div>
+        </section>
+
+        <div class="record-inline-status" data-record-inline-status role="status" aria-live="polite"></div>
 
         <section class="record-empty" id="record-empty" hidden>
           <p class="record-code">RECORD / NOT FOUND</p>
@@ -72,55 +122,6 @@
           <a class="text-link" href="index.html">Вернуться на главную <span>→</span></a>
         </section>
       </main>
-
-      <dialog class="record-editor-dialog" id="record-editor-dialog" aria-labelledby="record-editor-dialog-title">
-        <form class="record-editor-form" id="record-editor-form" novalidate>
-          <header class="record-editor-dialog-heading">
-            <div><span>EDITOR / EXISTING RECORD</span><h2 id="record-editor-dialog-title">РЕДАКТИРОВАТЬ<br />ДОСЬЕ</h2></div>
-            <button type="button" data-record-editor-close aria-label="Закрыть редактор">×</button>
-          </header>
-
-          <section class="record-editor-identity">
-            <label><span>НОМЕР / НЕИЗМЕНЯЕМЫЙ</span><input name="recordId" readonly /></label>
-            <label><span>ТИП / НЕИЗМЕНЯЕМЫЙ</span><input name="recordKind" readonly /></label>
-            <label><span>НАЗВАНИЕ *</span><input name="name" required maxlength="160" /></label>
-            <label><span>ПСЕВДОНИМ / ПОДЗАГОЛОВОК</span><input name="alias" maxlength="180" /></label>
-            <label><span>КЛАССИФИКАЦИЯ *</span><input name="cardType" required maxlength="180" /></label>
-            <label class="record-editor-wide"><span>КРАТКОЕ ОПИСАНИЕ *</span><textarea name="summary" required maxlength="2000" rows="5"></textarea></label>
-          </section>
-
-          <section class="record-editor-cover">
-            <div><span>ОБЛОЖКА</span><strong>ЗАМЕНИТЬ ИЗОБРАЖЕНИЕ</strong><p class="record-editor-image-status" data-record-editor-image-status role="status" aria-live="polite">Файл будет автоматически уменьшен и преобразован в WEBP. Если файл не выбран, текущая фотография останется без изменений.</p></div>
-            <label>
-              <input type="file" name="image" accept="image/png,image/jpeg,image/webp" />
-              <img data-record-editor-preview src="" alt="Предпросмотр обложки" />
-              <span>ВЫБРАТЬ НОВЫЙ ФАЙЛ</span>
-            </label>
-          </section>
-
-          <section class="record-editor-collection" aria-labelledby="record-editor-fields-title">
-            <header><div><span>ПОЛЯ ДОСЬЕ</span><h3 id="record-editor-fields-title">СВЕДЕНИЯ</h3></div><button type="button" data-record-editor-add-field>+ ДОБАВИТЬ ПОЛЕ</button></header>
-            <div class="record-editor-fields-list" data-record-editor-fields></div>
-          </section>
-
-          <section class="record-editor-collection" aria-labelledby="record-editor-sections-title">
-            <header><div><span>ПОЛНЫЙ МАТЕРИАЛ</span><h3 id="record-editor-sections-title">РАЗДЕЛЫ И АБЗАЦЫ</h3></div><button type="button" data-record-editor-add-section>+ ДОБАВИТЬ РАЗДЕЛ</button></header>
-            <p class="record-editor-help">Абзацы внутри раздела отделяйте пустой строкой. К каждому разделу можно прикрепить одну фотографию, заменить её или удалить; новый файл автоматически уменьшается перед сохранением.</p>
-            <div class="record-editor-sections-list" data-record-editor-sections></div>
-          </section>
-
-          <section class="record-editor-collection record-editor-relations" aria-labelledby="record-editor-relations-title">
-            <header><div><span>ГРАФ СВЯЗЕЙ</span><h3 id="record-editor-relations-title">СВЯЗИ</h3></div><strong data-record-editor-relations-count>ВЫБРАНО: 0</strong></header>
-            <label class="record-editor-relation-search"><span>ПОИСК ПО КАРТОТЕКЕ</span><input type="search" data-record-editor-relations-search placeholder="Имя, номер или тип" /></label>
-            <div class="record-editor-relations-list" data-record-editor-relations></div>
-          </section>
-
-          <footer class="record-editor-submit">
-            <p data-record-editor-status role="status" aria-live="polite">Номер карточки останется неизменным.</p>
-            <button type="submit" data-record-editor-save>СОХРАНИТЬ ИЗМЕНЕНИЯ</button>
-          </footer>
-        </form>
-      </dialog>
 
       <dialog class="record-delete-dialog" id="record-delete-dialog" aria-labelledby="record-delete-title">
         <form id="record-delete-form">
@@ -151,12 +152,14 @@
     <script src="krovolunanie-research.js?v=1"></script>
     <script src="editor-session.js?v=2"></script>
     <script src="site-gate.js?v=1"></script>
-    <script src="supabase-data.js?v=4"></script>
+    <script src="supabase-data.js?v=5"></script>
     <script src="editor-storage.js?v=7"></script>
     <script src="relations-data.js?v=1"></script>
     <script src="app.js?v=24"></script>
     <script src="research-charts.js?v=6"></script>
-    <script src="record.js?v=14"></script>
-    <script src="record-editor.js?v=8"></script>
+    <script src="record.js?v=15"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+    <script src="record-map.js?v=1"></script>
+    <script src="record-inline-editor.js?v=1"></script>
   </body>
 </html>
