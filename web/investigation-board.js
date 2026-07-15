@@ -30,14 +30,18 @@
     return result >>> 0;
   }
 
-  const recordNodes = typeOrder.flatMap((type) => Object.values(registry[type] || {})
-    .sort((left, right) => String(left.id).localeCompare(String(right.id), "ru"))
-    .map((record) => ({
-      key: recordKey(type, record.id), id: record.id, kind: type,
-      title: record.name || record.alias || record.id,
-      summary: record.summary || "Карточка включена в связный контур архива.",
-      image: record.cardImage || record.image || "", record, remote: false,
-    })));
+  function collectRecordNodes() {
+    return typeOrder.flatMap((type) => Object.values(registry[type] || {})
+      .sort((left, right) => String(left.id).localeCompare(String(right.id), "ru"))
+      .map((record) => ({
+        key: recordKey(type, record.id), id: record.id, kind: type,
+        title: record.name || record.alias || record.id,
+        summary: record.summary || "Карточка включена в связный контур архива.",
+        image: record.cardImage || record.image || "", record, remote: false,
+      })));
+  }
+
+  let recordNodes = collectRecordNodes();
 
   const placeDefinitions = [
     ["ХАБАРОВСК", [1, 4, 11, 20, 21, 23].map(clientId)],
@@ -66,16 +70,19 @@
   const recordColumns = 6;
   const recordSpacingX = 250;
   const recordSpacingY = 240;
-  const recordRows = Math.ceil(recordNodes.length / recordColumns);
-  const recordStartX = (width - (recordColumns - 1) * recordSpacingX) / 2;
-  const recordStartY = (height - (recordRows - 1) * recordSpacingY) / 2;
-  recordNodes.forEach((node, index) => {
-    const seed = hash(node.key);
-    const row = Math.floor(index / recordColumns);
-    const column = index % recordColumns;
-    node.x = recordStartX + column * recordSpacingX + (row % 2 ? recordSpacingX * 0.18 : 0) + ((seed % 31) - 15);
-    node.y = recordStartY + row * recordSpacingY + (((seed >>> 8) % 25) - 12);
-  });
+  function layoutRecordNodes(items = recordNodes) {
+    const recordRows = Math.ceil(items.length / recordColumns);
+    const recordStartX = (width - (recordColumns - 1) * recordSpacingX) / 2;
+    const recordStartY = (height - (recordRows - 1) * recordSpacingY) / 2;
+    items.forEach((node, index) => {
+      const seed = hash(node.key);
+      const row = Math.floor(index / recordColumns);
+      const column = index % recordColumns;
+      node.x = recordStartX + column * recordSpacingX + (row % 2 ? recordSpacingX * 0.18 : 0) + ((seed % 31) - 15);
+      node.y = recordStartY + row * recordSpacingY + (((seed >>> 8) % 25) - 12);
+    });
+  }
+  layoutRecordNodes();
 
   let nodes = [...placeNodes, ...recordNodes];
   const nodeMap = new Map(nodes.map((node) => [node.key, node]));
@@ -94,19 +101,29 @@
     if (remoteId) remoteEdgeIds.add(id);
   }
 
-  placeDefinitions.forEach(([, ids], index) => ids.forEach((id) => addEdge(placeNodes[index].key, keyFromId(id), "place")));
-  (window.MIDGAS_RELATIONS?.pairs || []).forEach(([source, target]) => addEdge(keyFromId(source), keyFromId(target)));
-  recordNodes.forEach((node) => {
-    const sectionRelations = Array.isArray(node.record.sections)
-      ? node.record.sections.flatMap((section) => section.relatedRecords || []) : [];
-    const explicit = Array.isArray(node.record.editorRelations) ? node.record.editorRelations : null;
-    (explicit || sectionRelations).forEach((relation) => {
-      const id = String(relation?.id || "");
-      const type = typeOrder.includes(relation?.type) ? relation.type
-        : id.includes("-C-") ? "client" : id.includes("-A-") ? "anomaly" : id.includes("-I-") ? "incident" : "";
-      if (type) addEdge(node.key, recordKey(type, id));
+  function rebuildDataEdges() {
+    [...edgeMap.entries()].forEach(([id, edge]) => {
+      if (edge.kind !== "remote") edgeMap.delete(id);
+      else if (!nodeMap.has(edge.source) || !nodeMap.has(edge.target)) {
+        edgeMap.delete(id);
+        remoteEdgeIds.delete(id);
+      }
     });
-  });
+    placeDefinitions.forEach(([, ids], index) => ids.forEach((id) => addEdge(placeNodes[index].key, keyFromId(id), "place")));
+    (window.MIDGAS_RELATIONS?.pairs || []).forEach(([source, target]) => addEdge(keyFromId(source), keyFromId(target)));
+    recordNodes.forEach((node) => {
+      const sectionRelations = Array.isArray(node.record.sections)
+        ? node.record.sections.flatMap((section) => section.relatedRecords || []) : [];
+      const explicit = Array.isArray(node.record.editorRelations) ? node.record.editorRelations : null;
+      (explicit || sectionRelations).forEach((relation) => {
+        const id = String(relation?.id || "");
+        const type = typeOrder.includes(relation?.type) ? relation.type
+          : id.includes("-C-") ? "client" : id.includes("-A-") ? "anomaly" : id.includes("-I-") ? "incident" : "";
+        if (type) addEdge(node.key, recordKey(type, id));
+      });
+    });
+  }
+  rebuildDataEdges();
 
   function nodeFromRow(row) {
     return {
@@ -135,6 +152,27 @@
   }
 
   nodes.forEach(createNodeElement);
+
+  function syncRecordNodesFromRegistry() {
+    recordNodes.forEach((node) => {
+      nodeElements.get(node.key)?.remove();
+      nodeElements.delete(node.key);
+      nodeMap.delete(node.key);
+    });
+    nodes = nodes.filter((node) => !typeOrder.includes(node.kind));
+    recordNodes = collectRecordNodes();
+    layoutRecordNodes();
+    recordNodes.forEach((node) => {
+      nodes.push(node);
+      nodeMap.set(node.key, node);
+      createNodeElement(node);
+    });
+    rebuildDataEdges();
+    renderThreads();
+    updateCounter();
+    if (!nodeMap.has(activeKey)) activeKey = nodeMap.has("anomaly:MID-A-0001") ? "anomaly:MID-A-0001" : nodes[0]?.key;
+    selectNode(activeKey);
+  }
 
   function makeThread(edge) {
     const source = nodeMap.get(edge.source);
@@ -260,6 +298,21 @@
   async function reloadRemoteBoard() {
     try { const data = await fetchRemoteBoard(); mergeRemoteBoard(data.nodeRows, data.edgeRows, data.positionRows); }
     catch (error) { console.warn("MIDGAS board sync:", error); }
+  }
+
+  let recordGraphReload = null;
+  function reloadRecordGraph() {
+    if (recordGraphReload) return recordGraphReload;
+    recordGraphReload = (async () => {
+      try {
+        await remoteData?.loadPublicRecords?.();
+        syncRecordNodesFromRegistry();
+        await reloadRemoteBoard();
+      } catch (error) {
+        console.warn("MIDGAS record graph sync:", error);
+      }
+    })().finally(() => { recordGraphReload = null; });
+    return recordGraphReload;
   }
 
   const MIN_SCALE = 0.34;
@@ -595,6 +648,7 @@
   if (new URLSearchParams(window.location.search).get("board") === "open") openBoard();
 
   await remoteReady;
+  syncRecordNodesFromRegistry();
   await reloadRemoteBoard();
 
   let previewParallaxFrame = 0;
@@ -615,6 +669,8 @@
       .on("postgres_changes", { event: "*", schema: "public", table: "board_nodes" }, reloadRemoteBoard)
       .on("postgres_changes", { event: "*", schema: "public", table: "board_edges" }, reloadRemoteBoard)
       .on("postgres_changes", { event: "*", schema: "public", table: "board_positions" }, reloadRemoteBoard)
+      .on("postgres_changes", { event: "*", schema: "public", table: "records" }, () => { void reloadRecordGraph(); })
+      .on("postgres_changes", { event: "*", schema: "public", table: "relationships" }, () => { void reloadRecordGraph(); })
       .subscribe();
   }
 
