@@ -60,6 +60,7 @@ async function findOrCreateUser(email: string, login: string, role: string, auth
     email,
     password: authPassword,
     email_confirm: true,
+    app_metadata: { editor_login: login, editor_role: role },
     user_metadata: { login, access_role: role },
   });
   if (!created.error && created.data.user) return created.data.user;
@@ -95,6 +96,7 @@ async function login(request: Request, payload: Record<string, unknown>, ipHash:
   const updated = await service.auth.admin.updateUserById(user.id, {
     password: authPassword,
     email_confirm: true,
+    app_metadata: { editor_login: loginValue, editor_role: account.access_role },
     user_metadata: { login: loginValue, access_role: account.access_role },
   });
   if (updated.error) throw updated.error;

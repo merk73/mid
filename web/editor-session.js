@@ -2,6 +2,7 @@
   "use strict";
 
   const SESSION_EVENT = "midgas:editor-session";
+  const BLOCKED_LOGIN = "abdulo";
   const ROLE_RANK = { pending: 0, limited: 1, full: 2, admin: 3 };
   const ROLE_LABELS = {
     limited: "ОГРАНИЧЕННЫЙ ДОСТУП",
@@ -33,7 +34,34 @@
     return cachedSession;
   }
 
+  function setSuspiciousActivityBlock(blocked) {
+    const root = document.documentElement;
+    let notice = document.querySelector("[data-editor-security-block]");
+    root.classList.toggle("editor-security-blocked", blocked);
+
+    if (!blocked) {
+      notice?.remove();
+      return;
+    }
+    if (notice) return;
+
+    notice = document.createElement("div");
+    notice.className = "editor-security-block";
+    notice.dataset.editorSecurityBlock = "";
+    notice.setAttribute("role", "alertdialog");
+    notice.setAttribute("aria-modal", "true");
+    notice.setAttribute("aria-labelledby", "editor-security-block-title");
+    notice.innerHTML = `
+      <div class="editor-security-block__frame" aria-hidden="true"></div>
+      <div class="editor-security-block__content">
+        <span>MIDGAS / SECURITY NOTICE</span>
+        <h1 id="editor-security-block-title">Доступ к сайту ограничен из-за подозрительной активности</h1>
+      </div>`;
+    document.body.append(notice);
+  }
+
   function notify(session, reason = "updated") {
+    setSuspiciousActivityBlock(Boolean(session?.securityBlocked));
     window.dispatchEvent(new CustomEvent(SESSION_EVENT, { detail: { session, reason } }));
   }
 
@@ -92,15 +120,22 @@
       return Promise.resolve(null);
     }
 
+    const sessionLogin = normalizeLogin(authSession.user.app_metadata?.editor_login);
+    setSuspiciousActivityBlock(sessionLogin === BLOCKED_LOGIN);
+
     if (hydrationPromise && hydrationUserId === authSession.user.id) return hydrationPromise;
     const sequence = ++refreshSequence;
     const currentAuthSession = authSession;
     hydrationUserId = currentAuthSession.user.id;
     hydrationPromise = (async () => {
+      let verifiedUser = currentAuthSession.user;
       let membership;
       let membershipError = "";
       try {
-        membership = await requestMembership(currentAuthSession.user);
+        const verified = await client.auth.getUser(currentAuthSession.access_token);
+        if (verified.error) throw verified.error;
+        verifiedUser = verified.data.user || verifiedUser;
+        membership = await requestMembership(verifiedUser);
       } catch (error) {
         membership = { role: "pending", approved_at: null, created_at: null };
         membershipError = friendlyError(error).message;
@@ -108,9 +143,10 @@
       }
       if (sequence !== refreshSequence) return cachedSession;
 
-      const login = normalizeLogin(currentAuthSession.user.user_metadata?.login || currentAuthSession.user.email?.split("@")[0]);
+      const trustedLogin = normalizeLogin(verifiedUser.app_metadata?.editor_login);
+      const login = trustedLogin || normalizeLogin(verifiedUser.user_metadata?.login || verifiedUser.email?.split("@")[0]);
       cachedSession = Object.freeze({
-        userId: currentAuthSession.user.id,
+        userId: verifiedUser.id,
         login,
         role: membership.role || "pending",
         roleLabel: ROLE_LABELS[membership.role] || ROLE_LABELS.pending,
@@ -118,6 +154,7 @@
         memberSince: membership.created_at || null,
         signedInAt: currentAuthSession.user.last_sign_in_at || "",
         authenticated: true,
+        securityBlocked: trustedLogin === BLOCKED_LOGIN,
         membershipError,
       });
       notify(cachedSession, reason);

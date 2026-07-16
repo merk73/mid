@@ -6,6 +6,107 @@
   font-display: swap;
 }
 
+/* Account-level security notice: Supabase marks the affected editor session. */
+html.editor-security-blocked,
+html.editor-security-blocked body {
+  overflow: hidden !important;
+  overscroll-behavior: none;
+}
+
+.editor-security-block {
+  position: fixed;
+  z-index: 2147483647;
+  inset: 0;
+  display: grid;
+  min-width: 100vw;
+  min-height: 100vh;
+  min-height: 100svh;
+  place-items: center;
+  overflow: hidden;
+  padding: max(28px, env(safe-area-inset-top)) max(22px, env(safe-area-inset-right)) max(28px, env(safe-area-inset-bottom)) max(22px, env(safe-area-inset-left));
+  color: #fff;
+  background: #f21b0c;
+  isolation: isolate;
+  cursor: not-allowed;
+}
+
+.editor-security-block::before,
+.editor-security-block::after {
+  position: absolute;
+  z-index: -1;
+  content: "";
+  pointer-events: none;
+}
+
+.editor-security-block::before {
+  inset: -35%;
+  opacity: .34;
+  background: repeating-linear-gradient(-45deg, transparent 0 44px, #710900 44px 46px);
+  transform: rotate(-4deg);
+}
+
+.editor-security-block::after {
+  width: min(78vw, 920px);
+  aspect-ratio: 1;
+  border: clamp(44px, 9vw, 118px) solid rgba(122, 0, 0, .24);
+  border-radius: 50%;
+}
+
+.editor-security-block__frame {
+  position: absolute;
+  inset: clamp(10px, 2vw, 28px);
+  border: 2px solid rgba(255,255,255,.78);
+  box-shadow: inset 0 0 0 7px rgba(104, 0, 0, .18);
+}
+
+.editor-security-block__frame::before,
+.editor-security-block__frame::after {
+  position: absolute;
+  left: 50%;
+  width: min(180px, 28vw);
+  height: 10px;
+  content: "";
+  background: #fff;
+  transform: translateX(-50%);
+}
+
+.editor-security-block__frame::before { top: -2px; }
+.editor-security-block__frame::after { bottom: -2px; }
+
+.editor-security-block__content {
+  width: min(980px, 100%);
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.editor-security-block__content > span {
+  display: inline-block;
+  margin-bottom: clamp(24px, 5vh, 54px);
+  padding: 9px 13px 8px;
+  color: #f21b0c;
+  background: #fff;
+  font-size: clamp(7px, .8vw, 10px);
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+
+.editor-security-block__content h1 {
+  max-width: 18ch;
+  margin: 0 auto;
+  color: #fff;
+  font-family: var(--display, sans-serif);
+  font-size: clamp(42px, 8vw, 112px);
+  font-weight: 600;
+  line-height: .89;
+  letter-spacing: -.035em;
+  text-wrap: balance;
+  text-shadow: 0 5px 0 rgba(93, 0, 0, .36);
+}
+
+@media (max-width: 560px) {
+  .editor-security-block__content h1 { max-width: 12ch; font-size: clamp(39px, 13vw, 70px); }
+}
+
 /* Full-screen cover for anomaly and incident records */
 body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-identity {
   position: relative;
