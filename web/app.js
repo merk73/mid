@@ -116,7 +116,15 @@ function createClientCardLevels(record) {
     label.textContent = entry.label;
     const value = document.createElement("strong");
     value.textContent = `${entry.prefix}${entry.level || "—"}`;
-    item.append(label, value);
+    const scale = document.createElement("span");
+    scale.className = "client-card-level-scale";
+    scale.setAttribute("aria-hidden", "true");
+    for (let index = 1; index <= 5; index += 1) {
+      const division = document.createElement("span");
+      if (index <= entry.level) division.className = "is-active";
+      scale.append(division);
+    }
+    item.append(label, value, scale);
     root.append(item);
   });
   return root;
@@ -145,15 +153,17 @@ function renderPreviewGrid(grid, records, recordType, limit) {
     const id = document.createElement("span");
     id.textContent = record.id;
     data.append(id);
+    if (recordType === "client") {
+      data.classList.add("client-card-data--levels");
+      data.append(createClientCardLevels(record));
+    }
 
     const heading = document.createElement("h3");
     heading.textContent = record.name;
     const type = document.createElement("p");
     type.textContent = record.cardType;
 
-    card.append(image);
-    if (recordType === "client") card.append(createClientCardLevels(record));
-    card.append(data, heading, type);
+    card.append(image, data, heading, type);
     grid.append(card);
   });
 

@@ -52,14 +52,16 @@ function createRegistryCard(record) {
   const id = document.createElement("span");
   id.textContent = record.id;
   data.append(id);
+  if (registryType === "client") {
+    data.classList.add("client-card-data--levels");
+    data.append(window.MIDGAS_CREATE_CLIENT_CARD_LEVELS(record));
+  }
 
   const heading = document.createElement("h3");
   heading.textContent = record.name;
   const type = document.createElement("p");
   type.textContent = record.cardType;
-  card.append(image);
-  if (registryType === "client") card.append(window.MIDGAS_CREATE_CLIENT_CARD_LEVELS(record));
-  card.append(data, heading, type);
+  card.append(image, data, heading, type);
   return card;
 }
 

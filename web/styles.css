@@ -2565,41 +2565,76 @@ button {
 }
 
 .client-card-levels {
-  position: absolute;
-  z-index: 2;
-  top: 10px;
-  right: 10px;
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, auto));
-  gap: 1px;
+  grid-template-columns: repeat(2, minmax(54px, 68px));
+  align-self: stretch;
+  margin-left: auto;
   overflow: hidden;
-  color: #fff;
-  background: rgba(8, 8, 8, .82);
-  border: 1px solid rgba(255, 255, 255, .38);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, .24);
-  backdrop-filter: blur(5px);
+  color: var(--ink);
+  background: #fff;
+  border-left: 1px solid var(--line);
 }
 
 .client-card-level {
   display: grid;
-  min-width: 48px;
-  padding: 5px 7px 6px;
-  text-align: center;
-  background: rgba(0, 0, 0, .38);
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-content: center;
+  align-items: end;
+  min-width: 0;
+  padding: 7px 8px 6px;
+  text-align: left;
 }
 
-.client-card-level + .client-card-level { border-left: 1px solid rgba(255, 255, 255, .22); }
+.client-card-level + .client-card-level { border-left: 1px solid var(--line); }
 .client-card-level small { font-size: 5px; line-height: 1; letter-spacing: .08em; }
-.client-card-level strong { margin-top: 4px; font-family: var(--display); font-size: 14px; font-weight: 500; line-height: .8; }
-.client-card-level--threat strong { color: #ff6258; }
-.client-card-level--access strong { color: #64c7cb; }
+.client-card-level strong { font-family: var(--display); font-size: 14px; font-weight: 500; line-height: .8; }
+.client-card-level--threat strong { color: #a9231b; }
+.client-card-level--access strong { color: #1f6266; }
 .client-card-level[data-level="0"] strong { color: #aaa9a3; }
 
-@media (max-width: 760px) {
-  .client-card-levels { top: 6px; right: 6px; }
-  .client-card-level { min-width: 42px; padding: 5px 5px 6px; }
-  .client-card-level small { font-size: 4.5px; }
-  .client-card-level strong { font-size: 12px; }
+.client-card-level-scale {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 2px;
+  margin-top: 6px;
+}
+
+.client-card-level-scale > span {
+  height: 4px;
+  background: #d0cec6;
+}
+
+.client-card-level--threat .client-card-level-scale > .is-active { background: #c52d22; }
+.client-card-level--access .client-card-level-scale > .is-active { background: #277276; }
+
+@media (hover: hover) {
+  .client-card:hover .client-card-levels,
+  .client-card:focus-visible .client-card-levels {
+    color: var(--paper);
+    background: var(--ink);
+    border-color: #333;
+  }
+
+  .client-card:hover .client-card-level + .client-card-level,
+  .client-card:focus-visible .client-card-level + .client-card-level {
+    border-color: #333;
+  }
+
+  .client-card:hover .client-card-level-scale > span,
+  .client-card:focus-visible .client-card-level-scale > span {
+    background: #3b3b3b;
+  }
+
+  .client-card:hover .client-card-level--threat .client-card-level-scale > .is-active,
+  .client-card:focus-visible .client-card-level--threat .client-card-level-scale > .is-active {
+    background: #dc4035;
+  }
+
+  .client-card:hover .client-card-level--access .client-card-level-scale > .is-active,
+  .client-card:focus-visible .client-card-level--access .client-card-level-scale > .is-active {
+    background: #3a9094;
+  }
 }
 
 .client-card-data {
@@ -2609,6 +2644,32 @@ button {
   border-bottom: 1px solid var(--line);
   color: var(--muted);
   font-size: 10px;
+}
+
+.client-card-data--levels {
+  align-items: stretch;
+  min-height: 54px;
+  padding: 0 0 0 18px;
+}
+
+.client-card-data--levels > span:first-child {
+  align-self: center;
+  flex: 0 0 auto;
+}
+
+@media (max-width: 760px) {
+  .client-card-data--levels,
+  .home-page .client-card .client-card-data--levels {
+    min-height: 50px;
+    padding: 0 0 0 10px;
+  }
+
+  .client-card-levels { grid-template-columns: repeat(2, minmax(47px, 52px)); }
+  .client-card-level { padding: 6px 5px 5px; }
+  .client-card-level small { font-size: 4.25px; }
+  .client-card-level strong { font-size: 11px; }
+  .client-card-level-scale { gap: 1px; margin-top: 5px; }
+  .client-card-level-scale > span { height: 3px; }
 }
 
 .client-card h3,
