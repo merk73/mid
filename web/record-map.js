@@ -116,6 +116,7 @@
         fadeAnimation: false,
         markerZoomAnimation: false,
       }).setView([lat, lng], 8);
+      map.attributionControl?.setPrefix(false);
       addTiles(false);
       map.on("click", (event) => {
         if (!editing) return;

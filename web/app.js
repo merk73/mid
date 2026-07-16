@@ -24,18 +24,26 @@ headerBackButton?.addEventListener("click", () => {
 });
 
 function updateHeaderMode() {
-  if (!siteHeader || !coverHero) return;
   const heroBottom = coverHero.getBoundingClientRect().bottom;
   const hasLeftHero = window.scrollY > 1 && heroBottom <= siteHeader.offsetHeight + 1;
   siteHeader.classList.toggle("is-scrolled", hasLeftHero);
 }
 
-updateHeaderMode();
-window.requestAnimationFrame(updateHeaderMode);
-window.addEventListener("load", updateHeaderMode);
-window.addEventListener("pageshow", updateHeaderMode);
-window.addEventListener("scroll", updateHeaderMode, { passive: true });
-window.addEventListener("resize", updateHeaderMode);
+if (siteHeader && coverHero) {
+  let headerFrame = 0;
+  const scheduleHeaderMode = () => {
+    if (headerFrame) return;
+    headerFrame = window.requestAnimationFrame(() => {
+      headerFrame = 0;
+      updateHeaderMode();
+    });
+  };
+  updateHeaderMode();
+  window.addEventListener("load", scheduleHeaderMode);
+  window.addEventListener("pageshow", scheduleHeaderMode);
+  window.addEventListener("scroll", scheduleHeaderMode, { passive: true });
+  window.addEventListener("resize", scheduleHeaderMode);
+}
 
 menuButton?.addEventListener("click", () => {
   const isOpen = navigation.classList.toggle("is-open");
@@ -70,6 +78,7 @@ function renderPreviewGrid(grid, records, recordType, limit) {
     image.src = record.cardImage || record.image;
     image.alt = record.name;
     image.loading = "lazy";
+    image.decoding = "async";
     if (record.imageFit) image.dataset.fit = record.imageFit;
 
     const data = document.createElement("div");

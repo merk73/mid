@@ -25,6 +25,7 @@
   let hydrationPromise = null;
   let hydrationUserId = "";
   let warningIntervalId = 0;
+  let suspiciousAccountActive = false;
 
   window.MIDGAS_SUPABASE_CLIENT = client;
 
@@ -50,6 +51,8 @@
   }
 
   function setSuspiciousAccountState(active) {
+    if (suspiciousAccountActive === active) return;
+    suspiciousAccountActive = active;
     if (!active) {
       window.clearInterval(warningIntervalId);
       warningIntervalId = 0;
@@ -99,6 +102,29 @@
     return new Error(message || "Supabase не выполнил запрос авторизации.");
   }
 
+  function isStaleSessionError(error) {
+    const code = String(error?.code || "").toLowerCase();
+    const message = String(error?.message || error || "").toLowerCase();
+    return code === "refresh_token_not_found"
+      || code === "session_not_found"
+      || message.includes("invalid refresh token")
+      || message.includes("refresh token not found")
+      || message.includes("session not found");
+  }
+
+  async function clearStaleSession(reason = "stale-session-cleared") {
+    try {
+      await client?.auth.signOut({ scope: "local" });
+    } catch {
+      // Supabase still clears browser auth storage when the remote session is already gone.
+    }
+    authSession = null;
+    cachedSession = null;
+    refreshSequence += 1;
+    notify(null, reason);
+    return null;
+  }
+
   async function requestMembership(user) {
     const { data, error } = await client
       .from("editor_members")
@@ -133,7 +159,10 @@
       let membershipError = "";
       try {
         const verified = await client.auth.getUser(currentAuthSession.access_token);
-        if (verified.error) throw verified.error;
+        if (verified.error) {
+          if (isStaleSessionError(verified.error)) return clearStaleSession();
+          throw verified.error;
+        }
         verifiedUser = verified.data.user || verifiedUser;
         membership = await requestMembership(verifiedUser);
       } catch (error) {
@@ -227,7 +256,10 @@
     if (!client) return null;
     if (authSession?.user) return hydrate(authSession, "membership-refreshed");
     const { data, error } = await client.auth.getSession();
-    if (error) throw friendlyError(error);
+    if (error) {
+      if (isStaleSessionError(error)) return clearStaleSession();
+      throw friendlyError(error);
+    }
     return hydrate(data.session, "session-refreshed");
   }
 
@@ -238,6 +270,7 @@
     }
     const { data, error } = await client.auth.getSession();
     if (error) {
+      if (isStaleSessionError(error)) return clearStaleSession();
       notify(null, "initialization-error");
       return null;
     }

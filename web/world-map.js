@@ -177,6 +177,7 @@
       fadeAnimation: false,
       markerZoomAnimation: false,
     });
+    map.attributionControl?.setPrefix(false);
     addTiles(false);
     markerLayer = window.L.featureGroup().addTo(map);
     map.on("zoomend", updateMarkerIcons);

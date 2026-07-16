@@ -44,6 +44,7 @@ function createRegistryCard(record) {
   image.src = record.cardImage || record.image;
   image.alt = record.name;
   image.loading = "lazy";
+  image.decoding = "async";
   if (record.imageFit) image.dataset.fit = record.imageFit;
 
   const data = document.createElement("div");

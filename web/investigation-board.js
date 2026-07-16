@@ -143,7 +143,7 @@
     button.style.setProperty("--node-tilt", `${((hash(node.key) % 51) - 25) / 20}deg`);
     if (node.image) {
       const image = document.createElement("img");
-      image.src = node.image; image.alt = ""; image.loading = "lazy"; button.append(image);
+      image.src = node.image; image.alt = ""; image.loading = "lazy"; image.decoding = "async"; button.append(image);
     }
     const code = document.createElement("span");
     const title = document.createElement("strong");
