@@ -441,11 +441,26 @@
   async function persistEdge(source, target) {
     const [sourceKey, targetKey] = [source, target].sort();
     if (edgeMap.has(`${sourceKey}|${targetKey}`)) { setEditStatus("СВЯЗЬ УЖЕ СУЩЕСТВУЕТ"); return; }
-    setEditStatus("СОХРАНЯЕМ СВЯЗЬ…");
-    const { error } = await supabase.from("board_edges").insert({ source_key: sourceKey, target_key: targetKey });
-    if (error && error.code !== "23505") throw error;
-    addEdge(sourceKey, targetKey, "remote", `pending-${Date.now()}`);
-    renderThreads(); selectNode(targetKey); updateCounter(); setEditStatus("СВЯЗЬ СОЗДАНА / ВЫБЕРИТЕ ПЕРВЫЙ УЗЕЛ");
+    setEditStatus("СОХРАНЯЕМ СВЯЗЬ В SUPABASE…");
+    const { data: edgeId, error } = await supabase.rpc("create_board_edge", {
+      p_source_key: sourceKey,
+      p_target_key: targetKey,
+    });
+    if (error) throw error;
+
+    addEdge(sourceKey, targetKey, "remote", edgeId || `pending-${Date.now()}`);
+    const sourceNode = nodeMap.get(sourceKey);
+    const targetNode = nodeMap.get(targetKey);
+    const linksDossiers = typeOrder.includes(sourceNode?.kind) && typeOrder.includes(targetNode?.kind);
+    if (linksDossiers && remoteData?.loadPublicRecords) {
+      await remoteData.loadPublicRecords({ throwOnError: true });
+      syncRecordNodesFromRegistry();
+    } else {
+      renderThreads();
+      updateCounter();
+    }
+    selectNode(targetKey);
+    setEditStatus("СВЯЗЬ СОХРАНЕНА В SUPABASE / ВЫБЕРИТЕ ПЕРВЫЙ УЗЕЛ");
   }
 
   async function handleNodeTap(key) {
@@ -650,19 +665,6 @@
   await remoteReady;
   syncRecordNodesFromRegistry();
   await reloadRemoteBoard();
-
-  let previewParallaxFrame = 0;
-  function updatePreviewParallax() {
-    previewParallaxFrame = 0;
-    if (isFullscreen) return;
-    const rect = stage.getBoundingClientRect();
-    const shift = Math.max(-70, Math.min(70, (window.innerHeight / 2 - rect.top - rect.height / 2) * 0.1));
-    stage.style.setProperty("--board-preview-parallax", `${shift.toFixed(1)}px`);
-  }
-  window.addEventListener("scroll", () => {
-    if (!previewParallaxFrame) previewParallaxFrame = requestAnimationFrame(updatePreviewParallax);
-  }, { passive: true });
-  updatePreviewParallax();
 
   if (supabase) {
     supabase.channel("midgas-board-live")
