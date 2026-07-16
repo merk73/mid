@@ -36,7 +36,6 @@
   const authCopy = document.querySelector("[data-auth-copy]");
   const authStatus = document.querySelector("[data-auth-status]");
   const authSubmit = document.querySelector("[data-auth-submit]");
-  const authModeToggle = document.querySelector("[data-auth-mode-toggle]");
   const createOpen = document.querySelector("[data-editor-create-open]");
   const recoveryOpen = document.querySelector("[data-editor-recovery-open]");
   const createPanel = document.querySelector("[data-editor-create-panel]");
@@ -47,7 +46,6 @@
   const modifiedEmpty = document.querySelector("[data-restore-modified-empty]");
   const maintenanceToggle = document.querySelector("[data-maintenance-toggle]");
   const maintenanceStatus = document.querySelector("[data-maintenance-status]");
-  let authMode = "sign-in";
   let maintenanceState = siteGate?.getState?.() || {};
 
   function renderMaintenanceControls(nextState = {}) {
@@ -70,26 +68,8 @@
     }
   }
 
-  function setAuthMode(mode) {
-    authMode = mode === "sign-up" ? "sign-up" : "sign-in";
-    const registering = authMode === "sign-up";
-    if (authModeLabel) authModeLabel.textContent = registering ? "РЕГИСТРАЦИЯ В SUPABASE" : "ЗАЩИЩЁННЫЙ ВХОД SUPABASE";
-    if (authTitle) authTitle.textContent = registering ? "СОЗДАТЬ АККАУНТ" : "ВХОД В РЕДАКТОР";
-    if (authCopy) {
-      authCopy.textContent = registering
-        ? "После регистрации подтвердите электронную почту. Новый аккаунт получит статус ожидания, а редактор откроется после одобрения владельцем MIDGAS."
-        : "Введите электронную почту и пароль Supabase. Доступ к редактору откроется только для аккаунта с одобренной ролью editor или admin.";
-    }
-    if (authSubmit) authSubmit.textContent = registering ? "ЗАРЕГИСТРИРОВАТЬСЯ" : "ВОЙТИ";
-    if (authModeToggle) authModeToggle.textContent = registering ? "УЖЕ ЕСТЬ АККАУНТ? ВОЙТИ" : "НЕТ АККАУНТА? ЗАРЕГИСТРИРОВАТЬСЯ";
-    const password = accountForm?.elements.namedItem("password");
-    if (password) password.autocomplete = registering ? "new-password" : "current-password";
-    if (authStatus) authStatus.textContent = "";
-  }
-
   function setAuthBusy(busy) {
     if (authSubmit) authSubmit.disabled = busy;
-    if (authModeToggle) authModeToggle.disabled = busy;
     accountForm?.querySelectorAll("input").forEach((input) => { input.disabled = busy; });
   }
 
@@ -104,7 +84,7 @@
     if (authStatus) authStatus.textContent = "";
     if (typeof loginDialog.showModal === "function") loginDialog.showModal();
     else loginDialog.setAttribute("open", "");
-    window.setTimeout(() => accountForm?.elements.namedItem("email")?.focus({ preventScroll: true }), 40);
+    window.setTimeout(() => accountForm?.elements.namedItem("login")?.focus({ preventScroll: true }), 40);
   }
 
   function closePasswordDialog() {
@@ -136,6 +116,10 @@
   function showEditorPanel(panel) {
     if (!sessionApi?.isEditor?.()) {
       openLoginDialog();
+      return;
+    }
+    if (panel === recoveryPanel && !sessionApi?.hasAccess?.("full")) {
+      if (accountStatus) accountStatus.textContent = "ВОССТАНОВЛЕНИЕ ДОСТУПНО ТОЛЬКО В РЕЖИМАХ ПОЛНОГО И АДМИНИСТРАТИВНОГО ДОСТУПА.";
       return;
     }
     [createPanel, recoveryPanel].forEach((candidate) => {
@@ -202,19 +186,23 @@
   }
 
   function renderAccount(session, message = "") {
-    const signedIn = Boolean(session?.authenticated && session?.email);
+    const signedIn = Boolean(session?.authenticated && session?.login);
     const isEditor = Boolean(sessionApi?.isEditor?.());
     if (editorLocked) editorLocked.hidden = signedIn;
     if (editorHome) editorHome.hidden = !signedIn;
     if (editorActions) editorActions.hidden = !isEditor;
+    if (recoveryOpen) recoveryOpen.hidden = !sessionApi?.hasAccess?.("full");
     if (!isEditor) [createPanel, recoveryPanel].forEach((panel) => { if (panel) panel.hidden = true; });
     if (!isEditor) document.body.classList.remove("editor-overlay-open");
-    if (accountEmail) accountEmail.textContent = session?.email || "";
-    if (accountSessionLabel) accountSessionLabel.textContent = isEditor ? "ВХОД ВЫПОЛНЕН" : "ЗАЯВКА ОЖИДАЕТ ОДОБРЕНИЯ";
+    if (accountEmail) accountEmail.textContent = session?.login || "";
+    if (accountSessionLabel) accountSessionLabel.textContent = session?.roleLabel || "ДОСТУП НЕ НАЗНАЧЕН";
     if (accountSessionCopy) {
-      accountSessionCopy.textContent = isEditor
-        ? "Редакционные операции разрешены вашей ролью Supabase."
-        : "Вы вошли в аккаунт, но редактор откроется только после назначения роли editor или admin.";
+      const accessCopy = {
+        limited: "Можно создавать и изменять карточки, связи и доску. Удаление и восстановление недоступны.",
+        full: "Можно создавать, изменять, удалять и восстанавливать карточки и элементы доски.",
+        admin: "Полный редакционный доступ и управление публичным доступом к сайту.",
+      };
+      accountSessionCopy.textContent = accessCopy[session?.role] || "Редакционный доступ не назначен.";
     }
     if (accountIndicator) {
       accountIndicator.textContent = isEditor
@@ -226,11 +214,7 @@
     if (accountStatus) {
       accountStatus.textContent = message || (session?.membershipError
         ? `ВХОД ВЫПОЛНЕН, НО РОЛЬ НЕ ПРОВЕРЕНА: ${session.membershipError}`
-        : (isEditor
-          ? "ВХОД ВЫПОЛНЕН. ВЫБЕРИТЕ НУЖНОЕ ДЕЙСТВИЕ."
-          : (signedIn
-            ? "АККАУНТ ПОДТВЕРЖДЁН. ОЖИДАЙТЕ ОДОБРЕНИЯ РЕДАКЦИОННОГО ДОСТУПА."
-            : "ВОЙДИТЕ ИЛИ СОЗДАЙТЕ АККАУНТ SUPABASE.")));
+        : (isEditor ? "ВХОД ВЫПОЛНЕН. ВЫБЕРИТЕ НУЖНОЕ ДЕЙСТВИЕ." : "ВОЙДИТЕ ПО ВЫДАННЫМ ЛОГИНУ И ПАРОЛЮ."));
     }
     if (isEditor) renderRecoveryLists();
   }
@@ -241,43 +225,19 @@
     siteGate?.refresh?.();
   });
   siteGate?.ready?.then(renderMaintenanceControls);
-  setAuthMode("sign-in");
-
   accountForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!accountForm.reportValidity()) return;
     const values = new FormData(accountForm);
     setAuthBusy(true);
-    if (authStatus) authStatus.textContent = authMode === "sign-up" ? "СОЗДАЁМ АККАУНТ…" : "ПРОВЕРЯЕМ ДАННЫЕ…";
+    if (authStatus) authStatus.textContent = "ПРОВЕРЯЕМ ДАННЫЕ…";
     try {
-      const credentials = { email: values.get("email"), password: values.get("password") };
-      if (authMode === "sign-up") {
-        const result = await sessionApi?.signUp?.(credentials);
-        if (!result) throw new Error("Модуль регистрации Supabase недоступен.");
-        if (result.confirmationRequired) {
-          accountForm.elements.namedItem("password").value = "";
-          setAuthMode("sign-in");
-          if (authStatus) authStatus.textContent = "АККАУНТ СОЗДАН. ПОДТВЕРДИТЕ ПОЧТУ ПО ССЫЛКЕ ИЗ ПИСЬМА, ЗАТЕМ ВОЙДИТЕ.";
-          if (accountStatus) accountStatus.textContent = "РЕГИСТРАЦИЯ ВЫПОЛНЕНА. ОТПРАВЛЕНО ПИСЬМО ДЛЯ ПОДТВЕРЖДЕНИЯ.";
-          return;
-        }
-        accountForm.reset();
-        closeLoginDialog();
-        renderAccount(result.session, result.session?.membershipError
-          ? ""
-          : "АККАУНТ СОЗДАН. РЕДАКЦИОННЫЙ ДОСТУП ОЖИДАЕТ ОДОБРЕНИЯ.");
-        return;
-      }
-
+      const credentials = { login: values.get("login"), password: values.get("password") };
       const session = await sessionApi?.signIn?.(credentials);
       if (!session) throw new Error("Модуль редакционного доступа недоступен.");
       accountForm.reset();
       closeLoginDialog();
-      renderAccount(session, session.membershipError
-        ? ""
-        : (sessionApi.isEditor()
-          ? "ВХОД ВЫПОЛНЕН. РЕЖИМ РЕДАКТОРА РАЗБЛОКИРОВАН."
-          : "ВХОД ВЫПОЛНЕН. РЕДАКЦИОННЫЙ ДОСТУП ОЖИДАЕТ ОДОБРЕНИЯ."));
+      renderAccount(session, session.membershipError ? "" : `${session.roleLabel}. РЕЖИМ РЕДАКТОРА РАЗБЛОКИРОВАН.`);
     } catch (error) {
       const message = error.message || "НЕ УДАЛОСЬ ОТКРЫТЬ РЕДАКЦИОННЫЙ СЕАНС.";
       if (authStatus) authStatus.textContent = message;
@@ -317,7 +277,6 @@
   loginClose?.addEventListener("click", closeLoginDialog);
   passwordOpen?.addEventListener("click", openPasswordDialog);
   passwordClose?.addEventListener("click", closePasswordDialog);
-  authModeToggle?.addEventListener("click", () => setAuthMode(authMode === "sign-in" ? "sign-up" : "sign-in"));
   loginDialog?.addEventListener("click", (event) => { if (event.target === loginDialog) closeLoginDialog(); });
   passwordDialog?.addEventListener("click", (event) => { if (event.target === passwordDialog) closePasswordDialog(); });
   createOpen?.addEventListener("click", () => {
@@ -596,7 +555,7 @@
         name.textContent = event.name || event.id;
         wrapper.append(code, name);
         item.append(wrapper);
-        const canRollback = sessionApi?.isEditor?.() && (
+        const canRollback = sessionApi?.hasAccess?.("full") && (
           event.action === "create"
           || (["update", "delete", "restore", "reset"].includes(event.action) && Number(event.version) > 1)
           || (["link", "unlink"].includes(event.action) && event.source && event.target)
@@ -790,7 +749,8 @@
   const editorWizardCounter = document.querySelector("[data-wizard-counter]");
   const editorWizardNavigation = document.querySelector("[data-wizard-navigation]");
   const editorCreateNext = document.querySelector("[data-create-next]");
-  const editorStageOrder = ["type", "details", "media", "sections", "relations", "publish"];
+  const clientStageOrder = ["identity", "levels", "summary", "sections", "relations", "publish"];
+  const standardStageOrder = ["identity", "summary", "sections", "relations", "publish"];
   let editorStage = "type";
   let preparedImage = "";
   let preparedFile = "";
@@ -846,24 +806,54 @@
     })).filter((section) => section.paragraphs.length);
   }
 
+  function selectedCreateType() {
+    return String(editorForm?.querySelector('input[name="type"]:checked')?.value || "");
+  }
+
+  function activeCreateStages() {
+    return selectedCreateType() === "client" ? clientStageOrder : standardStageOrder;
+  }
+
+  function updateCreateStageNumbers(order) {
+    const numberFor = (stage) => String(order.indexOf(stage) + 1).padStart(2, "0");
+    const summaryNumber = document.querySelector("[data-editor-summary-number]");
+    const sectionsNumber = document.querySelector("[data-editor-sections-number]");
+    const relationsNumber = document.querySelector("[data-editor-relations-number]");
+    const publishNumber = document.querySelector("[data-editor-publish-number]");
+    if (summaryNumber) summaryNumber.textContent = numberFor("summary");
+    if (sectionsNumber) sectionsNumber.textContent = `${numberFor("sections")} / НЕОБЯЗАТЕЛЬНО`;
+    if (relationsNumber) relationsNumber.textContent = `${numberFor("relations")} / НЕОБЯЗАТЕЛЬНО`;
+    if (publishNumber) publishNumber.textContent = numberFor("publish");
+  }
+
   function setCreateStage(stage) {
     if (editorWizardStages.length) {
-      editorStage = editorStageOrder.includes(stage) ? stage : "type";
-      const index = editorStageOrder.indexOf(editorStage);
+      const order = activeCreateStages();
+      editorStage = stage === "type" || order.includes(stage) ? stage : "type";
+      const index = order.indexOf(editorStage);
       editorWizardStages.forEach((element) => { element.hidden = element.dataset.wizardStage !== editorStage; });
-      editorWizardProgress.forEach((element, progressIndex) => {
-        element.classList.toggle("is-current", progressIndex === index);
-        element.classList.toggle("is-complete", progressIndex < index);
-      });
-      if (editorWizardBack) editorWizardBack.hidden = index === 0;
-      if (editorCreateNext) {
-        editorCreateNext.hidden = index === editorStageOrder.length - 1;
-        editorCreateNext.textContent = index === editorStageOrder.length - 2 ? "К ПУБЛИКАЦИИ →" : "ДАЛЕЕ →";
+      const isTypeStage = editorStage === "type";
+      const progressRoot = editorWizardProgress[0]?.parentElement;
+      if (progressRoot) {
+        progressRoot.hidden = isTypeStage;
+        progressRoot.style.gridTemplateColumns = `repeat(${order.length}, minmax(0, 1fr))`;
       }
-      if (editorWizardCounter) editorWizardCounter.textContent = `ШАГ ${index + 1} ИЗ ${editorStageOrder.length}`;
-      if (editorWizardNavigation) editorWizardNavigation.hidden = false;
+      editorWizardProgress.forEach((element) => {
+        const progressIndex = order.indexOf(element.dataset.wizardProgress);
+        element.hidden = progressIndex < 0;
+        element.classList.toggle("is-current", progressIndex === index);
+        element.classList.toggle("is-complete", progressIndex >= 0 && progressIndex < index);
+      });
+      updateCreateStageNumbers(order);
+      if (editorWizardBack) editorWizardBack.hidden = isTypeStage;
+      if (editorCreateNext) {
+        editorCreateNext.hidden = isTypeStage || index === order.length - 1;
+        editorCreateNext.textContent = index === order.length - 2 ? "К ПУБЛИКАЦИИ →" : "ДАЛЕЕ →";
+      }
+      if (editorWizardCounter && !isTypeStage) editorWizardCounter.textContent = `ШАГ ${index + 1} ИЗ ${order.length}`;
+      if (editorWizardNavigation) editorWizardNavigation.hidden = isTypeStage;
       clearEditorError();
-      document.querySelector(`[data-wizard-stage="${editorStage}"] input:not([type="hidden"]), [data-wizard-stage="${editorStage}"] textarea, [data-wizard-stage="${editorStage}"] select`)?.focus?.({ preventScroll: true });
+      if (!isTypeStage) document.querySelector(`[data-wizard-stage="${editorStage}"] input:not([type="hidden"]), [data-wizard-stage="${editorStage}"] textarea, [data-wizard-stage="${editorStage}"] select`)?.focus?.({ preventScroll: true });
       return;
     }
     editorFieldsSteps.forEach((element) => { element.hidden = stage === "type"; });
@@ -876,9 +866,7 @@
     preparedImage = "";
     preparedFile = "";
     imagePreparing = false;
-    if (editorClientAccessField) editorClientAccessField.hidden = true;
-    const accessSelect = editorClientAccessField?.querySelector("select");
-    if (accessSelect) accessSelect.disabled = true;
+    if (editorClientAccessField) editorClientAccessField.hidden = false;
     if (editorPreview) {
       editorPreview.src = "";
       editorPreview.hidden = true;
@@ -891,7 +879,6 @@
     if (editorSectionsList) editorSectionsList.replaceChildren();
     editorRelationsList?.querySelectorAll(".company-editor-relation-option").forEach((option) => { option.hidden = false; });
     if (editorResult) editorResult.hidden = true;
-    if (editorWizardProgress.length) editorWizardProgress.forEach((item) => { item.hidden = false; });
     if (editorSubmit) {
       editorSubmit.disabled = false;
       editorSubmit.textContent = "ОПУБЛИКОВАТЬ";
@@ -1077,7 +1064,10 @@
     url.searchParams.set("limit", "1");
     url.searchParams.set("accept-language", "ru");
     url.searchParams.set("q", value);
-    const response = await window.fetch(url.toString(), { headers: { Accept: "application/json" } });
+    const controller = new AbortController();
+    const timeout = window.setTimeout(() => controller.abort(), 6500);
+    const response = await window.fetch(url.toString(), { headers: { Accept: "application/json" }, signal: controller.signal })
+      .finally(() => window.clearTimeout(timeout));
     if (!response.ok) return null;
     const result = (await response.json())?.[0];
     const lat = Number(result?.lat);
@@ -1091,9 +1081,10 @@
       if (!input.checked) return;
       const isClient = input.value === "client";
       if (editorClientAccessField) editorClientAccessField.hidden = !isClient;
-      const accessSelect = editorClientAccessField?.querySelector("select");
-      if (accessSelect) accessSelect.disabled = !isClient;
-      if (!editorWizardStages.length) setCreateStage("fields");
+      const identityTitle = document.querySelector("[data-editor-identity-title]");
+      if (identityTitle) identityTitle.textContent = isClient ? "КТО ЭТО?" : (input.value === "incident" ? "ЧТО ПРОИЗОШЛО?" : "ЧТО ОБНАРУЖЕНО?");
+      if (editorWizardStages.length) window.setTimeout(() => setCreateStage("identity"), 90);
+      else setCreateStage("fields");
     });
   });
 
@@ -1107,7 +1098,7 @@
         invalid.reportValidity();
         return;
       }
-      if (editorStage === "media") {
+      if (editorStage === "identity") {
         if (imagePreparing) {
           showEditorError("Дождитесь завершения оптимизации изображения.");
           return;
@@ -1117,8 +1108,9 @@
           return;
         }
       }
-      const index = editorStageOrder.indexOf(editorStage);
-      setCreateStage(editorStageOrder[Math.min(editorStageOrder.length - 1, index + 1)]);
+      const order = activeCreateStages();
+      const index = order.indexOf(editorStage);
+      setCreateStage(order[Math.min(order.length - 1, index + 1)]);
       return;
     }
     const required = editorFieldsSteps.flatMap((element) => [...element.querySelectorAll("input[required], select[required], textarea[required]")]);
@@ -1139,8 +1131,10 @@
   });
 
   editorWizardBack?.addEventListener("click", () => {
-    const index = editorStageOrder.indexOf(editorStage);
-    if (index > 0) setCreateStage(editorStageOrder[index - 1]);
+    const order = activeCreateStages();
+    const index = order.indexOf(editorStage);
+    if (index > 0) setCreateStage(order[index - 1]);
+    else setCreateStage("type");
   });
 
   editorFile?.addEventListener("change", async () => {
@@ -1210,7 +1204,7 @@
         access: formData.get("access"),
         location: formData.get("location"),
         summary: formData.get("summary"),
-        description: formData.get("description"),
+        description: formData.get("summary"),
         geo,
         sections: collectCreateSections(),
         image: preparedImage,

@@ -1,16 +1,22 @@
 (() => {
+  "use strict";
+
   const SESSION_EVENT = "midgas:editor-session";
+  const ROLE_RANK = { pending: 0, limited: 1, full: 2, admin: 3 };
+  const ROLE_LABELS = {
+    limited: "ОГРАНИЧЕННЫЙ ДОСТУП",
+    full: "ПОЛНЫЙ ДОСТУП",
+    admin: "ДОСТУП АДМИНИСТРАТОРА",
+    pending: "ДОСТУП НЕ НАЗНАЧЕН",
+  };
   const config = window.MIDGAS_SUPABASE_CONFIG;
   const createClient = window.supabase?.createClient;
   const client = config?.url && config?.publishableKey && typeof createClient === "function"
     ? createClient(config.url, config.publishableKey, {
-      auth: {
-        persistSession: true,
-        autoRefreshToken: true,
-        detectSessionInUrl: true,
-      },
+      auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true },
     })
     : null;
+  const endpoint = config?.url ? `${config.url}/functions/v1/editor-login` : "";
   let cachedSession = null;
   let authSession = null;
   let refreshSequence = 0;
@@ -19,8 +25,8 @@
 
   window.MIDGAS_SUPABASE_CLIENT = client;
 
-  function normalizeEmail(value) {
-    return String(value || "").trim().toLocaleLowerCase("ru");
+  function normalizeLogin(value) {
+    return String(value || "").trim().toLowerCase();
   }
 
   function read() {
@@ -31,21 +37,20 @@
     window.dispatchEvent(new CustomEvent(SESSION_EVENT, { detail: { session, reason } }));
   }
 
-  function editorRole(role, approvedAt) {
-    return Boolean(approvedAt && (role === "editor" || role === "admin"));
+  function hasAccess(required = "limited") {
+    const role = cachedSession?.approvedAt ? cachedSession.role : "pending";
+    return (ROLE_RANK[role] || 0) >= (ROLE_RANK[required] || 1);
   }
 
   function isEditor() {
-    return editorRole(cachedSession?.role, cachedSession?.approvedAt);
+    return hasAccess("limited");
   }
 
-  function validateCredentials({ email, password } = {}) {
-    const normalizedEmail = normalizeEmail(email);
-    if (!normalizedEmail || !normalizedEmail.includes("@")) {
-      throw new Error("Укажите корректный адрес электронной почты.");
-    }
+  function validateCredentials({ login, password } = {}) {
+    const normalizedLogin = normalizeLogin(login);
+    if (!/^[a-z0-9_-]{3,40}$/.test(normalizedLogin)) throw new Error("Укажите корректный логин.");
     if (!String(password || "")) throw new Error("Введите пароль.");
-    return { email: normalizedEmail, password: String(password) };
+    return { login: normalizedLogin, password: String(password) };
   }
 
   function validatePasswordChange({ currentPassword, newPassword, confirmation } = {}) {
@@ -60,31 +65,19 @@
   }
 
   function friendlyError(error) {
-    const message = String(error?.message || "");
-    const normalized = message.toLocaleLowerCase("en");
-    if (normalized.includes("invalid login credentials")) return new Error("Неверная электронная почта или пароль.");
-    if (normalized.includes("email not confirmed")) return new Error("Сначала подтвердите электронную почту по ссылке из письма.");
-    if (normalized.includes("user already registered")) return new Error("Аккаунт с этой почтой уже зарегистрирован.");
-    if (normalized.includes("password") && normalized.includes("least")) return new Error("Пароль не соответствует требованиям безопасности.");
+    const message = String(error?.message || error || "").trim();
+    const normalized = message.toLowerCase();
     if (normalized.includes("failed to fetch") || normalized.includes("network")) return new Error("Нет связи с Supabase. Проверьте подключение к интернету.");
     return new Error(message || "Supabase не выполнил запрос авторизации.");
   }
 
   async function requestMembership(user) {
-    const selectMembership = () => client
+    const { data, error } = await client
       .from("editor_members")
       .select("role, approved_at, created_at")
       .eq("user_id", user.id)
       .maybeSingle();
-
-    let { data, error } = await selectMembership();
     if (error) throw error;
-    if (!data) {
-      const pendingInsert = await client.from("editor_members").insert({ user_id: user.id });
-      if (pendingInsert.error && pendingInsert.error.code !== "23505") throw pendingInsert.error;
-      ({ data, error } = await selectMembership());
-      if (error) throw error;
-    }
     return data || { role: "pending", approved_at: null, created_at: null };
   }
 
@@ -115,10 +108,12 @@
       }
       if (sequence !== refreshSequence) return cachedSession;
 
+      const login = normalizeLogin(currentAuthSession.user.user_metadata?.login || currentAuthSession.user.email?.split("@")[0]);
       cachedSession = Object.freeze({
         userId: currentAuthSession.user.id,
-        email: normalizeEmail(currentAuthSession.user.email),
+        login,
         role: membership.role || "pending",
+        roleLabel: ROLE_LABELS[membership.role] || ROLE_LABELS.pending,
         approvedAt: membership.approved_at || null,
         memberSince: membership.created_at || null,
         signedInAt: currentAuthSession.user.last_sign_in_at || "",
@@ -136,31 +131,33 @@
     return hydrationPromise;
   }
 
-  async function signIn(credentials = {}) {
-    if (!client) throw new Error("Модуль Supabase не загружен.");
-    const { email, password } = validateCredentials(credentials);
-    const { data, error } = await client.auth.signInWithPassword({ email, password });
-    if (error) throw friendlyError(error);
-    return hydrate(data.session, "signed-in");
+  async function callEndpoint(body, accessToken = "") {
+    if (!endpoint || !config?.publishableKey) throw new Error("Модуль Supabase не загружен.");
+    const response = await window.fetch(endpoint, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        apikey: config.publishableKey,
+        ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+      },
+      body: JSON.stringify(body),
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(payload.error || "Сервис входа временно недоступен.");
+    return payload;
   }
 
-  async function signUp(credentials = {}) {
+  async function signIn(credentials = {}) {
     if (!client) throw new Error("Модуль Supabase не загружен.");
-    const { email, password } = validateCredentials(credentials);
-    const emailRedirectTo = new URL("editor.html", window.location.href).href;
-    const { data, error } = await client.auth.signUp({
-      email,
-      password,
-      options: { emailRedirectTo },
+    const values = validateCredentials(credentials);
+    const result = await callEndpoint(values);
+    if (!result.session?.access_token || !result.session?.refresh_token) throw new Error("Supabase не вернул редакционный сеанс.");
+    const sessionResult = await client.auth.setSession({
+      access_token: result.session.access_token,
+      refresh_token: result.session.refresh_token,
     });
-    if (error) throw friendlyError(error);
-    const session = data.session ? await hydrate(data.session, "signed-up") : null;
-    return Object.freeze({
-      session,
-      user: data.user || null,
-      email,
-      confirmationRequired: !data.session,
-    });
+    if (sessionResult.error) throw friendlyError(sessionResult.error);
+    return hydrate(sessionResult.data.session || result.session, "signed-in");
   }
 
   async function signOut() {
@@ -175,30 +172,17 @@
   }
 
   async function changePassword(values = {}) {
-    if (!client) throw new Error("Модуль Supabase не загружен.");
-    if (!cachedSession?.authenticated || !cachedSession.email) {
-      throw new Error("Сначала войдите в аккаунт редактора.");
-    }
-
+    if (!client || !cachedSession?.authenticated || !authSession?.access_token) throw new Error("Сначала войдите в редактор.");
     const { currentPassword, newPassword } = validatePasswordChange(values);
-    const verification = await client.auth.signInWithPassword({
-      email: cachedSession.email,
-      password: currentPassword,
-    });
-    if (verification.error) throw new Error("Текущий пароль указан неверно.");
-
-    authSession = verification.data.session || authSession;
-    const { error } = await client.auth.updateUser({
-      password: newPassword,
-      current_password: currentPassword,
-    });
-    if (error) throw friendlyError(error);
-
+    await callEndpoint({
+      action: "change-password",
+      login: cachedSession.login,
+      currentPassword,
+      newPassword,
+    }, authSession.access_token);
     const otherSessions = await client.auth.signOut({ scope: "others" });
     if (otherSessions.error) throw friendlyError(otherSessions.error);
-    const { data: sessionData, error: sessionError } = await client.auth.getSession();
-    if (sessionError) throw friendlyError(sessionError);
-    return hydrate(sessionData.session || authSession, "password-changed");
+    return hydrate(authSession, "password-changed");
   }
 
   async function refresh() {
@@ -211,13 +195,11 @@
 
   const ready = (async () => {
     if (!client) {
-      console.error("MIDGAS: Supabase SDK или публичная конфигурация не загружены.");
       notify(null, "unavailable");
       return null;
     }
     const { data, error } = await client.auth.getSession();
     if (error) {
-      console.error("MIDGAS: не удалось восстановить Supabase-сессию.", error);
       notify(null, "initialization-error");
       return null;
     }
@@ -225,20 +207,11 @@
   })();
 
   client?.auth.onAuthStateChange((event, session) => {
-    window.setTimeout(() => {
-      void hydrate(session, event.toLocaleLowerCase("en")).catch((error) => {
-        console.error("MIDGAS: ошибка обновления сессии.", error);
-      });
-    }, 0);
+    window.setTimeout(() => void hydrate(session, event.toLowerCase()).catch(() => {}), 0);
   });
-
-  window.addEventListener("focus", () => {
-    if (authSession?.user) void hydrate(authSession, "focus-refresh");
-  });
+  window.addEventListener("focus", () => { if (authSession?.user) void hydrate(authSession, "focus-refresh"); });
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible" && authSession?.user) {
-      void hydrate(authSession, "visibility-refresh");
-    }
+    if (document.visibilityState === "visible" && authSession?.user) void hydrate(authSession, "visibility-refresh");
   });
 
   window.MIDGAS_EDITOR_SESSION = Object.freeze({
@@ -246,8 +219,9 @@
     ready,
     read,
     isEditor,
+    hasAccess,
+    roleLabels: Object.freeze({ ...ROLE_LABELS }),
     signIn,
-    signUp,
     signOut,
     changePassword,
     refresh,

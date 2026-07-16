@@ -170,7 +170,7 @@
     let query = client.from(MEMBERS_TABLE).select("role,approved_at").eq("user_id", user.id);
     const membershipResult = typeof query.maybeSingle === "function" ? await query.maybeSingle() : await query.single();
     const member = checked(membershipResult, "проверка прав редактора");
-    if (!member || !["editor", "admin"].includes(member.role) || !member.approved_at) {
+    if (!member || !["limited", "full", "admin"].includes(member.role) || !member.approved_at) {
       throw new MidgasSupabaseError(
         "Аккаунт ещё не одобрен как редактор MIDGAS. Локальное сохранение не используется при отказе в доступе.",
         { code: "EDITOR_NOT_APPROVED", status: 403 },

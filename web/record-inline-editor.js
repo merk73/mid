@@ -50,6 +50,10 @@
     return Boolean(session?.isEditor?.());
   }
 
+  function canDelete() {
+    return Boolean(session?.hasAccess?.("full"));
+  }
+
   function setStatus(message, state = "") {
     if (!status) return;
     status.textContent = message;
@@ -148,12 +152,13 @@
   function renderAccess() {
     if (!actions) return;
     actions.hidden = !isEditor() || !currentRecord();
+    if (deleteButton) deleteButton.hidden = editing || !canDelete();
     if (!isEditor() && editing) window.location.reload();
   }
 
   function setButtons(nextEditing) {
     if (editButton) editButton.hidden = nextEditing;
-    if (deleteButton) deleteButton.hidden = nextEditing;
+    if (deleteButton) deleteButton.hidden = nextEditing || !canDelete();
     if (saveButton) saveButton.hidden = !nextEditing;
     if (cancelButton) cancelButton.hidden = !nextEditing;
     if (addSectionButton) addSectionButton.hidden = !nextEditing;
@@ -452,6 +457,7 @@
           const input = document.createElement("input");
           input.type = "checkbox";
           input.checked = selected.has(key);
+          input.disabled = input.checked && !canDelete();
           input.dataset.type = relationType;
           input.dataset.id = candidate.id;
           input.dataset.label = candidate.name || candidate.alias || candidate.id;
@@ -614,7 +620,7 @@
   }
 
   function openDeleteDialog() {
-    if (!isEditor()) { window.location.href = "editor.html"; return; }
+    if (!canDelete()) { setStatus("УДАЛЕНИЕ ДОСТУПНО ТОЛЬКО В РЕЖИМАХ ПОЛНОГО И АДМИНИСТРАТИВНОГО ДОСТУПА.", "error"); return; }
     const output = document.querySelector("[data-record-delete-id]");
     if (output) output.textContent = id;
     if (typeof deleteDialog?.showModal === "function") deleteDialog.showModal();
@@ -637,6 +643,10 @@
   deleteForm?.addEventListener("submit", async (event) => {
     event.preventDefault();
     const deleteStatus = document.querySelector("[data-record-delete-status]");
+    if (!canDelete()) {
+      if (deleteStatus) deleteStatus.textContent = "НЕДОСТАТОЧНЫЙ УРОВЕНЬ ДОСТУПА.";
+      return;
+    }
     try {
       const result = await store.softDelete(type, id);
       if (deleteStatus) deleteStatus.textContent = result?.syncMessage || "КАРТОЧКА УДАЛЕНА.";

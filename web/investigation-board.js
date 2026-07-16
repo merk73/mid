@@ -212,6 +212,7 @@
     mobileImage: document.querySelector("[data-board-mobile-image]"), mobileTitle: document.querySelector("[data-board-mobile-title]"),
     mobileId: document.querySelector("[data-board-mobile-id]"),
   };
+  const inspectorDelete = document.querySelector("[data-board-node-delete]");
 
   function connectedKeys(key) {
     const result = new Set();
@@ -256,6 +257,7 @@
       if (typeOrder.includes(node.kind)) inspector.link.href = `record.html?type=${node.kind}&id=${encodeURIComponent(node.id)}`;
     }
     if (inspector.actions) inspector.actions.hidden = !(editorMode && node.remote);
+    if (inspectorDelete) inspectorDelete.hidden = !sessionApi?.hasAccess?.("full");
     if (focus) element.focus({ preventScroll: true });
   }
 
@@ -640,6 +642,7 @@
     const node = nodeMap.get(activeKey); if (node?.remote) openNodeDialog(node);
   });
   document.querySelector("[data-board-node-delete]")?.addEventListener("click", async () => {
+    if (!sessionApi?.hasAccess?.("full")) { setEditStatus("УДАЛЕНИЕ НЕДОСТУПНО ДЛЯ ОГРАНИЧЕННОГО ДОСТУПА"); return; }
     const node = nodeMap.get(activeKey);
     if (!node?.remote || !window.confirm(`Удалить узел «${node.title}» и его связи?`)) return;
     const key = node.key;

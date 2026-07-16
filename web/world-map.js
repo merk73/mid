@@ -13,6 +13,7 @@
   let markerLayer = null;
   let markerItems = [];
   let initialFitComplete = false;
+  let supabaseReady = false;
 
   function escapeHtml(value) {
     return String(value ?? "")
@@ -36,16 +37,20 @@
 
   function collectRecords() {
     const registry = window.MIDGAS_RECORDS || {};
-    return TYPES.flatMap((type) => Object.values(registry[type] || {}).map((record) => ({ type, record })))
-      .filter(({ record }) => validPosition(record?.geo))
-      .map(({ type, record }) => ({
+    return TYPES.flatMap((type) => Object.values(registry[type] || {}).map((record) => ({
+      type,
+      record,
+      geo: validPosition(record?.geo) ? record.geo : window.MIDGAS_GEO_SEEDS?.[record?.id],
+    })))
+      .filter(({ geo }) => validPosition(geo))
+      .map(({ type, record, geo }) => ({
         type,
         id: String(record.id || ""),
         name: String(record.name || record.alias || record.id || "БЕЗ НАЗВАНИЯ"),
         location: locationValue(record),
         image: String(record.cardImage || record.image || ""),
-        lat: Number(record.geo.lat),
-        lng: Number(record.geo.lng),
+        lat: Number(geo.lat),
+        lng: Number(geo.lng),
       }));
   }
 
@@ -123,9 +128,16 @@
       zoomControl: true,
       scrollWheelZoom: false,
       worldCopyJump: true,
+      preferCanvas: true,
+      zoomAnimation: false,
+      fadeAnimation: false,
+      markerZoomAnimation: false,
     });
     window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
+      updateWhenIdle: true,
+      keepBuffer: 2,
+      detectRetina: false,
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
     }).addTo(map);
     markerLayer = window.L.featureGroup().addTo(map);
@@ -152,7 +164,9 @@
       markerItems.push({ marker, item });
     });
     if (countLabel) countLabel.textContent = `${String(items.length).padStart(2, "0")} ЛОКАЦИЙ`;
-    if (stateLabel) stateLabel.textContent = items.length ? "ДАННЫЕ СИНХРОНИЗИРОВАНЫ С SUPABASE" : "ЛОКАЦИИ ПОКА НЕ УКАЗАНЫ";
+    if (stateLabel) stateLabel.textContent = items.length
+      ? (supabaseReady ? "ДАННЫЕ СИНХРОНИЗИРОВАНЫ С SUPABASE" : "БЫСТРЫЙ КЭШ · ОБНОВЛЯЮ SUPABASE")
+      : "ЛОКАЦИИ ПОКА НЕ УКАЗАНЫ";
     if (!initialFitComplete && items.length) {
       fitAll(false);
       initialFitComplete = true;
@@ -161,8 +175,8 @@
   }
 
   resetButton?.addEventListener("click", () => fitAll(true));
-  window.addEventListener("midgas:records-ready", render);
+  window.addEventListener("midgas:records-ready", () => { supabaseReady = true; render(); });
   window.addEventListener("midgas:record-mutated", render);
-  Promise.resolve(window.MIDGAS_SUPABASE_DATA?.ready).finally(render);
+  Promise.resolve(window.MIDGAS_SUPABASE_DATA?.ready).finally(() => { supabaseReady = true; render(); });
   render();
 })();

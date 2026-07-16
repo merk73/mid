@@ -68,9 +68,16 @@
         zoomControl: true,
         scrollWheelZoom: false,
         attributionControl: true,
+        preferCanvas: true,
+        zoomAnimation: false,
+        fadeAnimation: false,
+        markerZoomAnimation: false,
       }).setView([lat, lng], 8);
       window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
         maxZoom: 19,
+        updateWhenIdle: true,
+        keepBuffer: 2,
+        detectRetina: false,
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
       }).addTo(map);
       map.on("click", (event) => {
@@ -128,7 +135,10 @@
       url.searchParams.set("limit", "1");
       url.searchParams.set("accept-language", "ru");
       url.searchParams.set("q", query);
-      const response = await window.fetch(url.toString(), { headers: { Accept: "application/json" } });
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 6500);
+      const response = await window.fetch(url.toString(), { headers: { Accept: "application/json" }, signal: controller.signal })
+        .finally(() => window.clearTimeout(timeout));
       if (!response.ok) throw new Error(`Сервис геокодирования недоступен (${response.status}).`);
       const result = (await response.json())?.[0];
       if (!result || !validPosition({ lat: result.lat, lng: result.lon })) throw new Error("Локация не найдена. Поставьте точку на карте вручную.");
@@ -146,8 +156,9 @@
       setState("ЛОКАЦИЯ НАЙДЕНА.", "ready");
       return clone(position);
     })().catch((error) => {
-      setState(error.message || "НЕ УДАЛОСЬ ОПРЕДЕЛИТЬ ЛОКАЦИЮ.", "error");
-      throw error;
+      const nextError = error?.name === "AbortError" ? new Error("КАРТА НЕ ОТВЕТИЛА ВОВРЕМЯ. ПОСТАВЬТЕ ТОЧКУ ВРУЧНУЮ.") : error;
+      setState(nextError.message || "НЕ УДАЛОСЬ ОПРЕДЕЛИТЬ ЛОКАЦИЮ.", "error");
+      throw nextError;
     }).finally(() => { geocodeRequest = null; });
     return geocodeRequest;
   }
@@ -155,9 +166,11 @@
   function initialize() {
     if (!root || !canvas || root.hidden) return;
     const record = currentRecord();
-    if (validPosition(record?.geo)) {
-      setPosition(record.geo, { zoom: 9 });
-      setState("КООРДИНАТЫ СИНХРОНИЗИРОВАНЫ С КАРТОЧКОЙ.", "synced");
+    const seeded = window.MIDGAS_GEO_SEEDS?.[id];
+    const initialPosition = validPosition(record?.geo) ? record.geo : seeded;
+    if (validPosition(initialPosition)) {
+      setPosition(initialPosition, { zoom: 9 });
+      setState(record?.geo ? "КООРДИНАТЫ СИНХРОНИЗИРОВАНЫ С КАРТОЧКОЙ." : "КАРТА ЗАГРУЖЕНА ИЗ БЫСТРОГО КЭША.", record?.geo ? "synced" : "ready");
       return;
     }
     const query = locationQuery();
