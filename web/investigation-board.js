@@ -157,9 +157,42 @@
 
   nodes.forEach(createNodeElement);
 
-  function ensureNodeImage(key) {
+  let imageHydrationTimer = 0;
+  const queuedImageKeys = new Set();
+
+  function ensureNodeImage(key, priority = "high") {
     const image = nodeElements.get(key)?.querySelector("img[data-src]");
-    if (image && !image.getAttribute("src")) image.src = image.dataset.src;
+    if (!image || image.getAttribute("src")) {
+      queuedImageKeys.delete(key);
+      return false;
+    }
+    image.loading = "eager";
+    image.fetchPriority = priority;
+    image.src = image.dataset.src;
+    queuedImageKeys.delete(key);
+    return true;
+  }
+
+  function hydrateQueuedImages() {
+    imageHydrationTimer = 0;
+    if (!mobileQuery.matches || !queuedImageKeys.size) return;
+    let loaded = 0;
+    for (const key of queuedImageKeys) {
+      ensureNodeImage(key, "low");
+      loaded += 1;
+      if (loaded >= 2) break;
+    }
+    if (queuedImageKeys.size) imageHydrationTimer = window.setTimeout(hydrateQueuedImages, 160);
+  }
+
+  function scheduleAllNodeImages() {
+    if (!mobileQuery.matches) return;
+    nodeElements.forEach((element, key) => {
+      if (element.querySelector("img[data-src]:not([src])")) queuedImageKeys.add(key);
+    });
+    if (!imageHydrationTimer && queuedImageKeys.size) {
+      imageHydrationTimer = window.setTimeout(hydrateQueuedImages, 80);
+    }
   }
 
   function syncRecordNodesFromRegistry() {
@@ -179,6 +212,7 @@
     rebuildDataEdges();
     renderThreads();
     updateCounter();
+    scheduleAllNodeImages();
     if (!nodeMap.has(activeKey)) activeKey = nodeMap.has("anomaly:MID-A-0001") ? "anomaly:MID-A-0001" : nodes[0]?.key;
     selectNode(activeKey);
   }
@@ -438,6 +472,7 @@
     isFullscreen = true;
     stage.classList.add("is-fullscreen");
     document.documentElement.classList.add("board-fullscreen-open");
+    scheduleAllNodeImages();
     requestAnimationFrame(() => centerOn(activeKey, true));
   }
   function closeBoard() {
