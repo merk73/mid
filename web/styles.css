@@ -9876,8 +9876,9 @@ html.site-maintenance-locked body { overflow: hidden !important; background: #05
 
 @media (max-width: 700px) {
   .deploy-log { width: min(100% - 28px, 1180px); }
-  .deploy-log-hero { min-height: 62vh; padding: 28px 0 44px; }
-  .deploy-log-hero h1 { font-size: clamp(48px, 19vw, 88px); }
+  .deploy-log-hero { min-height: 62vh; grid-template-columns: minmax(0, 1fr); padding: 28px 0 44px; }
+  .deploy-log-hero > * { min-width: 0; max-width: 100%; }
+  .deploy-log-hero h1 { overflow-wrap: normal; font-size: clamp(40px, 12.8vw, 64px); line-height: .84; }
   .deploy-log-entry { grid-template-columns: 1fr auto; gap: 18px; padding: 26px 0; }
   .deploy-log-entry header { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; }
   .deploy-log-entry code { align-self: start; }

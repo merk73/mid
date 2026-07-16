@@ -4,9 +4,9 @@ const siteHeader = document.querySelector(".home-page .site-header");
 const coverHero = document.querySelector(".home-page .hero-cover");
 const headerBackButton = document.querySelector(".header-back-button");
 
-const homeRegistry = document.querySelector(".home-page #registry");
 const homeGlossary = document.querySelector(".home-page #glossary");
-if (homeRegistry && homeGlossary) homeRegistry.insertAdjacentElement("afterend", homeGlossary);
+const homeQuotes = document.querySelector(".home-page #company-quotes");
+if (homeGlossary && homeQuotes) homeQuotes.insertAdjacentElement("beforebegin", homeGlossary);
 
 headerBackButton?.addEventListener("click", () => {
   let hasInternalReferrer = false;

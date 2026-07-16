@@ -632,11 +632,15 @@
     }
   }
 
-  renderJournal();
-  loadRemoteJournal();
-  window.setInterval(() => {
-    if (!document.hidden) loadRemoteJournal();
-  }, 30000);
+  const journalSection = journalList?.closest(".company-journal");
+  const journalEnabled = Boolean(journalList && !journalSection?.hidden);
+  if (journalEnabled) {
+    renderJournal();
+    loadRemoteJournal();
+    window.setInterval(() => {
+      if (!document.hidden) loadRemoteJournal();
+    }, 30000);
+  }
 
   const quotes = [
     ["Я целый месяц жил на Урале. Там была строительная площадка. Волшебный город для сериала. Там и играл в пинг-понг. Ещё приезжал на КАМАЗе Баста.", "СЛУЧАЙНАЯ ЗАПИСЬ / 01"],
