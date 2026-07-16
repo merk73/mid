@@ -122,7 +122,11 @@ async function changePassword(request: Request, payload: Record<string, unknown>
   const user = userResult.data.user;
   if (userResult.error || !user) return response(request, 401, { error: "СЕАНС РЕДАКТОРА ЗАКРЫТ." });
 
-  const loginValue = normalizeLogin(payload.login || user.user_metadata?.login);
+  const assignedLogin = normalizeLogin(user.app_metadata?.editor_login);
+  if (assignedLogin === "abdulo") {
+    return response(request, 403, { error: "СМЕНА ПАРОЛЯ ДЛЯ ЭТОГО АККАУНТА НЕДОСТУПНА." });
+  }
+  const loginValue = normalizeLogin(assignedLogin || payload.login || user.user_metadata?.login);
   const currentPassword = String(payload.currentPassword || "");
   const newPassword = String(payload.newPassword || "");
   if (newPassword.length < 6) return response(request, 400, { error: "НОВЫЙ ПАРОЛЬ ДОЛЖЕН СОДЕРЖАТЬ НЕ МЕНЕЕ 6 СИМВОЛОВ." });

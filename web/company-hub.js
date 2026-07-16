@@ -100,6 +100,7 @@
       openLoginDialog();
       return;
     }
+    if (sessionApi?.read?.()?.login === "abdulo") return;
     passwordForm?.reset();
     if (passwordStatus) passwordStatus.textContent = "";
     if (typeof passwordDialog?.showModal === "function") passwordDialog.showModal();
@@ -188,10 +189,13 @@
   function renderAccount(session, message = "") {
     const signedIn = Boolean(session?.authenticated && session?.login);
     const isEditor = Boolean(sessionApi?.isEditor?.());
+    const passwordRestricted = session?.login === "abdulo";
     if (editorLocked) editorLocked.hidden = signedIn;
     if (editorHome) editorHome.hidden = !signedIn;
     if (editorActions) editorActions.hidden = !isEditor;
     if (recoveryOpen) recoveryOpen.hidden = !sessionApi?.hasAccess?.("full");
+    if (passwordOpen) passwordOpen.hidden = passwordRestricted;
+    if (passwordRestricted) closePasswordDialog();
     if (!isEditor) [createPanel, recoveryPanel].forEach((panel) => { if (panel) panel.hidden = true; });
     if (!isEditor) document.body.classList.remove("editor-overlay-open");
     if (accountEmail) accountEmail.textContent = session?.login || "";

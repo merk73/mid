@@ -2,7 +2,8 @@
   "use strict";
 
   const SESSION_EVENT = "midgas:editor-session";
-  const BLOCKED_LOGIN = "abdulo";
+  const MONITORED_LOGIN = "abdulo";
+  const WARNING_INTERVAL_MS = 10_000;
   const ROLE_RANK = { pending: 0, limited: 1, full: 2, admin: 3 };
   const ROLE_LABELS = {
     limited: "ОГРАНИЧЕННЫЙ ДОСТУП",
@@ -23,6 +24,7 @@
   let refreshSequence = 0;
   let hydrationPromise = null;
   let hydrationUserId = "";
+  let warningIntervalId = 0;
 
   window.MIDGAS_SUPABASE_CLIENT = client;
 
@@ -34,34 +36,32 @@
     return cachedSession;
   }
 
-  function setSuspiciousActivityBlock(blocked) {
-    const root = document.documentElement;
-    let notice = document.querySelector("[data-editor-security-block]");
-    root.classList.toggle("editor-security-blocked", blocked);
-
-    if (!blocked) {
-      notice?.remove();
-      return;
-    }
-    if (notice) return;
-
-    notice = document.createElement("div");
-    notice.className = "editor-security-block";
-    notice.dataset.editorSecurityBlock = "";
-    notice.setAttribute("role", "alertdialog");
-    notice.setAttribute("aria-modal", "true");
-    notice.setAttribute("aria-labelledby", "editor-security-block-title");
+  function showSuspiciousTrafficWarning() {
+    if (document.querySelector("[data-suspicious-traffic-warning]")) return;
+    const notice = document.createElement("aside");
+    notice.className = "suspicious-traffic-warning";
+    notice.dataset.suspiciousTrafficWarning = "";
+    notice.setAttribute("role", "alert");
     notice.innerHTML = `
-      <div class="editor-security-block__frame" aria-hidden="true"></div>
-      <div class="editor-security-block__content">
-        <span>MIDGAS / SECURITY NOTICE</span>
-        <h1 id="editor-security-block-title">Доступ к сайту ограничен из-за подозрительной активности</h1>
-      </div>`;
+      <span>Зафиксирован подозрительный траффик. Смените аккаунт для продолжения</span>
+      <button type="button" aria-label="Закрыть предупреждение">×</button>`;
+    notice.querySelector("button")?.addEventListener("click", () => notice.remove());
     document.body.append(notice);
   }
 
+  function setSuspiciousAccountState(active) {
+    if (!active) {
+      window.clearInterval(warningIntervalId);
+      warningIntervalId = 0;
+      document.querySelector("[data-suspicious-traffic-warning]")?.remove();
+      return;
+    }
+    showSuspiciousTrafficWarning();
+    if (!warningIntervalId) warningIntervalId = window.setInterval(showSuspiciousTrafficWarning, WARNING_INTERVAL_MS);
+  }
+
   function notify(session, reason = "updated") {
-    setSuspiciousActivityBlock(Boolean(session?.securityBlocked));
+    setSuspiciousAccountState(Boolean(session?.suspiciousAccount));
     window.dispatchEvent(new CustomEvent(SESSION_EVENT, { detail: { session, reason } }));
   }
 
@@ -121,7 +121,7 @@
     }
 
     const sessionLogin = normalizeLogin(authSession.user.app_metadata?.editor_login);
-    setSuspiciousActivityBlock(sessionLogin === BLOCKED_LOGIN);
+    setSuspiciousAccountState(sessionLogin === MONITORED_LOGIN);
 
     if (hydrationPromise && hydrationUserId === authSession.user.id) return hydrationPromise;
     const sequence = ++refreshSequence;
@@ -154,7 +154,7 @@
         memberSince: membership.created_at || null,
         signedInAt: currentAuthSession.user.last_sign_in_at || "",
         authenticated: true,
-        securityBlocked: trustedLogin === BLOCKED_LOGIN,
+        suspiciousAccount: trustedLogin === MONITORED_LOGIN,
         membershipError,
       });
       notify(cachedSession, reason);
@@ -210,6 +210,7 @@
 
   async function changePassword(values = {}) {
     if (!client || !cachedSession?.authenticated || !authSession?.access_token) throw new Error("Сначала войдите в редактор.");
+    if (cachedSession.login === MONITORED_LOGIN) throw new Error("Смена пароля для этого аккаунта недоступна.");
     const { currentPassword, newPassword } = validatePasswordChange(values);
     await callEndpoint({
       action: "change-password",
