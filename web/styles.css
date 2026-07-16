@@ -6,58 +6,18 @@
   font-display: swap;
 }
 
-/* Recurring account warning, intentionally compact and non-blocking. */
-.suspicious-traffic-warning {
+/* WebGL screen interference, enabled only for the monitored editor account. */
+.account-glitch-overlay {
   position: fixed;
-  z-index: 2147483647;
-  top: max(10px, env(safe-area-inset-top));
-  left: 50%;
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 48px;
-  width: min(760px, calc(100vw - 24px));
-  color: #fff;
-  background: #d92116;
-  border: 1px solid #ff8b82;
-  box-shadow: 0 12px 34px rgba(72, 0, 0, .36);
-  transform: translateX(-50%);
-  animation: suspicious-traffic-enter .24s ease-out both;
+  z-index: 2147483646;
+  inset: 0;
+  width: 100vw;
+  height: 100dvh;
+  pointer-events: none;
+  contain: strict;
 }
 
-.suspicious-traffic-warning span {
-  align-self: center;
-  padding: 15px 18px;
-  font-size: 9px;
-  font-weight: 700;
-  line-height: 1.45;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-}
-
-.suspicious-traffic-warning button {
-  display: grid;
-  min-width: 48px;
-  min-height: 48px;
-  place-items: center;
-  padding: 0;
-  color: #fff;
-  background: rgba(71,0,0,.22);
-  border: 0;
-  border-left: 1px solid rgba(255,255,255,.42);
-  cursor: pointer;
-  font: 400 25px/1 Arial, sans-serif;
-}
-
-.suspicious-traffic-warning button:hover { background: rgba(71,0,0,.48); }
-
-@keyframes suspicious-traffic-enter {
-  from { opacity: 0; transform: translate(-50%, -16px); }
-  to { opacity: 1; transform: translate(-50%, 0); }
-}
-
-@media (max-width: 560px) {
-  .suspicious-traffic-warning { top: max(6px, env(safe-area-inset-top)); width: calc(100vw - 12px); }
-  .suspicious-traffic-warning span { padding: 12px 13px; font-size: 7px; }
-}
+.account-glitch-overlay[hidden] { display: none; }
 
 /* Full-screen cover for anomaly and incident records */
 body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-identity {
