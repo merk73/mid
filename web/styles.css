@@ -12613,3 +12613,59 @@ textarea:focus-visible {
   .world-map,
   .record-map { filter: none; }
 }
+
+/* Mobile board performance and editor controls. */
+.company-board-stage.has-board-draft [data-board-save] {
+  color: #090909;
+  background: #eceae2;
+  border-color: #eceae2;
+}
+
+.company-board-world .company-board-node.is-draft {
+  outline: 3px solid #e55343;
+  outline-offset: 4px;
+}
+
+.company-board-thread--pending .company-board-thread-base { stroke: #f03a2b; stroke-width: 3.2; stroke-dasharray: 12 7; }
+
+@media (max-width: 760px) {
+  .company-board-fullscreen-controls {
+    align-items: flex-start;
+    flex-wrap: nowrap;
+    overflow: visible;
+  }
+
+  .company-board-editor-tools {
+    display: grid;
+    grid-template-columns: repeat(6, 36px);
+    gap: 3px;
+  }
+
+  .company-board-editor-tools[hidden] { display: none; }
+  .company-board-editor-tools .company-board-tool-icon {
+    width: 36px;
+    min-width: 36px;
+    height: 40px;
+    min-height: 40px;
+  }
+
+  .company-board-fullscreen-controls > [data-board-edit-status] {
+    position: absolute;
+    top: 45px;
+    left: 0;
+    max-width: calc(100vw - 20px);
+    padding: 5px 8px;
+    overflow: hidden;
+    color: #deddd7;
+    background: rgba(8, 8, 8, .82);
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .company-board-world .company-board-node { box-shadow: 0 6px 16px rgba(0, 0, 0, .32); }
+  .company-board-world .company-board-node img { filter: none; }
+  .company-board-thread,
+  .company-board-thread path,
+  .company-board-world .company-board-node { transition: none !important; }
+  .company-board-thread.is-active .company-board-thread-base { filter: none; }
+}

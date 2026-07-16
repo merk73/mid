@@ -99,6 +99,7 @@
     const id = `${first}|${second}`;
     if (!edgeMap.has(id)) edgeMap.set(id, { id, source: first, target: second, kind, remoteId });
     if (remoteId) remoteEdgeIds.add(id);
+    return edgeMap.get(id);
   }
 
   function rebuildDataEdges() {
@@ -137,13 +138,16 @@
     const button = document.createElement("button");
     button.type = "button";
     button.className = `company-board-node company-board-node--${node.kind}`;
+    if (node.draft) button.classList.add("is-draft");
     button.dataset.boardNode = node.key;
     button.style.left = `${node.x.toFixed(1)}px`;
     button.style.top = `${node.y.toFixed(1)}px`;
     button.style.setProperty("--node-tilt", `${((hash(node.key) % 51) - 25) / 20}deg`);
     if (node.image) {
       const image = document.createElement("img");
-      image.src = node.image; image.alt = ""; image.loading = "lazy"; image.decoding = "async"; button.append(image);
+      image.dataset.src = node.image;
+      if (!mobileQuery.matches) image.src = node.image;
+      image.alt = ""; image.loading = "lazy"; image.decoding = "async"; button.append(image);
     }
     const code = document.createElement("span");
     const title = document.createElement("strong");
@@ -152,6 +156,11 @@
   }
 
   nodes.forEach(createNodeElement);
+
+  function ensureNodeImage(key) {
+    const image = nodeElements.get(key)?.querySelector("img[data-src]");
+    if (image && !image.getAttribute("src")) image.src = image.dataset.src;
+  }
 
   function syncRecordNodesFromRegistry() {
     recordNodes.forEach((node) => {
@@ -174,9 +183,10 @@
     selectNode(activeKey);
   }
 
-  function makeThread(edge) {
+  function threadPathData(edge) {
     const source = nodeMap.get(edge.source);
     const target = nodeMap.get(edge.target);
+    if (!source || !target) return "";
     const dx = target.x - source.x;
     const dy = target.y - source.y;
     const distance = Math.hypot(dx, dy) || 1;
@@ -186,10 +196,14 @@
     const gravity = Math.min(116, 28 + distance * 0.1);
     const controlX = (source.x + target.x) / 2 + perpendicularX * sideways;
     const controlY = (source.y + target.y) / 2 + perpendicularY * sideways + gravity;
-    const pathData = `M ${source.x.toFixed(1)} ${source.y.toFixed(1)} Q ${controlX.toFixed(1)} ${controlY.toFixed(1)} ${target.x.toFixed(1)} ${target.y.toFixed(1)}`;
+    return `M ${source.x.toFixed(1)} ${source.y.toFixed(1)} Q ${controlX.toFixed(1)} ${controlY.toFixed(1)} ${target.x.toFixed(1)} ${target.y.toFixed(1)}`;
+  }
+
+  function makeThread(edge) {
+    const pathData = threadPathData(edge);
     const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-    group.classList.add("company-board-thread");
-    group.dataset.source = edge.source; group.dataset.target = edge.target;
+    group.classList.add("company-board-thread", `company-board-thread--${edge.kind}`);
+    group.dataset.edgeId = edge.id; group.dataset.source = edge.source; group.dataset.target = edge.target;
     ["shadow", "base"].forEach((layer) => {
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       path.setAttribute("d", pathData); path.classList.add(`company-board-thread-${layer}`); group.append(path);
@@ -201,6 +215,15 @@
     svg.querySelectorAll(".company-board-thread:not(.company-board-thread--draft)").forEach((item) => item.remove());
     threadGroups = [...edgeMap.values()].map((edge) => {
       const group = makeThread(edge); svg.prepend(group); return group;
+    });
+  }
+
+  function updateThreadsForNode(key) {
+    threadGroups.forEach((group) => {
+      if (group.dataset.source !== key && group.dataset.target !== key) return;
+      const edge = edgeMap.get(group.dataset.edgeId);
+      const pathData = edge ? threadPathData(edge) : "";
+      if (pathData) group.querySelectorAll("path").forEach((path) => path.setAttribute("d", pathData));
     });
   }
 
@@ -229,6 +252,8 @@
     if (!node || !element) return;
     activeKey = key;
     const related = connectedKeys(key);
+    ensureNodeImage(key);
+    related.forEach(ensureNodeImage);
     nodeElements.forEach((item, itemKey) => {
       item.classList.toggle("is-active", itemKey === key);
       item.classList.toggle("is-related", related.has(itemKey));
@@ -297,13 +322,20 @@
     selectNode(activeKey);
   }
 
-  async function reloadRemoteBoard() {
-    try { const data = await fetchRemoteBoard(); mergeRemoteBoard(data.nodeRows, data.edgeRows, data.positionRows); }
-    catch (error) { console.warn("MIDGAS board sync:", error); }
+  let boardReloadPromise = null;
+  function reloadRemoteBoard() {
+    if (editorMode && hasDraftChanges()) return Promise.resolve();
+    if (boardReloadPromise) return boardReloadPromise;
+    boardReloadPromise = (async () => {
+      try { const data = await fetchRemoteBoard(); mergeRemoteBoard(data.nodeRows, data.edgeRows, data.positionRows); }
+      catch (error) { console.warn("MIDGAS board sync:", error); }
+    })().finally(() => { boardReloadPromise = null; });
+    return boardReloadPromise;
   }
 
   let recordGraphReload = null;
   function reloadRecordGraph() {
+    if (editorMode && hasDraftChanges()) return Promise.resolve();
     if (recordGraphReload) return recordGraphReload;
     recordGraphReload = (async () => {
       try {
@@ -327,11 +359,47 @@
   let panFrame = 0;
   let isFullscreen = false;
   let editorMode = false;
-  let linkMode = false;
+  let linkMode = "";
   let positionMode = false;
   let movingNode = null;
   let firstLinkKey = "";
   let draftGroup = null;
+  let threadFrame = 0;
+  let pendingThreadKey = "";
+  const draftChanges = {
+    addedEdges: new Map(),
+    removedEdges: new Map(),
+    positions: new Map(),
+    newNodes: new Map(),
+    updatedNodes: new Map(),
+    deletedNodes: new Map(),
+  };
+
+  function clearDraftChanges() {
+    Object.values(draftChanges).forEach((collection) => collection.clear());
+  }
+
+  function draftChangeCount() {
+    return Object.values(draftChanges).reduce((total, collection) => total + collection.size, 0);
+  }
+
+  function hasDraftChanges() { return draftChangeCount() > 0; }
+
+  function updateDraftStatus(message = "") {
+    const count = draftChangeCount();
+    setEditStatus(message || (count ? `ЧЕРНОВИК: ${count} ИЗМЕНЕНИЙ` : "РЕЖИМ РЕДАКТОРА / ИЗМЕНЕНИЙ НЕТ"));
+    stage.classList.toggle("has-board-draft", count > 0);
+  }
+
+  function scheduleThreadUpdate(key) {
+    pendingThreadKey = key;
+    if (threadFrame) return;
+    threadFrame = requestAnimationFrame(() => {
+      threadFrame = 0;
+      updateThreadsForNode(pendingThreadKey);
+      pendingThreadKey = "";
+    });
+  }
 
   function clampScale(value) { return Math.min(MAX_SCALE, Math.max(MIN_SCALE, value)); }
   function constrainPan() {
@@ -373,11 +441,15 @@
     requestAnimationFrame(() => centerOn(activeKey, true));
   }
   function closeBoard() {
+    if (editorMode && hasDraftChanges()) {
+      void discardBoardDraft().then(() => { leaveEditor(); closeBoard(); });
+      return;
+    }
     if (document.body.classList.contains("board-page")) {
       window.location.href = "index.html";
       return;
     }
-    isFullscreen = false; editorMode = false; linkMode = false; positionMode = false; movingNode = null; firstLinkKey = ""; removeDraft();
+    isFullscreen = false; editorMode = false; linkMode = ""; positionMode = false; movingNode = null; firstLinkKey = ""; removeDraft();
     stage.classList.remove("is-fullscreen", "is-editor-mode", "is-position-mode");
     document.documentElement.classList.remove("board-fullscreen-open");
     document.querySelector("[data-board-editor-tools]").hidden = true;
@@ -393,30 +465,43 @@
   }
 
   function setEditStatus(message = "") { const output = document.querySelector("[data-board-edit-status]"); if (output) output.textContent = message; }
-  function enterEditor() {
-    if (!sessionApi?.isEditor?.()) return;
+  async function enterEditor() {
+    try { await sessionApi?.ready; } catch { /* session state is checked below */ }
+    if (!sessionApi?.isEditor?.()) {
+      updateEditorAccess();
+      setEditStatus("СЕССИЯ РЕДАКТОРА НЕ АКТИВНА");
+      return;
+    }
     editorMode = true; stage.classList.add("is-editor-mode");
+    clearDraftChanges();
     document.querySelector("[data-board-edit]").hidden = true;
     document.querySelector("[data-board-editor-tools]").hidden = false;
-    setEditStatus("РЕЖИМ РЕДАКТОРА");
+    const removeEdgeButton = document.querySelector("[data-board-remove-edge]");
+    if (removeEdgeButton) removeEdgeButton.hidden = !sessionApi?.hasAccess?.("full");
+    document.querySelector("[data-board-edit]")?.setAttribute("aria-pressed", "true");
+    if (mobileQuery.matches) inspector.root?.classList.remove("is-expanded");
+    updateDraftStatus();
     selectNode(activeKey);
   }
   function leaveEditor() {
-    editorMode = false; linkMode = false; positionMode = false; movingNode = null; firstLinkKey = ""; removeDraft();
-    stage.classList.remove("is-editor-mode", "is-position-mode");
+    editorMode = false; linkMode = ""; positionMode = false; movingNode = null; firstLinkKey = ""; removeDraft();
+    stage.classList.remove("is-editor-mode", "is-position-mode", "has-board-draft");
     document.querySelector("[data-board-editor-tools]").hidden = true;
+    document.querySelector("[data-board-edit]")?.setAttribute("aria-pressed", "false");
     updateEditorAccess(); setEditStatus(""); selectNode(activeKey);
   }
 
-  async function persistNodePosition(node) {
-    const userId = sessionApi?.read?.()?.userId;
-    if (!userId || !node) return;
-    const { error } = await supabase.from("board_positions").upsert({
-      node_key: node.key, position_x: Number(node.x.toFixed(2)), position_y: Number(node.y.toFixed(2)),
-      updated_by: userId, updated_at: new Date().toISOString(),
-    }, { onConflict: "node_key" });
-    if (error) setEditStatus(error.message || "НЕ УДАЛОСЬ СОХРАНИТЬ ПОЛОЖЕНИЕ");
-    else setEditStatus("ПОЛОЖЕНИЕ СОХРАНЕНО / МОЖНО ДВИГАТЬ ДАЛЬШЕ");
+  function stageNodePosition(node) {
+    if (!node || node.draft) {
+      updateDraftStatus("НОВЫЙ УЗЕЛ ПЕРЕМЕЩЁН / СОХРАНИТЕ ЧЕРНОВИК");
+      return;
+    }
+    draftChanges.positions.set(node.key, {
+      node_key: node.key,
+      position_x: Number(node.x.toFixed(2)),
+      position_y: Number(node.y.toFixed(2)),
+    });
+    updateDraftStatus("ПОЛОЖЕНИЕ ИЗМЕНЕНО / СОХРАНИТЕ ИЛИ ОТМЕНИТЕ");
   }
 
   function ensureDraft() {
@@ -440,32 +525,41 @@
     ensureDraft().querySelectorAll("path").forEach((item) => item.setAttribute("d", path));
   }
 
-  async function persistEdge(source, target) {
+  function stageEdgeAddition(source, target) {
     const [sourceKey, targetKey] = [source, target].sort();
-    if (edgeMap.has(`${sourceKey}|${targetKey}`)) { setEditStatus("СВЯЗЬ УЖЕ СУЩЕСТВУЕТ"); return; }
-    setEditStatus("СОХРАНЯЕМ СВЯЗЬ В SUPABASE…");
-    const { data: edgeId, error } = await supabase.rpc("create_board_edge", {
-      p_source_key: sourceKey,
-      p_target_key: targetKey,
-    });
-    if (error) throw error;
-
-    addEdge(sourceKey, targetKey, "remote", edgeId || `pending-${Date.now()}`);
-    const sourceNode = nodeMap.get(sourceKey);
-    const targetNode = nodeMap.get(targetKey);
-    const linksDossiers = typeOrder.includes(sourceNode?.kind) && typeOrder.includes(targetNode?.kind);
-    if (linksDossiers && remoteData?.loadPublicRecords) {
-      await remoteData.loadPublicRecords({ throwOnError: true });
-      syncRecordNodesFromRegistry();
-    } else {
-      renderThreads();
-      updateCounter();
+    const id = `${sourceKey}|${targetKey}`;
+    const removed = draftChanges.removedEdges.get(id);
+    if (removed) {
+      edgeMap.set(id, removed);
+      draftChanges.removedEdges.delete(id);
+      renderThreads(); selectNode(targetKey); updateDraftStatus("УДАЛЕНИЕ СВЯЗИ ОТМЕНЕНО");
+      return;
     }
-    selectNode(targetKey);
-    setEditStatus("СВЯЗЬ СОХРАНЕНА В SUPABASE / ВЫБЕРИТЕ ПЕРВЫЙ УЗЕЛ");
+    if (edgeMap.has(id)) { setEditStatus("СВЯЗЬ УЖЕ СУЩЕСТВУЕТ"); return; }
+    const edge = addEdge(sourceKey, targetKey, "pending");
+    if (edge) draftChanges.addedEdges.set(id, edge);
+    renderThreads(); updateCounter(); selectNode(targetKey);
+    updateDraftStatus("СВЯЗЬ ДОБАВЛЕНА В ЧЕРНОВИК");
   }
 
-  async function handleNodeTap(key) {
+  function stageEdgeRemoval(source, target) {
+    if (!sessionApi?.hasAccess?.("full")) {
+      setEditStatus("УДАЛЕНИЕ СВЯЗЕЙ ДОСТУПНО С ПОЛНЫМ ДОСТУПОМ");
+      return;
+    }
+    const [sourceKey, targetKey] = [source, target].sort();
+    const id = `${sourceKey}|${targetKey}`;
+    const edge = edgeMap.get(id);
+    if (!edge) { setEditStatus("МЕЖДУ ЭТИМИ УЗЛАМИ НЕТ СВЯЗИ"); return; }
+    if (edge.kind === "place") { setEditStatus("СИСТЕМНУЮ СВЯЗЬ ЛОКАЦИИ УДАЛИТЬ НЕЛЬЗЯ"); return; }
+    edgeMap.delete(id);
+    if (edge.kind === "pending") draftChanges.addedEdges.delete(id);
+    else draftChanges.removedEdges.set(id, edge);
+    renderThreads(); updateCounter(); selectNode(targetKey);
+    updateDraftStatus("СВЯЗЬ УБРАНА ИЗ ЧЕРНОВИКА");
+  }
+
+  function handleNodeTap(key) {
     stage.classList.add("has-board-selection");
     if (!linkMode) { selectNode(key); return; }
     if (!firstLinkKey) {
@@ -473,8 +567,110 @@
     }
     if (firstLinkKey === key) { setEditStatus("ВЫБЕРИТЕ ДРУГОЙ УЗЕЛ"); return; }
     const source = firstLinkKey; firstLinkKey = ""; removeDraft();
-    try { await persistEdge(source, key); }
-    catch (error) { setEditStatus(error.message || "НЕ УДАЛОСЬ СОЗДАТЬ СВЯЗЬ"); }
+    if (linkMode === "remove") stageEdgeRemoval(source, key);
+    else stageEdgeAddition(source, key);
+  }
+
+  async function discardBoardDraft() {
+    const draftNodeKeys = [...draftChanges.newNodes.keys()];
+    draftNodeKeys.forEach((key) => {
+      nodeElements.get(key)?.remove();
+      nodeElements.delete(key);
+      nodeMap.delete(key);
+    });
+    nodes = nodes.filter((node) => !draftNodeKeys.includes(node.key));
+    clearDraftChanges();
+    linkMode = ""; positionMode = false; firstLinkKey = ""; removeDraft();
+    stage.classList.remove("is-position-mode", "has-board-draft");
+    try {
+      await remoteData?.loadPublicRecords?.();
+      syncRecordNodesFromRegistry();
+      await reloadRemoteBoard();
+    } catch (error) {
+      console.warn("MIDGAS board draft reset:", error);
+    }
+    if (!nodeMap.has(activeKey)) activeKey = nodes[0]?.key;
+    renderThreads(); updateCounter(); selectNode(activeKey);
+  }
+
+  async function saveBoardDraft() {
+    if (!hasDraftChanges()) { updateDraftStatus("НЕТ ИЗМЕНЕНИЙ ДЛЯ СОХРАНЕНИЯ"); return; }
+    if (!sessionApi?.isEditor?.() || !supabase) { setEditStatus("СЕССИЯ РЕДАКТОРА НЕ АКТИВНА"); return; }
+    const saveButton = document.querySelector("[data-board-save]");
+    if (saveButton) saveButton.disabled = true;
+    setEditStatus("СОХРАНЯЕМ ЧЕРНОВИК В SUPABASE…");
+    const keyMap = new Map();
+    try {
+      for (const [key, node] of draftChanges.newNodes) {
+        const { data, error } = await supabase.from("board_nodes").insert({
+          node_type: node.kind === "subject" ? "SUB" : "LOC",
+          title: node.title,
+          description: node.summary,
+          position_x: Number(node.x.toFixed(2)),
+          position_y: Number(node.y.toFixed(2)),
+          updated_at: new Date().toISOString(),
+        }).select("id,node_no,node_code,node_type,title,description,position_x,position_y,created_at").single();
+        if (error) throw error;
+        keyMap.set(key, `board:${data.id}`);
+      }
+
+      for (const [key, node] of draftChanges.updatedNodes) {
+        if (draftChanges.deletedNodes.has(key) || node.draft) continue;
+        const { error } = await supabase.from("board_nodes").update({
+          node_type: node.kind === "subject" ? "SUB" : "LOC",
+          title: node.title,
+          description: node.summary,
+          updated_at: new Date().toISOString(),
+        }).eq("id", node.row.id);
+        if (error) throw error;
+      }
+
+      for (const edge of draftChanges.removedEdges.values()) {
+        const source = keyMap.get(edge.source) || edge.source;
+        const target = keyMap.get(edge.target) || edge.target;
+        const { error } = await supabase.rpc("delete_board_edge", { p_source_key: source, p_target_key: target });
+        if (error) throw error;
+      }
+
+      for (const node of draftChanges.deletedNodes.values()) {
+        const key = node.key;
+        const edgeResult = await supabase.from("board_edges").delete().or(`source_key.eq.${key},target_key.eq.${key}`);
+        if (edgeResult.error) throw edgeResult.error;
+        const positionResult = await supabase.from("board_positions").delete().eq("node_key", key);
+        if (positionResult.error) throw positionResult.error;
+        const nodeResult = await supabase.from("board_nodes").delete().eq("id", node.row.id);
+        if (nodeResult.error) throw nodeResult.error;
+      }
+
+      for (const edge of draftChanges.addedEdges.values()) {
+        const source = keyMap.get(edge.source) || edge.source;
+        const target = keyMap.get(edge.target) || edge.target;
+        const { error } = await supabase.rpc("create_board_edge", { p_source_key: source, p_target_key: target });
+        if (error) throw error;
+      }
+
+      const userId = sessionApi?.read?.()?.userId;
+      const positions = [...draftChanges.positions.values()]
+        .filter((position) => !draftChanges.deletedNodes.has(position.node_key) && !keyMap.has(position.node_key))
+        .map((position) => ({ ...position, updated_by: userId, updated_at: new Date().toISOString() }));
+      if (positions.length) {
+        const { error } = await supabase.from("board_positions").upsert(positions, { onConflict: "node_key" });
+        if (error) throw error;
+      }
+
+      if (keyMap.has(activeKey)) activeKey = keyMap.get(activeKey);
+      clearDraftChanges();
+      stage.classList.remove("has-board-draft");
+      await remoteData?.loadPublicRecords?.({ throwOnError: true });
+      syncRecordNodesFromRegistry();
+      await reloadRemoteBoard();
+      updateDraftStatus("ВСЕ ИЗМЕНЕНИЯ СОХРАНЕНЫ В SUPABASE");
+    } catch (error) {
+      if (keyMap.size) await discardBoardDraft();
+      setEditStatus(error.message || "НЕ УДАЛОСЬ СОХРАНИТЬ ЧЕРНОВИК");
+    } finally {
+      if (saveButton) saveButton.disabled = false;
+    }
   }
 
   viewport.addEventListener("pointerdown", (event) => {
@@ -487,6 +683,7 @@
       if (movingNode) {
         gesture = { mode: "node", pointerId: event.pointerId, startX: event.clientX, startY: event.clientY, startNodeX: movingNode.x, startNodeY: movingNode.y, moved: false };
         targetNode.classList.add("is-positioning");
+        selectNode(movingNode.key);
         return;
       }
     }
@@ -510,7 +707,7 @@
       movingNode.y = Math.max(90, Math.min(height - 90, gesture.startNodeY + dy));
       const movingElement = nodeElements.get(movingNode.key);
       if (movingElement) { movingElement.style.left = `${movingNode.x.toFixed(1)}px`; movingElement.style.top = `${movingNode.y.toFixed(1)}px`; }
-      renderThreads(); selectNode(movingNode.key); event.preventDefault(); return;
+      scheduleThreadUpdate(movingNode.key); event.preventDefault(); return;
     }
     if (gesture?.mode === "pinch" && pointers.size >= 2) {
       const [a, b] = [...pointers.values()].slice(0, 2);
@@ -533,7 +730,11 @@
     pointers.delete(event.pointerId);
     try { if (viewport.hasPointerCapture(event.pointerId)) viewport.releasePointerCapture(event.pointerId); } catch { /* best effort */ }
     if (tappedKey) handleNodeTap(tappedKey);
-    if (movedNode) void persistNodePosition(movedNode);
+    if (movedNode) {
+      if (threadFrame) cancelAnimationFrame(threadFrame);
+      threadFrame = 0; pendingThreadKey = ""; updateThreadsForNode(movedNode.key);
+      stageNodePosition(movedNode);
+    }
     if (pointers.size === 0) { gesture = null; movingNode = null; viewport.classList.remove("is-dragging"); }
   }
   viewport.addEventListener("pointerup", finishPointer);
@@ -560,7 +761,8 @@
       field.hidden = opensRecordCreator;
       field.querySelectorAll("input, textarea").forEach((control) => { control.required = !opensRecordCreator; });
     });
-    if (nodeSubmit && !nodeForm?.elements.nodeId?.value) nodeSubmit.textContent = opensRecordCreator ? "ПЕРЕЙТИ К СОЗДАНИЮ КАРТОЧКИ" : "ДОБАВИТЬ УЗЕЛ";
+    const editingKey = nodeForm?.elements.nodeKey?.value || nodeForm?.elements.nodeId?.value;
+    if (nodeSubmit && !editingKey) nodeSubmit.textContent = opensRecordCreator ? "ПЕРЕЙТИ К СОЗДАНИЮ КАРТОЧКИ" : "ДОБАВИТЬ УЗЕЛ";
   }
   function openNodeDialog(node = null) {
     nodeForm?.reset(); if (nodeError) nodeError.textContent = "";
@@ -569,7 +771,8 @@
         input.disabled = Boolean(node) && typeOrder.includes(input.value);
         input.closest("label")?.toggleAttribute("hidden", input.disabled);
       });
-      nodeForm.elements.nodeId.value = node?.row?.id || "";
+      nodeForm.elements.nodeId.value = node?.key || "";
+      if (nodeForm.elements.nodeKey) nodeForm.elements.nodeKey.value = node?.key || "";
       if (node?.remote) {
         const type = node.kind === "subject" ? "SUB" : "LOC";
         const typeInput = nodeForm.querySelector(`[name="nodeType"][value="${type}"]`);
@@ -590,31 +793,51 @@
     const submit = nodeForm.querySelector('[type="submit"]'); submit.disabled = true;
     try {
       const values = new FormData(nodeForm);
-      const editingId = String(values.get("nodeId") || "");
+      const editingKey = String(values.get("nodeKey") || values.get("nodeId") || "");
       const selectedType = String(values.get("nodeType") || "");
-      if (!editingId && typeOrder.includes(selectedType)) {
+      if (!editingKey && typeOrder.includes(selectedType)) {
         closeNodeDialog();
         closeBoard();
         window.location.href = `editor.html?create=${encodeURIComponent(selectedType)}`;
         return;
       }
       const center = worldPoint(viewport.getBoundingClientRect().left + viewport.clientWidth / 2, viewport.getBoundingClientRect().top + viewport.clientHeight / 2);
-      const payload = {
-        node_type: values.get("nodeType"), title: String(values.get("title") || "").trim(),
-        description: String(values.get("description") || "").trim(), updated_at: new Date().toISOString(),
-      };
-      if (!editingId) {
-        payload.position_x = Math.max(180, Math.min(width - 180, center.x + 120));
-        payload.position_y = Math.max(140, Math.min(height - 140, center.y + 90));
+      const title = String(values.get("title") || "").trim();
+      const summary = String(values.get("description") || "").trim();
+      let key = editingKey;
+      if (editingKey) {
+        const node = nodeMap.get(editingKey);
+        if (!node) throw new Error("УЗЕЛ НЕ НАЙДЕН В ЧЕРНОВИКЕ");
+        node.title = title;
+        node.summary = summary;
+        node.kind = selectedType === "SUB" ? "subject" : "place";
+        const element = nodeElements.get(editingKey);
+        if (element) {
+          element.className = `company-board-node company-board-node--${node.kind}`;
+          if (node.draft) element.classList.add("is-draft");
+          const heading = element.querySelector("strong");
+          if (heading) heading.textContent = node.title;
+        }
+        if (!node.draft) draftChanges.updatedNodes.set(editingKey, node);
+      } else {
+        key = `draft:${globalThis.crypto?.randomUUID?.() || `${Date.now()}-${Math.random().toString(16).slice(2)}`}`;
+        const node = {
+          key,
+          id: `NEW-${String(draftChanges.newNodes.size + 1).padStart(2, "0")}`,
+          kind: selectedType === "SUB" ? "subject" : "place",
+          title,
+          summary,
+          image: "",
+          x: Math.max(180, Math.min(width - 180, center.x + 120)),
+          y: Math.max(140, Math.min(height - 140, center.y + 90)),
+          remote: true,
+          draft: true,
+          row: null,
+        };
+        nodes.push(node); nodeMap.set(key, node); draftChanges.newNodes.set(key, node); createNodeElement(node);
       }
-      const request = editingId
-        ? supabase.from("board_nodes").update(payload).eq("id", editingId)
-        : supabase.from("board_nodes").insert(payload);
-      const { data, error } = await request.select("id,node_no,node_code,node_type,title,description,position_x,position_y,created_at").single();
-      if (error) throw error;
-      closeNodeDialog(); await reloadRemoteBoard();
-      const key = `board:${data.id}`; selectNode(key); centerOn(key);
-      setEditStatus(editingId ? "ИЗМЕНЕНИЯ УЗЛА СОХРАНЕНЫ" : "УЗЕЛ ДОБАВЛЕН / МОЖНО СОЗДАТЬ СВЯЗЬ");
+      closeNodeDialog(); renderThreads(); updateCounter(); selectNode(key); centerOn(key);
+      updateDraftStatus(editingKey ? "ИЗМЕНЕНИЯ УЗЛА ДОБАВЛЕНЫ В ЧЕРНОВИК" : "НОВЫЙ УЗЕЛ ДОБАВЛЕН В ЧЕРНОВИК");
     } catch (error) { if (nodeError) nodeError.textContent = error.message || "НЕ УДАЛОСЬ ДОБАВИТЬ УЗЕЛ"; }
     finally { submit.disabled = false; }
   });
@@ -626,38 +849,58 @@
 
   document.querySelector("[data-board-open]")?.addEventListener("click", openBoard);
   document.querySelector("[data-board-close]")?.addEventListener("click", closeBoard);
-  document.querySelector("[data-board-edit]")?.addEventListener("click", enterEditor);
-  document.querySelector("[data-board-edit-close]")?.addEventListener("click", leaveEditor);
+  document.querySelector("[data-board-edit]")?.addEventListener("click", () => { void enterEditor(); });
+  document.querySelector("[data-board-save]")?.addEventListener("click", () => { void saveBoardDraft(); });
+  document.querySelector("[data-board-edit-close]")?.addEventListener("click", () => {
+    void discardBoardDraft().then(leaveEditor);
+  });
   document.querySelector("[data-board-add-edge]")?.addEventListener("click", () => {
-    linkMode = true; positionMode = false; movingNode = null; firstLinkKey = ""; removeDraft();
+    linkMode = "add"; positionMode = false; movingNode = null; firstLinkKey = ""; removeDraft();
     stage.classList.remove("is-position-mode"); setEditStatus("ВЫБЕРИТЕ ПЕРВЫЙ УЗЕЛ");
+  });
+  document.querySelector("[data-board-remove-edge]")?.addEventListener("click", () => {
+    if (!sessionApi?.hasAccess?.("full")) { setEditStatus("УДАЛЕНИЕ СВЯЗЕЙ ДОСТУПНО С ПОЛНЫМ ДОСТУПОМ"); return; }
+    linkMode = "remove"; positionMode = false; movingNode = null; firstLinkKey = ""; removeDraft();
+    stage.classList.remove("is-position-mode"); setEditStatus("УДАЛЕНИЕ СВЯЗИ: ВЫБЕРИТЕ ПЕРВЫЙ УЗЕЛ");
   });
   document.querySelector("[data-board-add-node]")?.addEventListener("click", () => openNodeDialog());
   document.querySelector("[data-board-move-nodes]")?.addEventListener("click", () => {
-    positionMode = !positionMode; linkMode = false; firstLinkKey = ""; removeDraft();
+    positionMode = !positionMode; linkMode = ""; firstLinkKey = ""; removeDraft();
     stage.classList.toggle("is-position-mode", positionMode);
-    setEditStatus(positionMode ? "ПЕРЕТАСКИВАЙТЕ КАРТОЧКИ / ПОЛОЖЕНИЕ СОХРАНЯЕТСЯ" : "РЕЖИМ РЕДАКТОРА");
+    setEditStatus(positionMode ? "ПЕРЕТАСКИВАЙТЕ КАРТОЧКИ / ЗАТЕМ НАЖМИТЕ СОХРАНИТЬ" : "РЕЖИМ РЕДАКТОРА");
   });
   document.querySelector("[data-board-node-edit]")?.addEventListener("click", () => {
     const node = nodeMap.get(activeKey); if (node?.remote) openNodeDialog(node);
   });
-  document.querySelector("[data-board-node-delete]")?.addEventListener("click", async () => {
+  document.querySelector("[data-board-node-delete]")?.addEventListener("click", () => {
     if (!sessionApi?.hasAccess?.("full")) { setEditStatus("УДАЛЕНИЕ НЕДОСТУПНО ДЛЯ ОГРАНИЧЕННОГО ДОСТУПА"); return; }
     const node = nodeMap.get(activeKey);
-    if (!node?.remote || !window.confirm(`Удалить узел «${node.title}» и его связи?`)) return;
+    if (!node?.remote) return;
     const key = node.key;
-    setEditStatus("УДАЛЯЕМ УЗЕЛ…");
-    const edgeResult = await supabase.from("board_edges").delete().or(`source_key.eq.${key},target_key.eq.${key}`);
-    if (edgeResult.error) { setEditStatus(edgeResult.error.message); return; }
-    await supabase.from("board_positions").delete().eq("node_key", key);
-    const { error } = await supabase.from("board_nodes").delete().eq("id", node.row.id);
-    if (error) { setEditStatus(error.message); return; }
-    await reloadRemoteBoard(); setEditStatus("УЗЕЛ УДАЛЁН");
+    if (node.draft) draftChanges.newNodes.delete(key);
+    else draftChanges.deletedNodes.set(key, node);
+    [...edgeMap.entries()].forEach(([id, edge]) => {
+      if (edge.source !== key && edge.target !== key) return;
+      edgeMap.delete(id);
+      draftChanges.addedEdges.delete(id);
+      draftChanges.removedEdges.delete(id);
+    });
+    draftChanges.positions.delete(key);
+    draftChanges.updatedNodes.delete(key);
+    nodeElements.get(key)?.remove(); nodeElements.delete(key); nodeMap.delete(key);
+    nodes = nodes.filter((item) => item.key !== key);
+    activeKey = nodes[0]?.key;
+    renderThreads(); updateCounter(); selectNode(activeKey);
+    updateDraftStatus("УЗЕЛ УБРАН ИЗ ЧЕРНОВИКА");
   });
   document.querySelector("[data-board-node-cancel]")?.addEventListener("click", closeNodeDialog);
   nodeForm?.querySelectorAll('[name="nodeType"]').forEach((input) => input.addEventListener("change", updateNodeDialogMode));
   document.querySelector("[data-board-inspector-toggle]")?.addEventListener("click", () => inspector.root?.classList.toggle("is-expanded"));
-  window.addEventListener("keydown", (event) => { if (event.key === "Escape" && isFullscreen && !nodeDialog?.open) closeBoard(); });
+  window.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape" || !isFullscreen || nodeDialog?.open) return;
+    if (editorMode) void discardBoardDraft().then(leaveEditor);
+    else closeBoard();
+  });
   window.addEventListener(sessionApi?.eventName || "midgas:editor-session", updateEditorAccess);
   sessionApi?.ready?.then(updateEditorAccess);
 

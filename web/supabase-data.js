@@ -210,8 +210,11 @@
     const coverUrl = publicUrlForPath(row?.cover_path);
     record.id = code;
     if (!record.kind && type) record.kind = type.toUpperCase();
-    if (coverUrl && (!record.image || /^(?:data:|blob:|midgas-image:)/i.test(record.image))) record.image = coverUrl;
-    if (coverUrl && (!record.cardImage || /^(?:data:|blob:|midgas-image:)/i.test(record.cardImage))) record.cardImage = coverUrl;
+    if (coverUrl) {
+      record.image = coverUrl;
+      record.cardImage = coverUrl;
+      delete record.imageFit;
+    }
     return record;
   }
 
