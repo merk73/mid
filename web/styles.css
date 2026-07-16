@@ -19,6 +19,48 @@
 
 .account-glitch-overlay[hidden] { display: none; }
 
+body.is-account-screen-glitch {
+  overflow-x: clip;
+  background: #050505;
+}
+
+body.is-account-screen-glitch > :not(.account-glitch-overlay) {
+  transform: translate3d(var(--screen-glitch-x, 0), var(--screen-glitch-y, 0), 0) skewX(var(--screen-glitch-skew, 0));
+  filter: contrast(var(--screen-glitch-contrast, 1)) saturate(var(--screen-glitch-saturation, 1)) hue-rotate(var(--screen-glitch-hue, 0));
+  will-change: transform, filter;
+}
+
+body.is-account-screen-glitch::before,
+body.is-account-screen-glitch::after {
+  position: fixed;
+  z-index: 2147483645;
+  inset: 0;
+  content: "";
+  pointer-events: none;
+}
+
+body.is-account-screen-glitch::before {
+  background: repeating-linear-gradient(180deg, rgba(255, 255, 255, .035) 0 1px, transparent 1px 4px);
+  mix-blend-mode: screen;
+}
+
+body.is-account-screen-glitch::after {
+  background: linear-gradient(90deg, rgba(255, 0, 30, .07), transparent 3%, transparent 97%, rgba(0, 220, 255, .08));
+  box-shadow: inset 0 0 110px rgba(0, 0, 0, .58);
+}
+
+body.is-account-screen-glitch[data-screen-glitch-mode="1"] > :not(.account-glitch-overlay) {
+  filter: contrast(var(--screen-glitch-contrast, 1)) saturate(.72) hue-rotate(var(--screen-glitch-hue, 0));
+}
+
+body.is-account-screen-glitch[data-screen-glitch-mode="2"]::before {
+  background: repeating-linear-gradient(176deg, rgba(255, 255, 255, .08) 0 1px, transparent 1px 6px);
+}
+
+body.is-account-screen-glitch[data-screen-glitch-mode="3"] > :not(.account-glitch-overlay) {
+  filter: contrast(1.18) saturate(.82);
+}
+
 /* Full-screen cover for anomaly and incident records */
 body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-identity {
   position: relative;
@@ -2498,6 +2540,7 @@ button {
 }
 
 .client-card {
+  position: relative;
   min-width: 0;
   padding-bottom: 28px;
   border-right: 1px solid var(--ink);
@@ -2519,6 +2562,44 @@ button {
   object-fit: cover;
   object-position: center 35%;
   border-bottom: 1px solid var(--ink);
+}
+
+.client-card-levels {
+  position: absolute;
+  z-index: 2;
+  top: 10px;
+  right: 10px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, auto));
+  gap: 1px;
+  overflow: hidden;
+  color: #fff;
+  background: rgba(8, 8, 8, .82);
+  border: 1px solid rgba(255, 255, 255, .38);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, .24);
+  backdrop-filter: blur(5px);
+}
+
+.client-card-level {
+  display: grid;
+  min-width: 48px;
+  padding: 5px 7px 6px;
+  text-align: center;
+  background: rgba(0, 0, 0, .38);
+}
+
+.client-card-level + .client-card-level { border-left: 1px solid rgba(255, 255, 255, .22); }
+.client-card-level small { font-size: 5px; line-height: 1; letter-spacing: .08em; }
+.client-card-level strong { margin-top: 4px; font-family: var(--display); font-size: 14px; font-weight: 500; line-height: .8; }
+.client-card-level--threat strong { color: #ff6258; }
+.client-card-level--access strong { color: #64c7cb; }
+.client-card-level[data-level="0"] strong { color: #aaa9a3; }
+
+@media (max-width: 760px) {
+  .client-card-levels { top: 6px; right: 6px; }
+  .client-card-level { min-width: 42px; padding: 5px 5px 6px; }
+  .client-card-level small { font-size: 4.5px; }
+  .client-card-level strong { font-size: 12px; }
 }
 
 .client-card-data {

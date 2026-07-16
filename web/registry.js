@@ -57,7 +57,9 @@ function createRegistryCard(record) {
   heading.textContent = record.name;
   const type = document.createElement("p");
   type.textContent = record.cardType;
-  card.append(image, data, heading, type);
+  card.append(image);
+  if (registryType === "client") card.append(window.MIDGAS_CREATE_CLIENT_CARD_LEVELS(record));
+  card.append(data, heading, type);
   return card;
 }
 

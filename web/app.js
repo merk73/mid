@@ -65,6 +65,65 @@ navigation?.addEventListener("click", (event) => {
 
 const clientGrid = document.querySelector("#client-grid");
 
+function normalizedCardFieldLabel(value) {
+  return String(value || "").trim().toLocaleLowerCase("ru").replaceAll("ё", "е");
+}
+
+function clientCardFieldValue(record, labels) {
+  const normalizedLabels = labels.map(normalizedCardFieldLabel);
+  const match = (record?.fields || []).find(([label]) => normalizedLabels.some((item) => normalizedCardFieldLabel(label).includes(item)));
+  return String(match?.[1] || "").trim();
+}
+
+function clientCardLevel(value, kind) {
+  const prefix = kind === "threat" ? "T" : "D";
+  const source = String(value || "").trim();
+  const code = source.match(new RegExp(`\\b${prefix}([1-5])\\b`, "i"));
+  if (code) return Number(code[1]);
+  const normalized = normalizedCardFieldLabel(source);
+  if (!normalized) return 0;
+  if (kind === "threat") {
+    if (normalized.includes("критич") || normalized.includes("сверхопас")) return 5;
+    if (normalized.includes("высок")) return 4;
+    if (normalized.includes("значитель") || normalized.includes("влияни")) return 3;
+    if (normalized.includes("умерен") || normalized.includes("скрыт")) return 2;
+    if (normalized.includes("низк")) return 1;
+  } else {
+    if (normalized.includes("максим") || normalized.includes("полн") || normalized.includes("высш")) return 5;
+    if (normalized.includes("высок")) return 4;
+    if (normalized.includes("средн")) return 3;
+    if (normalized.includes("низк")) return normalized.includes("очень") ? 1 : 2;
+  }
+  return 0;
+}
+
+function createClientCardLevels(record) {
+  const threatValue = clientCardFieldValue(record, ["Уровень угрозы"]);
+  const accessValue = clientCardFieldValue(record, ["Уровень доступа", "Осведомленность клиента"]);
+  const levels = [
+    { kind: "threat", label: "УГРОЗА", prefix: "T", value: threatValue, level: clientCardLevel(threatValue, "threat") },
+    { kind: "access", label: "ДОСТУП", prefix: "D", value: accessValue, level: clientCardLevel(accessValue, "access") },
+  ];
+  const root = document.createElement("div");
+  root.className = "client-card-levels";
+  root.setAttribute("aria-label", `Уровень угрозы: ${threatValue || "не указан"}. Уровень доступа: ${accessValue || "не указан"}.`);
+  levels.forEach((entry) => {
+    const item = document.createElement("span");
+    item.className = `client-card-level client-card-level--${entry.kind}`;
+    item.dataset.level = String(entry.level);
+    item.title = entry.value || "Не указан";
+    const label = document.createElement("small");
+    label.textContent = entry.label;
+    const value = document.createElement("strong");
+    value.textContent = `${entry.prefix}${entry.level || "—"}`;
+    item.append(label, value);
+    root.append(item);
+  });
+  return root;
+}
+
+window.MIDGAS_CREATE_CLIENT_CARD_LEVELS = createClientCardLevels;
+
 function renderPreviewGrid(grid, records, recordType, limit) {
   if (!grid) return;
   grid.replaceChildren();
@@ -92,7 +151,9 @@ function renderPreviewGrid(grid, records, recordType, limit) {
     const type = document.createElement("p");
     type.textContent = record.cardType;
 
-    card.append(image, data, heading, type);
+    card.append(image);
+    if (recordType === "client") card.append(createClientCardLevels(record));
+    card.append(data, heading, type);
     grid.append(card);
   });
 
