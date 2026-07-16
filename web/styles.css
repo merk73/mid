@@ -2566,9 +2566,11 @@ button {
 
 .client-card-levels {
   display: grid;
-  grid-template-columns: repeat(2, minmax(54px, 68px));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  flex: 1 1 0;
   align-self: stretch;
-  margin-left: auto;
+  min-width: 0;
+  margin-left: 18px;
   overflow: hidden;
   color: var(--ink);
   background: #fff;
@@ -2664,7 +2666,7 @@ button {
     padding: 0 0 0 10px;
   }
 
-  .client-card-levels { grid-template-columns: repeat(2, minmax(47px, 52px)); }
+  .client-card-levels { margin-left: 8px; }
   .client-card-level { padding: 6px 5px 5px; }
   .client-card-level small { font-size: 4.25px; }
   .client-card-level strong { font-size: 11px; }
