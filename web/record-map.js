@@ -18,6 +18,15 @@
   let position = null;
   let editing = false;
   let geocodeRequest = null;
+  let tileLayer = null;
+  let tileErrorCount = 0;
+  let fallbackTiles = false;
+  let restoreFrame = 0;
+
+  function visibleSize() {
+    const rect = canvas?.getBoundingClientRect?.();
+    return rect && rect.width > 8 && rect.height > 8 ? rect : null;
+  }
 
   function clone(value) {
     if (!value) return null;
@@ -61,8 +70,41 @@
     stateLabel.dataset.state = state;
   }
 
+  function addTiles(useFallback = false) {
+    if (!map || !window.L) return;
+    tileLayer?.remove?.();
+    tileErrorCount = 0;
+    fallbackTiles = useFallback;
+    const url = useFallback
+      ? "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+      : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png";
+    tileLayer = window.L.tileLayer(url, {
+      subdomains: useFallback ? undefined : "abcd",
+      maxZoom: 19,
+      updateWhenIdle: true,
+      keepBuffer: 2,
+      detectRetina: false,
+      crossOrigin: true,
+      attribution: useFallback
+        ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    });
+    tileLayer.on("load", () => canvas.classList.add("is-map-ready"));
+    tileLayer.on("tileerror", () => {
+      tileErrorCount += 1;
+      if (tileErrorCount < 4) return;
+      if (!fallbackTiles) {
+        addTiles(true);
+        return;
+      }
+      canvas.classList.add("is-map-background-failed");
+      setState("МЕТКА ДОСТУПНА · ФОН КАРТЫ НЕ ЗАГРУЖЕН", "error");
+    });
+    tileLayer.addTo(map);
+  }
+
   function ensureMap(lat, lng) {
-    if (!canvas || !window.L) return null;
+    if (!canvas || !window.L || !visibleSize()) return null;
     if (!map) {
       map = window.L.map(canvas, {
         zoomControl: true,
@@ -73,13 +115,7 @@
         fadeAnimation: false,
         markerZoomAnimation: false,
       }).setView([lat, lng], 8);
-      window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        maxZoom: 19,
-        updateWhenIdle: true,
-        keepBuffer: 2,
-        detectRetina: false,
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      }).addTo(map);
+      addTiles(false);
       map.on("click", (event) => {
         if (!editing) return;
         setPosition({
@@ -92,7 +128,7 @@
         setState("ТОЧКА УСТАНОВЛЕНА. СОХРАНИТЕ КАРТОЧКУ.", "editing");
       });
     }
-    window.setTimeout(() => map?.invalidateSize?.(), 0);
+    window.setTimeout(() => map?.invalidateSize?.({ pan: false, animate: false }), 0);
     return map;
   }
 
@@ -165,6 +201,10 @@
 
   function initialize() {
     if (!root || !canvas || root.hidden) return;
+    if (!visibleSize()) {
+      setState("КАРТА ЗАГРУЗИТСЯ ПОСЛЕ ОТКРЫТИЯ САЙТА.", "loading");
+      return;
+    }
     const record = currentRecord();
     const seeded = window.MIDGAS_GEO_SEEDS?.[id];
     const initialPosition = validPosition(record?.geo) ? record.geo : seeded;
@@ -179,6 +219,24 @@
       return;
     }
     geocode(query).catch(() => {});
+  }
+
+  function restoreMap() {
+    if (!visibleSize()) return;
+    if (!map) {
+      initialize();
+      return;
+    }
+    map.invalidateSize({ pan: false, animate: false });
+    if (position) map.setView([position.lat, position.lng], map.getZoom(), { animate: false });
+  }
+
+  function scheduleRestore() {
+    if (restoreFrame) window.cancelAnimationFrame(restoreFrame);
+    restoreFrame = window.requestAnimationFrame(() => {
+      restoreFrame = 0;
+      window.requestAnimationFrame(restoreMap);
+    });
   }
 
   function setEditing(next) {
@@ -211,5 +269,12 @@
 
   window.addEventListener("midgas:record-rendered", initialize);
   window.addEventListener("midgas:records-ready", initialize);
+  window.addEventListener("midgas:site-access-granted", scheduleRestore);
+  window.addEventListener("pageshow", scheduleRestore);
+  window.addEventListener("resize", scheduleRestore, { passive: true });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") scheduleRestore();
+  });
+  if (canvas && "ResizeObserver" in window) new ResizeObserver(scheduleRestore).observe(canvas);
   initialize();
 })();

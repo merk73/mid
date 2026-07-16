@@ -4,6 +4,7 @@
   const ACCESS_KEY = "midgas_site_access_token_v2";
   const ENDPOINT = "https://skvwaovkkoxqfwkcpuvh.supabase.co/functions/v1/site-access";
   const PUBLISHABLE_KEY = "sb_publishable_VzgpYoXN_0lM414FnMWp2A_ZU8ucWDv";
+  const originalTitle = document.title;
   document.documentElement.classList.add("site-access-locked");
   document.title = "Безопасный вход";
 
@@ -48,6 +49,8 @@
     document.documentElement.classList.remove("site-access-locked");
     document.documentElement.classList.add("site-access-granted");
     document.querySelector(".site-access-gate")?.remove();
+    document.title = originalTitle;
+    window.dispatchEvent(new CustomEvent("midgas:site-access-granted"));
   }
 
   function renderGate(messageText = "") {

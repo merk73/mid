@@ -14,6 +14,15 @@
   let markerItems = [];
   let initialFitComplete = false;
   let supabaseReady = false;
+  let tileLayer = null;
+  let tileErrorCount = 0;
+  let fallbackTiles = false;
+  let renderFrame = 0;
+
+  function visibleSize() {
+    const rect = canvas.getBoundingClientRect();
+    return rect.width > 8 && rect.height > 8 ? rect : null;
+  }
 
   function escapeHtml(value) {
     return String(value ?? "")
@@ -113,13 +122,47 @@
   }
 
   function fitAll(animate = false) {
-    if (!map || !markerItems.length) return;
+    if (!map || !markerItems.length || !visibleSize()) return;
     const bounds = window.L.latLngBounds(markerItems.map(({ item }) => [item.displayLat, item.displayLng]));
     if (bounds.isValid()) map.fitBounds(bounds, { padding: [54, 54], maxZoom: 6, animate });
   }
 
+  function addTiles(useFallback = false) {
+    if (!map || !window.L) return;
+    tileLayer?.remove?.();
+    tileErrorCount = 0;
+    fallbackTiles = useFallback;
+    const url = useFallback
+      ? "https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+      : "https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png";
+    tileLayer = window.L.tileLayer(url, {
+      subdomains: useFallback ? undefined : "abcd",
+      maxZoom: 19,
+      updateWhenIdle: true,
+      keepBuffer: 2,
+      detectRetina: false,
+      crossOrigin: true,
+      attribution: useFallback
+        ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+    });
+    tileLayer.on("load", () => canvas.classList.add("is-map-ready"));
+    tileLayer.on("tileerror", () => {
+      tileErrorCount += 1;
+      if (tileErrorCount < 4) return;
+      if (!fallbackTiles) {
+        addTiles(true);
+        return;
+      }
+      canvas.classList.add("is-map-background-failed");
+      if (stateLabel) stateLabel.textContent = "МЕТКИ ДОСТУПНЫ · ФОН КАРТЫ НЕ ЗАГРУЖЕН";
+    });
+    tileLayer.addTo(map);
+  }
+
   function ensureMap() {
     if (map || !window.L) return map;
+    if (!visibleSize()) return null;
     map = window.L.map(canvas, {
       center: [32, 60],
       zoom: 2,
@@ -133,22 +176,20 @@
       fadeAnimation: false,
       markerZoomAnimation: false,
     });
-    window.L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      maxZoom: 19,
-      updateWhenIdle: true,
-      keepBuffer: 2,
-      detectRetina: false,
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-    }).addTo(map);
+    addTiles(false);
     markerLayer = window.L.featureGroup().addTo(map);
     map.on("zoomend", updateMarkerIcons);
     map.on("focus", () => map.scrollWheelZoom.enable());
     map.on("blur", () => map.scrollWheelZoom.disable());
-    window.setTimeout(() => map.invalidateSize(), 0);
+    window.setTimeout(() => map?.invalidateSize?.({ pan: false, animate: false }), 0);
     return map;
   }
 
   function render() {
+    if (!visibleSize()) {
+      if (stateLabel) stateLabel.textContent = "КАРТА ЗАГРУЗИТСЯ ПОСЛЕ ОТКРЫТИЯ САЙТА";
+      return;
+    }
     const instance = ensureMap();
     if (!instance || !markerLayer) {
       if (stateLabel) stateLabel.textContent = "КАРТА ВРЕМЕННО НЕДОСТУПНА";
@@ -174,9 +215,37 @@
     updateMarkerIcons();
   }
 
+  function restoreMap() {
+    if (!visibleSize()) return;
+    if (!map) {
+      render();
+      return;
+    }
+    map.invalidateSize({ pan: false, animate: false });
+    if (!initialFitComplete && markerItems.length) {
+      fitAll(false);
+      initialFitComplete = true;
+    }
+  }
+
+  function scheduleRestore() {
+    if (renderFrame) window.cancelAnimationFrame(renderFrame);
+    renderFrame = window.requestAnimationFrame(() => {
+      renderFrame = 0;
+      window.requestAnimationFrame(restoreMap);
+    });
+  }
+
   resetButton?.addEventListener("click", () => fitAll(true));
   window.addEventListener("midgas:records-ready", () => { supabaseReady = true; render(); });
   window.addEventListener("midgas:record-mutated", render);
+  window.addEventListener("midgas:site-access-granted", scheduleRestore);
+  window.addEventListener("pageshow", scheduleRestore);
+  window.addEventListener("resize", scheduleRestore, { passive: true });
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") scheduleRestore();
+  });
+  if ("ResizeObserver" in window) new ResizeObserver(scheduleRestore).observe(canvas);
   Promise.resolve(window.MIDGAS_SUPABASE_DATA?.ready).finally(() => { supabaseReady = true; render(); });
   render();
 })();

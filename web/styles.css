@@ -10702,7 +10702,14 @@ body .record-shell .record-fields dd { font-size: 14px; line-height: 1.5; }
 .record-location h2 { max-width: 100%; margin: auto 0 18px; overflow-wrap: anywhere; font-family: var(--display); font-size: clamp(38px, 4.1vw, 64px); font-weight: 500; line-height: .88; letter-spacing: -.045em; }
 .record-location header p { margin: 0; color: #aaa9a3; font-size: 10px; line-height: 1.65; }
 .record-map-shell { position: relative; z-index: 0; min-width: 0; min-height: 480px; overflow: hidden; isolation: isolate; background: #242421; }
-.record-map { width: 100%; height: 100%; min-height: 480px; filter: grayscale(.8) contrast(1.08) brightness(.78); }
+.record-map {
+  width: 100%;
+  height: 100%;
+  min-height: 480px;
+  background-color: #171817;
+  background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+}
 .record-map-state {
   position: absolute;
   z-index: 600;
@@ -12127,7 +12134,15 @@ textarea:focus-visible {
   background: #1b1b19;
   border: 1px solid #4b4a45;
 }
-.world-map { width: 100%; height: 100%; filter: grayscale(.86) contrast(1.08) brightness(.74); }
+.world-map {
+  width: 100%;
+  height: 100%;
+  background-color: #171817;
+  background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+.world-map .leaflet-tile,
+.record-map .leaflet-tile { will-change: auto; }
 .world-map:focus { outline: 0; }
 .world-map .leaflet-tile-pane { opacity: .9; }
 .world-map .leaflet-control-zoom,
@@ -12193,7 +12208,7 @@ textarea:focus-visible {
   height: 14px;
   background: #111;
   border: 3px solid #efeee8;
-  border-radius: 50%;
+  border-radius: 50% !important;
   box-shadow: 0 0 0 4px rgba(8, 8, 8, .28), 0 2px 10px rgba(0, 0, 0, .5);
 }
 .world-map-marker.is-compact.is-anomaly > span { background: #a9231b; border-color: #f5d6d2; }
