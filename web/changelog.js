@@ -13,7 +13,7 @@
     article.className = "deploy-log-entry";
     const revision = String(entry.revision).padStart(3, "0");
     const changes = (entry.changes || [entry.title]).map((item) => `<li>${item}</li>`).join("");
-    article.innerHTML = `<header><span>DEPLOY / ${revision}</span><time datetime="${entry.date}">${formatter.format(new Date(entry.date))}</time></header><div><h2>${entry.title}</h2><ul>${changes}</ul></div><code>${entry.hash}</code>`;
+    article.innerHTML = `<header><span>ОБНОВЛЕНИЕ / ${revision}</span><time datetime="${entry.date}">${formatter.format(new Date(entry.date))}</time></header><div><h2>${entry.title}</h2><ul>${changes}</ul></div><code>${entry.hash}</code>`;
     return article;
   }));
 })();
