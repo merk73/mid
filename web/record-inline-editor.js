@@ -564,7 +564,25 @@
     const relations = collectRelations();
     const fields = collectFields(relations);
     const cardType = fields.find(([term]) => normalized(term) === "тип")?.[1] || draft.cardType || typeLabels[type];
-    const geo = window.MIDGAS_RECORD_MAP?.getPosition?.() || draft.geo || null;
+    const location = String(fields.find(([term]) => /местополож|локаци/i.test(String(term || "")))?.[1] || "").trim();
+    const originalLocation = String((draft.fields || []).find(([term]) => /местополож|локаци/i.test(String(term || "")))?.[1] || "").trim();
+    let geo = window.MIDGAS_RECORD_MAP?.getPosition?.() || draft.geo || null;
+    const pointChanged = Boolean(geo && (
+      Number(geo.lat) !== Number(draft.geo?.lat)
+      || Number(geo.lng) !== Number(draft.geo?.lng)
+      || String(geo.updatedAt || "") !== String(draft.geo?.updatedAt || "")
+    ));
+    if (saveButton) { saveButton.disabled = true; saveButton.textContent = "СОХРАНЯЮ…"; }
+    if (location && normalized(location) !== normalized(originalLocation) && !pointChanged) {
+      setStatus("ОПРЕДЕЛЯЮ КООРДИНАТЫ НОВОЙ ЛОКАЦИИ…", "busy");
+      try {
+        geo = await window.MIDGAS_RECORD_MAP?.geocode?.(location);
+      } catch (error) {
+        if (saveButton) { saveButton.disabled = false; saveButton.textContent = "СОХРАНИТЬ ИЗМЕНЕНИЯ"; }
+        setStatus(error.message || "НЕ УДАЛОСЬ НАЙТИ ЛОКАЦИЮ. ПОСТАВЬТЕ ТОЧКУ НА КАРТЕ.", "error");
+        return;
+      }
+    }
     const patch = {
       name,
       alias: text(document.querySelector("#record-alias")),
@@ -579,7 +597,6 @@
       cardImage: draft.image || "",
       removeCover: !draft.image,
     };
-    if (saveButton) { saveButton.disabled = true; saveButton.textContent = "СОХРАНЯЮ…"; }
     setStatus("СИНХРОНИЗИРУЮ КАРТОЧКУ, ФОТОГРАФИИ, КАРТУ И СВЯЗИ…", "busy");
     try {
       const result = await store.update(type, id, patch);

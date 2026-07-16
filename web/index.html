@@ -7,8 +7,9 @@
     <title>THE MIDGAS — Research Archive</title>
     <link rel="preconnect" href="https://skvwaovkkoxqfwkcpuvh.supabase.co" crossorigin />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
     <script src="site-access.js?v=2"></script>
-    <link rel="stylesheet" href="styles.css?v=76" />
+    <link rel="stylesheet" href="styles.css?v=77" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -26,9 +27,9 @@
           </div>
           <a class="wordmark" href="#top" aria-label="THE MIDGAS — на главную">THE MIDGAS</a>
           <div class="nav-group nav-group-right">
-            <a href="#glossary">Глоссарий</a>
+            <a href="#locations">Локации</a>
             <a href="#company-materials">Материалы</a>
-            <a href="board.html?board=open">Доска</a>
+            <a href="board.html?board=open">Связи</a>
             <a href="editor.html">Редактор</a>
           </div>
         </nav>
@@ -416,6 +417,19 @@
             </section>
             <p class="glossary-empty" id="glossary-empty" hidden>ТЕРМИНЫ ПО ЗАДАННОМУ ЗАПРОСУ НЕ НАЙДЕНЫ.</p>
           </div>
+        </section>
+
+        <section class="world-locations" id="locations" aria-labelledby="world-locations-title">
+          <header class="world-locations-heading company-reveal">
+            <div><span>ГЕОГРАФИЯ / LIVE</span><h2 id="world-locations-title">КАРТА ЛОКАЦИЙ</h2></div>
+            <p>Клиенты и аномалии с координатами из досье. Приблизьте карту, чтобы увидеть фотографию и название каждой записи.</p>
+          </header>
+          <div class="world-map-shell company-reveal">
+            <div class="world-map" data-world-map aria-label="Мировая карта локаций клиентов и аномалий"></div>
+            <div class="world-map-toolbar"><span data-world-map-count>00 ЛОКАЦИЙ</span><button type="button" data-world-map-reset>ПОКАЗАТЬ ВСЕ</button></div>
+            <span class="world-map-state" data-world-map-state>ЗАГРУЖАЮ ДАННЫЕ SUPABASE…</span>
+          </div>
+          <footer class="world-map-legend"><span><i class="is-client"></i> КЛИЕНТЫ</span><span><i class="is-anomaly"></i> АНОМАЛИИ</span><p>Точка назначается в режиме редактирования досье и сохраняется вместе с карточкой.</p></footer>
         </section>
 
         <section class="company-hub" id="company-hub" aria-labelledby="company-hub-title">
@@ -829,10 +843,12 @@
     <script src="editor-session.js?v=3"></script>
     <script src="site-gate.js?v=1"></script>
     <script src="supabase-data.js?v=4"></script>
-    <script src="editor-storage.js?v=7"></script>
+    <script src="editor-storage.js?v=8"></script>
     <script src="relations-data.js?v=1"></script>
-    <script src="company-hub.js?v=18"></script>
+    <script src="company-hub.js?v=21"></script>
     <script src="investigation-board.js?v=19"></script>
-    <script src="app.js?v=25"></script>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
+    <script src="world-map.js?v=1"></script>
+    <script src="app.js?v=26"></script>
   </body>
 </html>

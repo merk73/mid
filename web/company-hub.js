@@ -1061,6 +1061,31 @@
     editorError.hidden = true;
   }
 
+  async function geocodeCreatedLocation(query) {
+    const value = String(query || "").trim().split(/\s+\/\s+/)[0].trim();
+    if (!value || /^(?:нет|не указано|не установлено|не раскрывается|unknown|—)$/i.test(value)) return null;
+    const coordinates = value.match(/^\s*(-?\d{1,2}(?:[.,]\d+)?)\s*[,;]\s*(-?\d{1,3}(?:[.,]\d+)?)\s*$/);
+    if (coordinates) {
+      const lat = Number(coordinates[1].replace(",", "."));
+      const lng = Number(coordinates[2].replace(",", "."));
+      if (Number.isFinite(lat) && Number.isFinite(lng) && Math.abs(lat) <= 90 && Math.abs(lng) <= 180) {
+        return { lat, lng, label: value, source: "editor_coordinates", updatedAt: new Date().toISOString() };
+      }
+    }
+    const url = new URL("https://nominatim.openstreetmap.org/search");
+    url.searchParams.set("format", "jsonv2");
+    url.searchParams.set("limit", "1");
+    url.searchParams.set("accept-language", "ru");
+    url.searchParams.set("q", value);
+    const response = await window.fetch(url.toString(), { headers: { Accept: "application/json" } });
+    if (!response.ok) return null;
+    const result = (await response.json())?.[0];
+    const lat = Number(result?.lat);
+    const lng = Number(result?.lon);
+    if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+    return { lat, lng, label: String(result.display_name || value), source: "nominatim", updatedAt: new Date().toISOString() };
+  }
+
   editorForm?.querySelectorAll('input[name="type"]').forEach((input) => {
     input.addEventListener("change", () => {
       if (!input.checked) return;
@@ -1165,13 +1190,20 @@
     try {
       if (!preparedImage || preparedFile !== file.name) preparedImage = await prepareEditorImage(file);
       const formData = new FormData(editorForm);
+      const recordType = String(formData.get("type") || "");
+      if (editorSubmit && ["client", "anomaly"].includes(recordType)) editorSubmit.textContent = "ОПРЕДЕЛЯЮ ЛОКАЦИЮ…";
+      let geo = null;
+      if (["client", "anomaly"].includes(recordType)) {
+        try { geo = await geocodeCreatedLocation(formData.get("location")); }
+        catch { geo = null; }
+      }
       const relations = [...(editorRelationsList?.querySelectorAll('input[type="checkbox"]:checked') || [])].map((input) => ({
         type: input.dataset.relationType,
         id: input.dataset.relationId,
         label: input.dataset.relationLabel,
       }));
       const created = await window.MIDGAS_EDITOR_STORE?.create({
-        type: formData.get("type"),
+        type: recordType,
         name: formData.get("name"),
         alias: formData.get("alias"),
         threat: formData.get("threat"),
@@ -1179,6 +1211,7 @@
         location: formData.get("location"),
         summary: formData.get("summary"),
         description: formData.get("description"),
+        geo,
         sections: collectCreateSections(),
         image: preparedImage,
         relations,

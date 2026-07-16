@@ -545,6 +545,7 @@
         editorUpdatedAt: now,
         editorRelations: relations,
         editorRelationsVersion: 1,
+        geo: payload.geo || null,
         fields,
         sections: buildCreatedSections(payload.sections, description, relations),
       }),
@@ -642,6 +643,7 @@
       editorUpdatedAt: now,
       editorRelations: relations,
       editorRelationsVersion: 1,
+      geo: payload.geo || null,
       fields,
       sections: buildCreatedSections(payload.sections, description, relations),
     });
