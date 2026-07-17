@@ -80,10 +80,7 @@ const titleTranslations = {
   "Add role-based editor access and focused card wizard": "Уровни доступа редактора и пошаговое создание карточек",
   "Fix map loading after secure access": "Исправление загрузки карты после защищённого входа",
   "Audit Supabase and responsive site layout": "Проверка Supabase и адаптивной вёрстки сайта",
-  "Block suspicious editor account": "Ограничение подозрительного аккаунта редактора",
-  "Restrict password changes for monitored account": "Запрет смены пароля для контролируемого аккаунта",
   "Refine mobile board portal and map UI": "Улучшение мобильного блока связей и карт",
-  "Add monitored account glitch shaders": "Шейдерные глитч-эффекты для контролируемого аккаунта",
 };
 
 const descriptions = {
@@ -165,11 +162,10 @@ const descriptions = {
   "Add role-based editor access and focused card wizard": ["Добавлены три уровня доступа редактора и упрощённое пошаговое создание карточек."],
   "Fix map loading after secure access": ["Карта корректно загружается после прохождения защищённого входа на сайт."],
   "Audit Supabase and responsive site layout": ["Проверены подключения Supabase, адаптивная вёрстка, тексты и основные разделы сайта."],
-  "Block suspicious editor account": ["Для подозрительного аккаунта редактора временно был включён полноэкранный запрет доступа."],
-  "Restrict password changes for monitored account": ["Для контролируемого аккаунта отключена смена пароля и добавлено предупреждение безопасности."],
   "Refine mobile board portal and map UI": ["Переработан мобильный блок перехода к связям и очищен интерфейс карт от лишнего брендинга."],
-  "Add monitored account glitch shaders": ["Предупреждение удалено; для контролируемого аккаунта добавлены случайные WebGL-глитчи каждые 30–60 секунд."],
 };
+
+const excludedHashes = new Set(["25e2732", "70fb7ca", "3763480", "c9e952e"]);
 
 function localizeTitle(subject) {
   if (titleTranslations[subject]) return titleTranslations[subject];
@@ -178,15 +174,19 @@ function localizeTitle(subject) {
 }
 
 const output = execFileSync("git", ["log", "--reverse", "--date=iso-strict", "--pretty=format:%H%x1f%ad%x1f%s%x1e"], { encoding: "utf8" });
-const deployments = output.split("\x1e").map((entry) => entry.trim()).filter(Boolean).map((entry, index) => {
-  const [hash, date, subject] = entry.split("\x1f");
-  return {
-    revision: index + 1,
-    hash: hash.slice(0, 8),
-    date,
-    title: localizeTitle(subject),
-    changes: descriptions[subject] || [localizeTitle(subject)],
-  };
-}).reverse();
+const deployments = output.split("\x1e")
+  .map((entry) => entry.trim())
+  .filter(Boolean)
+  .filter((entry) => !excludedHashes.has(entry.split("\x1f")[0].slice(0, 7)))
+  .map((entry, index) => {
+    const [hash, date, subject] = entry.split("\x1f");
+    return {
+      revision: index + 1,
+      hash: hash.slice(0, 8),
+      date,
+      title: localizeTitle(subject),
+      changes: descriptions[subject] || [localizeTitle(subject)],
+    };
+  }).reverse();
 
 writeFileSync(resolve("web/deploy-history.js"), `window.MIDGAS_DEPLOY_HISTORY = ${JSON.stringify(deployments, null, 2)};\n`, "utf8");

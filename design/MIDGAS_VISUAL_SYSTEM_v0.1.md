@@ -20,7 +20,7 @@ Core properties:
 - Corner radius is always `0`.
 - No pills, capsules, rounded cards, soft badges, or circular UI controls.
 - No drop shadows, glass effects, gradients, glow, blur, or fake paper texture.
-- No decorative occult symbols, glitch effects, or redacted-document theatre.
+- No decorative occult symbols or redacted-document theatre.
 - Information hierarchy is created with scale, weight, spacing, rules, and alignment.
 - Every block aligns to the grid.
 - The base identity is monochrome. Color never replaces a written status or label.
