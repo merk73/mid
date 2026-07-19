@@ -358,7 +358,7 @@ if (motionTargets.length && !window.matchMedia("(prefers-reduced-motion: reduce)
         observer.unobserve(entry.target);
       });
     },
-    { rootMargin: "65% 0px 45%", threshold: 0.01 },
+    { rootMargin: "115% 0px 105%", threshold: 0.001 },
   );
 
   motionTargets.forEach((element) => observer.observe(element));

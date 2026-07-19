@@ -698,9 +698,41 @@ body .record-level-scale button { min-width: 0; }
 /* Stage 14 — let the browser skip off-screen layout and paint work. */
 .home-page main > :is(.client-preview, .historical-archive-cover, .company-hub, .glossary-section) { content-visibility: visible; }
 img { content-visibility: auto; }
+
+/* The home page is fully primed: no late layout/paint activation while scrolling. */
+.home-preload-all .home-page main > *,
+.home-preload-all .home-page main img,
+.home-preload-all .home-page .company-process-shot {
+  content-visibility: visible !important;
+  contain-intrinsic-size: none !important;
+}
+.site-parallax-enabled :is(
+  .hero-group-photo > img,
+  .topic-strip > img,
+  .historical-archive-cover > img,
+  .company-quotes-image > img,
+  .company-board-preview-image,
+  .catalog-hero img,
+  .record-portrait > img
+) {
+  will-change: translate;
+  transition: translate 90ms linear;
+}
+.motion-enabled .motion-reveal {
+  transition-delay: calc(var(--motion-order, 0) * 35ms);
+}
 @media (max-width: 760px), (pointer: coarse) {
   .motion-enabled .motion-reveal { transition-duration: 360ms; }
-  .company-process-shot[data-company-parallax] { transform: none !important; }
+  .company-process-shot[data-company-parallax] { transform: translate3d(0, var(--company-parallax-y, 0px), 0); }
+  .site-parallax-enabled :is(
+    .hero-group-photo > img,
+    .topic-strip > img,
+    .historical-archive-cover > img,
+    .company-quotes-image > img,
+    .company-board-preview-image,
+    .catalog-hero img,
+    .record-portrait > img
+  ) { transition-duration: 130ms; }
 }
 
 /* Home relationship board: an interface preview, without a photographic cover. */

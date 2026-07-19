@@ -1281,7 +1281,7 @@
         entry.target.classList.add("is-visible");
         observer.unobserve(entry.target);
       });
-    }, { rootMargin: "65% 0px 45%", threshold: 0.01 });
+    }, { rootMargin: "115% 0px 105%", threshold: 0.001 });
     revealElements.forEach((element) => revealObserver.observe(element));
   }
 
@@ -1301,7 +1301,7 @@
   function updateParallax() {
     parallaxFrame = 0;
     const viewportHeight = window.innerHeight;
-    const mobileFactor = window.innerWidth <= 760 ? 0.45 : 1;
+    const mobileFactor = window.innerWidth <= 760 ? 0.24 : 1;
     parallaxElements.forEach((element) => {
       const rect = element.getBoundingClientRect();
       if (rect.bottom < -100 || rect.top > viewportHeight + 100) return;
@@ -1316,7 +1316,7 @@
     if (!parallaxFrame) parallaxFrame = window.requestAnimationFrame(updateParallax);
   }
 
-  if (!reducedMotion && !saveData && parallaxElements.length && window.innerWidth > 760) {
+  if (!reducedMotion && !saveData && parallaxElements.length) {
     updateParallax();
     window.addEventListener("scroll", requestParallax, { passive: true });
     window.addEventListener("resize", requestParallax);

@@ -1,32 +1,112 @@
 (() => {
   "use strict";
-  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const recordPage = document.querySelector("main.record-page");
-  const targets = recordPage || reduceMotion
-    ? []
-    : [...document.querySelectorAll("main > section:not(.hero-cover), .account-profile, .account-tools, .workspace-actions, .workspace-content, .workspace-journal")];
 
-  const lazyImages = [...document.querySelectorAll('img[loading="lazy"]')];
-  if (lazyImages.length && "IntersectionObserver" in window) {
+  const root = document.documentElement;
+  const homePage = document.body.classList.contains("home-page");
+  const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const saveData = Boolean(navigator.connection?.saveData);
+  const recordPage = document.querySelector("main.record-page");
+
+  function primeImage(image) {
+    if (!(image instanceof HTMLImageElement)) return;
+    image.decoding = "async";
+    if (homePage) {
+      image.loading = "eager";
+      if (!image.closest(".hero-cover")) image.fetchPriority = "low";
+    }
+  }
+
+  const images = [...document.images];
+  images.forEach(primeImage);
+
+  if (homePage) {
+    root.classList.add("home-preload-all");
+    const imageObserver = new MutationObserver((mutations) => {
+      mutations.forEach((mutation) => mutation.addedNodes.forEach((node) => {
+        if (node instanceof HTMLImageElement) primeImage(node);
+        node.querySelectorAll?.("img").forEach(primeImage);
+      }));
+    });
+    imageObserver.observe(document.body, { childList: true, subtree: true });
+    window.setTimeout(() => imageObserver.disconnect(), 20000);
+    Promise.allSettled(images.filter((image) => image.src).map((image) => image.decode?.())).then(() => {
+      root.classList.add("home-assets-ready");
+      window.dispatchEvent(new CustomEvent("midgas:home-assets-ready"));
+    });
+  } else if (images.length && "IntersectionObserver" in window) {
     const preloadObserver = new IntersectionObserver((entries) => {
       entries.forEach((entry) => {
         if (!entry.isIntersecting) return;
         entry.target.loading = "eager";
         preloadObserver.unobserve(entry.target);
       });
-    }, { rootMargin: "140% 0px", threshold: 0.01 });
-    lazyImages.forEach((image) => preloadObserver.observe(image));
+    }, { rootMargin: "180% 0px", threshold: 0.01 });
+    images.filter((image) => image.loading === "lazy").forEach((image) => preloadObserver.observe(image));
   }
 
-  if (!targets.length || !("IntersectionObserver" in window)) return;
-  document.documentElement.classList.add("motion-enabled");
-  targets.forEach((target) => target.classList.add("motion-reveal"));
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach((entry) => {
-      if (!entry.isIntersecting) return;
-      entry.target.classList.add("is-visible");
-      observer.unobserve(entry.target);
+  const revealTargets = recordPage || reduceMotion
+    ? []
+    : [...document.querySelectorAll("main > section:not(.hero-cover), .account-profile, .account-tools, .workspace-actions, .workspace-content, .workspace-journal")];
+
+  if (revealTargets.length) {
+    root.classList.add("motion-enabled");
+    revealTargets.forEach((target, index) => {
+      target.classList.add("motion-reveal");
+      target.style.setProperty("--motion-order", String(index % 3));
     });
-  }, { rootMargin: "70% 0px 55%", threshold: 0.01 });
-  targets.forEach((target) => observer.observe(target));
+    if (!("IntersectionObserver" in window)) {
+      revealTargets.forEach((target) => target.classList.add("is-visible"));
+    } else {
+      const revealObserver = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.classList.add("is-visible");
+          revealObserver.unobserve(entry.target);
+        });
+      }, {
+        rootMargin: homePage ? "115% 0px 115%" : "55% 0px 40%",
+        threshold: 0.001,
+      });
+      revealTargets.forEach((target) => {
+        if (target.getBoundingClientRect().top < window.innerHeight * 2.15) target.classList.add("is-visible");
+        else revealObserver.observe(target);
+      });
+    }
+  }
+
+  const parallaxTargets = reduceMotion || saveData ? [] : [...document.querySelectorAll([
+    ".hero-group-photo > img",
+    ".topic-strip > img",
+    ".historical-archive-cover > img",
+    ".company-quotes-image > img",
+    ".company-board-preview-image",
+    ".catalog-hero img",
+    ".record-portrait > img",
+  ].join(","))].filter((element) => !element.closest("[data-company-parallax]"));
+
+  let motionFrame = 0;
+  function renderParallax() {
+    motionFrame = 0;
+    const viewport = window.innerHeight || 1;
+    const mobileFactor = window.innerWidth <= 760 ? 0.22 : 0.46;
+    parallaxTargets.forEach((element) => {
+      const rect = element.parentElement?.getBoundingClientRect?.() || element.getBoundingClientRect();
+      if (rect.bottom < -viewport * .25 || rect.top > viewport * 1.25) return;
+      const progress = (rect.top + rect.height / 2 - viewport / 2) / viewport;
+      const travel = Math.max(-22, Math.min(22, progress * -38 * mobileFactor));
+      element.style.translate = `0 ${travel.toFixed(2)}px`;
+    });
+  }
+  function requestParallax() {
+    if (!motionFrame) motionFrame = window.requestAnimationFrame(renderParallax);
+  }
+
+  if (parallaxTargets.length) {
+    root.classList.add("site-parallax-enabled");
+    renderParallax();
+    window.addEventListener("scroll", requestParallax, { passive: true });
+    window.addEventListener("resize", requestParallax, { passive: true });
+  }
+
+  window.MIDGAS_SITE_MOTION = Object.freeze({ refresh: requestParallax });
 })();
