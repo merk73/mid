@@ -19,9 +19,9 @@
     const { data: userData } = await client.auth.getUser();
     const user = userData?.user;
     if (!user?.id) return { authenticated: false, approved: false, owner: false, login: "", role: "", userId: "" };
-    const { data: member } = await client.from("editor_members").select("role,approved_at").eq("user_id", user.id).maybeSingle();
-    const approved = Boolean(member?.approved_at && ["limited", "full", "admin"].includes(member.role));
-    const login = String(user.user_metadata?.login || "").toLowerCase();
+    const { data: member } = await client.from("account_members").select("login,role,approved_at").eq("user_id", user.id).maybeSingle();
+    const approved = Boolean(member?.approved_at && ["viewer", "editor", "admin"].includes(member.role));
+    const login = String(member?.login || user.app_metadata?.account_login || "").toLowerCase();
     return { authenticated: true, approved, owner: approved && member?.role === "admin", login, role: member?.role || "", userId: user.id };
   }
 
@@ -48,7 +48,7 @@
       const output = gate.querySelector("[data-maintenance-message]");
       output.textContent = "ПРОВЕРЯЕМ ДОСТУП…";
       try {
-        await window.MIDGAS_EDITOR_SESSION?.signIn?.({
+        await window.MIDGAS_ACCOUNT_SESSION?.signIn?.({
           login: form.elements.login.value.trim(),
           password: form.elements.password.value,
         });
