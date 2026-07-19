@@ -194,7 +194,7 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
   max-width: none;
   object-fit: cover;
   object-position: 50% 52%;
-  filter: grayscale(1) brightness(0.27) contrast(1.22);
+  filter: grayscale(1) brightness(0.42) contrast(1.14);
   transform: translate3d(0, var(--hero-parallax-y, 0), 0) scale(1.08);
   will-change: transform;
 }
@@ -221,8 +221,8 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
 .history-hero-shade {
   z-index: 2;
   background:
-    linear-gradient(90deg, rgba(0, 0, 0, 0.68), rgba(0, 0, 0, 0.25) 58%, rgba(0, 0, 0, 0.5)),
-    linear-gradient(0deg, rgba(0, 0, 0, 0.8), transparent 58%, rgba(0, 0, 0, 0.24));
+    linear-gradient(90deg, rgba(0, 0, 0, 0.56), rgba(0, 0, 0, 0.18) 58%, rgba(0, 0, 0, 0.38)),
+    linear-gradient(0deg, rgba(0, 0, 0, 0.68), transparent 58%, rgba(0, 0, 0, 0.18));
 }
 
 .history-hero::before {
@@ -12668,14 +12668,21 @@ textarea:focus-visible {
 }
 .catalog-view { display: flex; }
 .catalog-view button {
-  width: 42px;
+  display: grid;
+  width: 40px;
   height: 40px;
+  min-width: 40px;
+  min-height: 40px;
+  padding: 0;
+  place-items: center;
   color: #111;
   background: #fff;
   border: 1px solid #77766f;
-  font-size: 18px;
   cursor: pointer;
 }
+.catalog-view button svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.6; vector-effect: non-scaling-stroke; }
+.catalog-view button[data-catalog-view="grid"] svg rect { fill: currentColor; stroke: none; }
+.catalog-view button[data-catalog-view="list"] svg circle { fill: currentColor; stroke: none; }
 .catalog-view button + button { border-left: 0; }
 .catalog-view button.is-active { color: #fff; background: #111; }
 .catalog-results-meta {
@@ -12801,7 +12808,7 @@ textarea:focus-visible {
   .catalog-sort { flex: 1 1 auto; }
   .catalog-sort select { width: 100%; min-width: 0; }
   .catalog-view { align-self: end; flex: 0 0 auto; height: 40px; }
-  .catalog-view button { flex: 0 0 42px; height: 40px; }
+  .catalog-view button { flex: 0 0 40px; width: 40px; height: 40px; }
   .catalog-results-meta { padding: 0 12px; }
   .registry-grid.is-list-view .registry-card { min-height: 132px; grid-template-columns: 116px minmax(0,1fr); }
   .registry-grid.is-list-view .registry-card h3 { margin: 15px 12px 5px; font-size: clamp(24px, 8vw, 36px); }

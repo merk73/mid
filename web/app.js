@@ -211,8 +211,8 @@ filterButtons.forEach((button) => {
 
 const glossarySearch = document.querySelector("#glossary-search");
 const glossaryFilterButtons = [...document.querySelectorAll("[data-glossary-filter]")];
-const glossaryEntries = [...document.querySelectorAll("[data-glossary-entry]")];
-const glossaryGroups = [...document.querySelectorAll("[data-glossary-group]")];
+let glossaryEntries = [...document.querySelectorAll("[data-glossary-entry]")];
+let glossaryGroups = [...document.querySelectorAll("[data-glossary-group]")];
 const glossaryEmpty = document.querySelector("#glossary-empty");
 let activeGlossaryFilter = "all";
 let activeGlossaryEntry = null;
@@ -250,6 +250,7 @@ function toggleGlossaryEntry(entry) {
 
 function initializeGlossaryAccordions() {
   glossaryEntries.forEach((entry, index) => {
+    if (entry.querySelector(":scope > .glossary-entry-trigger")) return;
     const sourceMeta = entry.querySelector(":scope > div");
     const code = sourceMeta?.querySelector(":scope > span");
     const title = sourceMeta?.querySelector("h4");
@@ -309,6 +310,13 @@ function updateGlossary() {
 
 initializeGlossaryAccordions();
 
+window.MIDGAS_REFRESH_GLOSSARY = () => {
+  glossaryEntries = [...document.querySelectorAll("[data-glossary-entry]")];
+  glossaryGroups = [...document.querySelectorAll("[data-glossary-group]")];
+  initializeGlossaryAccordions();
+  updateGlossary();
+};
+
 glossaryFilterButtons.forEach((button) => {
   button.addEventListener("click", () => {
     activeGlossaryFilter = button.dataset.glossaryFilter || "all";
@@ -350,7 +358,7 @@ if (motionTargets.length && !window.matchMedia("(prefers-reduced-motion: reduce)
         observer.unobserve(entry.target);
       });
     },
-    { rootMargin: "0px 0px -7%", threshold: 0.06 },
+    { rootMargin: "65% 0px 45%", threshold: 0.01 },
   );
 
   motionTargets.forEach((element) => observer.observe(element));

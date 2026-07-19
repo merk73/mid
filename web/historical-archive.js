@@ -18,6 +18,12 @@ const visibleScenes = new Set();
 let frameRequested = false;
 let activeEntryId = "";
 
+function preloadSceneMedia(scene) {
+  scene.querySelectorAll('img[loading="lazy"]').forEach((image) => {
+    image.loading = "eager";
+  });
+}
+
 if (!reduceMotion.matches && historyEntries.length) {
   document.documentElement.classList.add("archive-motion-ready");
 }
@@ -28,19 +34,22 @@ const entryObserver = new IntersectionObserver(
       if (isIntersecting) target.classList.add("is-visible");
     });
   },
-  { rootMargin: "0px 0px -10%", threshold: 0.08 },
+  { rootMargin: "55% 0px 45%", threshold: 0.01 },
 );
 
 const sceneObserver = new IntersectionObserver(
   (records) => {
     records.forEach(({ target, isIntersecting }) => {
       target.classList.toggle("is-in-viewport", isIntersecting);
-      if (isIntersecting) visibleScenes.add(target);
+      if (isIntersecting) {
+        preloadSceneMedia(target);
+        visibleScenes.add(target);
+      }
       else visibleScenes.delete(target);
     });
     scheduleArchiveFrame();
   },
-  { rootMargin: "28% 0px" },
+  { rootMargin: "85% 0px" },
 );
 
 historyEntries.forEach((entry) => {

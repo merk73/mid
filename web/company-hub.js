@@ -659,12 +659,19 @@
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   let quoteAnimation = null;
   let quoteTimer = null;
+  let quoteEditingPaused = false;
   const QUOTE_ROTATION_MS = 6500;
 
+  const quoteBody = (item) => Array.isArray(item) ? item[0] : item?.body;
+  const quoteSourceValue = (item) => Array.isArray(item) ? item[1] : item?.metadata?.source || item?.title;
+
   function renderQuote(index) {
-    if (quoteText) quoteText.textContent = quotes[index][0];
-    if (quoteSource) quoteSource.textContent = quotes[index][1];
+    const item = quotes[index];
+    if (quoteText) quoteText.textContent = quoteBody(item) || "";
+    if (quoteSource) quoteSource.textContent = quoteSourceValue(item) || "";
+    if (quoteFrame) quoteFrame.dataset.editorialId = Array.isArray(item) ? "" : item?.id || "";
     if (quoteCounter) quoteCounter.textContent = `${String(index + 1).padStart(2, "0")} / ${String(quotes.length).padStart(2, "0")}`;
+    window.dispatchEvent(new CustomEvent("midgas:quote-rendered", { detail: { item, index } }));
   }
 
   async function showQuote(nextIndex) {
@@ -713,16 +720,20 @@
   function restartQuoteTimer() {
     window.clearInterval(quoteTimer);
     quoteTimer = null;
-    if (reducedMotion || document.hidden || !quoteFrame) return;
+    if (reducedMotion || document.hidden || !quoteFrame || quoteEditingPaused) return;
     quoteTimer = window.setInterval(() => { void showQuote(quoteIndex + 1); }, QUOTE_ROTATION_MS);
   }
 
   window.MIDGAS_SET_QUOTES = (items) => {
-    const next = Array.isArray(items) ? items.filter((item) => Array.isArray(item) && item[0]) : [];
+    const next = Array.isArray(items) ? items.filter((item) => Array.isArray(item) ? item[0] : item?.body) : [];
     if (!next.length) return;
     quotes = next;
     quoteIndex = 0;
     renderQuote(0);
+    restartQuoteTimer();
+  };
+  window.MIDGAS_SET_QUOTE_EDITING = (paused) => {
+    quoteEditingPaused = Boolean(paused);
     restartQuoteTimer();
   };
 
@@ -1270,7 +1281,7 @@
         entry.target.classList.add("is-visible");
         observer.unobserve(entry.target);
       });
-    }, { rootMargin: "0px 0px -8%", threshold: 0.08 });
+    }, { rootMargin: "65% 0px 45%", threshold: 0.01 });
     revealElements.forEach((element) => revealObserver.observe(element));
   }
 
