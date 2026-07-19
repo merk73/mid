@@ -210,6 +210,10 @@
     const coverUrl = publicUrlForPath(row?.cover_path);
     record.id = code;
     if (!record.kind && type) record.kind = type.toUpperCase();
+    Object.defineProperties(record, {
+      supabaseCreatedAt: { value: String(row?.created_at || ""), enumerable: false, configurable: true },
+      supabaseUpdatedAt: { value: String(row?.updated_at || ""), enumerable: false, configurable: true },
+    });
     if (coverUrl) {
       record.image = coverUrl;
       record.cardImage = coverUrl;

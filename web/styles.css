@@ -194,7 +194,7 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
   max-width: none;
   object-fit: cover;
   object-position: 50% 52%;
-  filter: grayscale(1) brightness(0.4) contrast(1.18);
+  filter: grayscale(1) brightness(0.27) contrast(1.22);
   transform: translate3d(0, var(--hero-parallax-y, 0), 0) scale(1.08);
   will-change: transform;
 }
@@ -211,8 +211,8 @@ body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-por
   pointer-events: none;
   object-fit: contain;
   object-position: 50% 100%;
-  opacity: 0.62;
-  filter: grayscale(1) brightness(0.54) contrast(1.22);
+  opacity: 0.48;
+  filter: grayscale(1) brightness(0.35) contrast(1.26);
   mix-blend-mode: screen;
   transform: translate3d(var(--hero-parallax-x, 0), var(--hero-parallax-y, 0), 0) scale(1.12);
   will-change: transform;
@@ -12798,6 +12798,8 @@ textarea:focus-visible {
   .catalog-control-row .filter-button { flex: 0 0 auto; min-height: 40px; }
   .catalog-sort { flex: 1 1 auto; }
   .catalog-sort select { width: 100%; min-width: 0; }
+  .catalog-view { align-self: end; flex: 0 0 auto; height: 40px; }
+  .catalog-view button { flex: 0 0 42px; height: 40px; }
   .catalog-results-meta { padding: 0 12px; }
   .registry-grid.is-list-view .registry-card { min-height: 132px; grid-template-columns: 116px minmax(0,1fr); }
   .registry-grid.is-list-view .registry-card h3 { margin: 15px 12px 5px; font-size: clamp(24px, 8vw, 36px); }
@@ -12841,26 +12843,135 @@ textarea:focus-visible {
   body .record-shell .record-fields { padding: 32px 16px; }
   body .record-shell .lore-section p { text-align: left; hyphens: none; }
 
-  .history-page .timeline-dossier:not([open]) { background: rgba(12,12,12,.72); }
-  .history-page .timeline-dossier-toggle { min-height: 54px; }
-  .history-page .archive-scene:not(.is-in-viewport) .archive-scene-background,
-  .history-page .archive-scene:not(.is-in-viewport) .archive-scene-cutout { visibility: hidden; }
-  .history-page .archive-scene-background,
-  .history-page .archive-scene-cutout { transform: none !important; }
 }
 
 @media (max-width: 520px) {
-  .registry-page .registry-grid:not(.is-list-view),
-  .home-page .client-grid { grid-template-columns: 1fr; }
+  .catalog-control-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: end;
+  }
+  .catalog-control-row .filters { grid-column: 1 / -1; }
+  .catalog-sort { grid-column: 1; min-width: 0; }
+  .catalog-view { grid-column: 2; }
+
+  .registry-page .registry-grid:not(.is-list-view) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .registry-page .registry-grid:not(.is-list-view) .registry-card,
+  .registry-page .registry-grid:not(.is-list-view) .registry-card:nth-child(3n) { border-right: 1px solid var(--ink) !important; }
+  .registry-page .registry-grid:not(.is-list-view) .registry-card:nth-child(2n) { border-right: 0 !important; }
+  .registry-page .registry-grid:not(.is-list-view) .registry-card { padding-bottom: 18px; }
+  .registry-page .registry-grid:not(.is-list-view) .registry-card img { aspect-ratio: 4 / 3; }
+  .registry-page .registry-grid:not(.is-list-view) .registry-card h3 {
+    margin: 14px 10px 6px;
+    font-size: clamp(18px, 5.8vw, 24px);
+    line-height: 1;
+    overflow-wrap: anywhere;
+  }
+  .registry-page .registry-grid:not(.is-list-view) .registry-card p {
+    margin: 0 10px;
+    font-size: 9px;
+    line-height: 1.4;
+  }
+  .registry-page .registry-grid:not(.is-list-view) .client-card-data {
+    min-height: 42px;
+    padding: 10px;
+    font-size: 9px;
+  }
+  .registry-page .registry-grid:not(.is-list-view) .client-card-data--levels {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: 112px;
+    padding: 0;
+  }
+  .registry-page .registry-grid:not(.is-list-view) .client-card-data--levels > span:first-child {
+    width: 100%;
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .registry-page .registry-grid:not(.is-list-view) .client-card-levels {
+    width: 100%;
+    min-height: 72px;
+    margin-left: 0;
+    border-left: 0;
+  }
+  .registry-page .registry-grid:not(.is-list-view) .client-card-level { padding: 9px 7px 8px; }
+  .registry-page .registry-grid:not(.is-list-view) .client-card-level small { font-size: 7px; }
+  .registry-page .registry-grid:not(.is-list-view) .client-card-level strong { font-size: 18px; }
+  .registry-page .registry-grid:not(.is-list-view) .client-card-level-scale { gap: 2px; margin-top: 8px; }
+  .registry-page .registry-grid:not(.is-list-view) .client-card-level-scale > span { min-width: 0; height: 5px; }
+
+  .home-page .client-grid { grid-template-columns: 1fr; }
   .home-page .client-grid .client-card { border-right: 0 !important; }
-  .registry-page .registry-grid:not(.is-list-view) .registry-card img,
   .home-page .client-grid .client-card img { aspect-ratio: 4 / 3; }
-  .client-card-data--levels,
   .home-page .client-card .client-card-data--levels { min-height: 64px; padding-left: 14px; }
   .client-card-level { min-width: 74px; padding: 9px 8px 7px; }
   .client-card-level small { font-size: 7px; }
   .client-card-level strong { font-size: 17px; }
   .client-card-level-scale { gap: 2px; margin-top: 7px; }
   .client-card-level-scale > span { height: 5px; }
+}
+
+/* 2026 interaction polish: tactile, accessible and deliberately restrained. */
+html { scrollbar-gutter: stable; }
+
+:where(a, button, input, select, textarea, summary) {
+  touch-action: manipulation;
+}
+
+:where(.catalog-hero h1, .record-heading h1, .section-heading h2, .company-section-heading h2, .history-hero h1) {
+  text-wrap: balance;
+}
+
+:where(.catalog-hero p, .record-summary p, .company-section-heading p, .history-hero-copy p) {
+  text-wrap: pretty;
+}
+
+:where(main [id], section[id], article[id]) {
+  scroll-margin-top: 76px;
+}
+
+:where(.registry-card, .company-process-shot) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 420px;
+}
+
+:where(.filter-button, .catalog-view button, .catalog-search-field button, .world-map-toolbar button, .company-board-discovery button):focus-visible {
+  position: relative;
+  z-index: 3;
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
+@media (hover: none) {
+  :where(.filter-button, .catalog-view button, .catalog-search-field button, .registry-card, .world-map-list-item, .company-process-toggle):active {
+    opacity: .72;
+  }
+}
+
+@media (max-width: 760px) {
+  .site-header { padding-top: env(safe-area-inset-top); }
+  .site-footer { padding-bottom: max(18px, env(safe-area-inset-bottom)); }
+
+  .catalog-search-field input,
+  .catalog-sort select,
+  .world-map-list > label input,
+  .company-board-discovery input {
+    font-size: 16px;
+  }
+
+  .catalog-search-field input,
+  .catalog-search-field button { height: 52px; }
+  .catalog-control-row .filter-button { min-height: 44px; }
+  .catalog-sort select,
+  .catalog-view,
+  .catalog-view button { height: 44px; }
+  .catalog-view button { width: 44px; flex-basis: 44px; }
+
+  :where(main [id], section[id], article[id]) { scroll-margin-top: 68px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(.registry-card, .registry-card img, .filter-button, .catalog-view button, .company-process-toggle) {
+    transition-duration: .01ms !important;
+  }
 }

@@ -79,10 +79,16 @@ function searchText(record) {
   ].join(" "));
 }
 
-function updatedTime(record) {
-  const raw = record.updatedAt || record.updated_at || record.createdAt || record.created_at || "";
+function newestTime(record) {
+  const raw = record.createdAt || record.created_at || record.editorCreatedAt || record.supabaseCreatedAt
+    || record.updatedAt || record.updated_at || record.editorUpdatedAt || record.supabaseUpdatedAt || "";
   const time = Date.parse(raw);
   return Number.isFinite(time) ? time : 0;
+}
+
+function recordSequence(record) {
+  const match = String(record.id || "").match(/(\d+)(?!.*\d)/);
+  return match ? Number(match[1]) : 0;
 }
 
 function createRegistryCard(record) {
@@ -162,7 +168,11 @@ function sortedVisibleRecords() {
     .filter((record) => !query || searchText(record).includes(query))
     .sort((left, right) => {
       if (state.sort === "name") return String(left.name).localeCompare(String(right.name), "ru");
-      if (state.sort === "updated") return updatedTime(right) - updatedTime(left) || String(left.id).localeCompare(String(right.id), "ru");
+      if (state.sort === "updated") {
+        return newestTime(right) - newestTime(left)
+          || recordSequence(right) - recordSequence(left)
+          || String(right.id).localeCompare(String(left.id), "ru");
+      }
       return String(left.id).localeCompare(String(right.id), "ru");
     });
 }
@@ -227,7 +237,6 @@ viewButtons.forEach((button) => button.addEventListener("click", () => {
 try {
   const savedView = localStorage.getItem("midgas:registry-view");
   if (["grid", "list"].includes(savedView)) state.view = savedView;
-  else if (window.matchMedia("(max-width: 520px)").matches) state.view = "list";
 } catch { /* storage can be blocked */ }
 
 refreshRegistryFromSource();

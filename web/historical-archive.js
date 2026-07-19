@@ -49,15 +49,8 @@ historyEntries.forEach((entry) => {
 });
 historyScenes.forEach((scene) => sceneObserver.observe(scene));
 
-historyDossiers.forEach((details, index) => {
-  details.open = !narrowViewport.matches || index === 0;
-  details.addEventListener("toggle", () => {
-    if (!narrowViewport.matches || !details.open) return;
-    historyDossiers.forEach((item) => {
-      if (item !== details) item.open = false;
-    });
-    scheduleArchiveFrame();
-  });
+historyDossiers.forEach((details) => {
+  details.open = true;
 });
 
 function revealHashTarget() {
@@ -117,7 +110,7 @@ function updateActiveEntry() {
 }
 
 function updateParallax() {
-  const parallaxEnabled = !reduceMotion.matches && !saveData && !narrowViewport.matches && !coarsePointer.matches;
+  const parallaxEnabled = !reduceMotion.matches && !saveData;
   const compactMotion = narrowViewport.matches || coarsePointer.matches;
 
   visibleScenes.forEach((scene) => {
@@ -159,7 +152,7 @@ function updateHeroParallax() {
   if (!historyHero || !historyHeroLayers.length) return;
   const rect = historyHero.getBoundingClientRect();
   const progress = Math.max(0, Math.min(1, -rect.top / Math.max(rect.height, 1)));
-  const enabled = !reduceMotion.matches && !saveData && !narrowViewport.matches;
+  const enabled = !reduceMotion.matches && !saveData;
 
   historyHeroLayers.forEach((layer) => {
     const isFog = layer.dataset.heroParallax === "fog";
