@@ -79,10 +79,9 @@ function renderLevel(root, value, prefix, kind) {
 function renderClearance(sourceRecord) {
   const root = document.querySelector("[data-record-clearance]");
   if (!root) return;
-  root.hidden = type !== "client";
-  if (type !== "client") return;
-  const threat = recordFieldValue(sourceRecord, ["Уровень угрозы"]);
-  const access = recordFieldValue(sourceRecord, ["Уровень доступа", "Осведомленность клиента"]);
+  root.hidden = false;
+  const threat = `T${Math.min(5, Math.max(1, Number(sourceRecord?.threatLevel) || levelFromValue(recordFieldValue(sourceRecord, ["Уровень угрозы"]), "threat") || 1))}`;
+  const access = `D${Math.min(5, Math.max(1, Number(sourceRecord?.accessLevel) || levelFromValue(recordFieldValue(sourceRecord, ["Уровень доступа", "Осведомленность клиента"]), "access") || 1))}`;
   renderLevel(root.querySelector("[data-record-threat]"), threat, "T", "threat");
   renderLevel(root.querySelector("[data-record-access]"), access, "D", "access");
 }

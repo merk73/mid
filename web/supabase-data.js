@@ -211,6 +211,8 @@
     record.id = code;
     record.caption = String(record.caption || record.alias || record.cardType || "").trim();
     record.isPublished = record.isPublished !== false;
+    record.threatLevel = Math.min(5, Math.max(1, Number(record.threatLevel) || 1));
+    record.accessLevel = Math.min(5, Math.max(1, Number(record.accessLevel) || 1));
     delete record.alias;
     delete record.cardType;
     Object.defineProperties(record, {
@@ -621,6 +623,8 @@
     delete content._supabase;
     content.caption = String(content.caption || content.alias || content.cardType || "").trim();
     content.isPublished = content.isPublished !== false;
+    content.threatLevel = Math.min(5, Math.max(1, Number(content.threatLevel) || 1));
+    content.accessLevel = Math.min(5, Math.max(1, Number(content.accessLevel) || 1));
     delete content.alias;
     delete content.cardType;
     delete content.type;

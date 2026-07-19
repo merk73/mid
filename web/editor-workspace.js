@@ -7,6 +7,7 @@
   const fields = document.querySelector("[data-workspace-fields]");
   const list = document.querySelector("[data-entry-list]");
   const status = document.querySelector("[data-workspace-status]");
+  const journal = document.querySelector("[data-workspace-journal]");
   let account = null;
   let entries = [];
   let filter = "all";
@@ -46,7 +47,7 @@
     if (kind === "location") return [
       field("Название", `<input name="title" required maxlength="180" value="${escape(entry.title)}" />`),
       field("Описание", `<textarea name="body" maxlength="1400" rows="4">${escape(entry.body)}</textarea>`),
-      `<div class="workspace-form-row">${field("Широта", `<input name="latitude" type="number" step="any" required value="${escape(meta.latitude)}" />`)}${field("Долгота", `<input name="longitude" type="number" step="any" required value="${escape(meta.longitude)}" />`)}</div>`,
+      `<p>Введите город — координаты определятся автоматически. Ручные координаты имеют приоритет.</p><div class="workspace-form-row">${field("Широта — необязательно", `<input name="latitude" type="number" step="any" min="-90" max="90" value="${escape(meta.latitude)}" />`)}${field("Долгота — необязательно", `<input name="longitude" type="number" step="any" min="-180" max="180" value="${escape(meta.longitude)}" />`)}</div>`,
       '<label class="ui-check"><input type="checkbox" name="published" checked /><span>Показывать на карте</span></label>',
     ].join("");
     return [
@@ -82,10 +83,37 @@
     list.innerHTML = visible.length ? visible.map((entry) => `<article class="workspace-entry" data-entry-id="${entry.id}"><span>${entry.entry_type.toUpperCase()}</span><div><strong>${escape(entry.title)}</strong><small>${entry.is_published ? "ОПУБЛИКОВАНО" : "ЧЕРНОВИК"}</small></div><button type="button" data-entry-edit>Изменить</button>${account?.role === "admin" ? '<button type="button" data-entry-delete aria-label="Удалить">×</button>' : ""}</article>`).join("") : "<p>Материалов этого типа пока нет.</p>";
   }
 
+  async function loadJournal() {
+    const rows = await window.MIDGAS_SUPABASE_DATA.loadChangeFeed(120);
+    const labels = { record_created: "СОЗДАНО", record_updated: "ИЗМЕНЕНО", record_soft_deleted: "УДАЛЕНО", record_restored: "ВОССТАНОВЛЕНО", relationship_created: "СВЯЗЬ ДОБАВЛЕНА", relationship_deleted: "СВЯЗЬ УДАЛЕНА" };
+    journal.innerHTML = rows.length ? rows.map((row) => `<article class="workspace-journal-row" data-journal-id="${escape(row.id)}"><time datetime="${escape(row.occurred_at)}">${new Date(row.occurred_at).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</time><div><span>${labels[row.action] || escape(row.action)}</span><strong>${escape(row.record_name || row.record_code || "Связь карточек")}</strong></div><button type="button" data-journal-rollback>Откатить</button></article>`).join("") : "<p>Изменений пока нет.</p>";
+    journal._rows = rows;
+    const actions = { record_created: "create", record_updated: "update", record_soft_deleted: "delete", record_restored: "restore", relationship_created: "link", relationship_deleted: "unlink" };
+    journal._changes = rows.map((row) => ({ action: actions[row.action], type: row.record_type, id: row.record_code, version: Number(row.details?.version) || null, source: row.details?.source, target: row.details?.target }));
+  }
+
+  async function geocodeLocation(query) {
+    const url = new URL("https://nominatim.openstreetmap.org/search");
+    url.searchParams.set("format", "jsonv2"); url.searchParams.set("limit", "1"); url.searchParams.set("accept-language", "ru"); url.searchParams.set("q", query);
+    const controller = new AbortController(); const timeout = window.setTimeout(() => controller.abort(), 7000);
+    const response = await fetch(url, { headers: { Accept: "application/json" }, signal: controller.signal }).finally(() => window.clearTimeout(timeout));
+    const result = response.ok ? (await response.json())?.[0] : null;
+    const latitude = Number(result?.lat); const longitude = Number(result?.lon);
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) throw new Error("Локация не найдена. Уточните город или введите координаты вручную.");
+    return { latitude, longitude, label: String(result.display_name || query), source: "nominatim" };
+  }
+
   async function saveEditorial(data, kind, id) {
+    let locationMeta = null;
+    if (kind === "location") {
+      const latitude = Number(data.get("latitude")); const longitude = Number(data.get("longitude"));
+      locationMeta = data.get("latitude") !== "" && data.get("longitude") !== ""
+        ? { latitude, longitude, label: String(data.get("title") || "").trim(), source: "manual" }
+        : await geocodeLocation(String(data.get("title") || "").trim());
+    }
     const payload = {
       entry_type: kind, title: String(data.get("title") || "").trim(), body: String(data.get("body") || "").trim(),
-      metadata: kind === "location" ? { latitude: Number(data.get("latitude")), longitude: Number(data.get("longitude")) } : kind === "quote" ? { source: String(data.get("source") || "").trim() } : { group: String(data.get("group") || "").trim() },
+      metadata: kind === "location" ? locationMeta : kind === "quote" ? { source: String(data.get("source") || "").trim() } : { group: String(data.get("group") || "").trim() },
       is_published: data.get("published") === "on", updated_by: account.userId,
     };
     const query = id ? client.from("editorial_entries").update(payload).eq("id", id) : client.from("editorial_entries").insert({ ...payload, created_by: account.userId }).select().single();
@@ -134,6 +162,16 @@
       else await loadEntries();
     }
   });
+  journal?.addEventListener("click", async (event) => {
+    const row = event.target.closest("[data-journal-id]");
+    const rowIndex = journal._rows?.findIndex((item) => String(item.id) === row?.dataset.journalId);
+    const change = rowIndex >= 0 ? journal._changes?.[rowIndex] : null;
+    const button = event.target.closest("[data-journal-rollback]");
+    if (!change || !button) return;
+    button.disabled = true;
+    try { await window.MIDGAS_SUPABASE_DATA.rollbackChange(change); await loadJournal(); status.textContent = "Изменение откачено."; }
+    catch (error) { status.textContent = error?.message || "Откат не выполнен."; button.disabled = false; }
+  });
   form?.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!form.reportValidity()) return;
@@ -147,12 +185,26 @@
     finally { submit.disabled = false; }
   });
 
-  session.ready.then(async (current) => {
-    account = current;
+  async function waitForAccount() {
+    const immediate = await session.ready;
+    if (immediate) return immediate;
+    return new Promise((resolve) => {
+      const timeout = window.setTimeout(() => resolve(session.read()), 4000);
+      window.addEventListener(session.eventName, function onSession(event) {
+        if (!event.detail?.account) return;
+        window.clearTimeout(timeout);
+        window.removeEventListener(session.eventName, onSession);
+        resolve(event.detail.account);
+      });
+    });
+  }
+
+  waitForAccount().then(async (current) => {
+    account = current || session.read();
     if (!account || !session.hasAccess("editor")) { window.location.replace("account.html"); return; }
     document.querySelector("[data-workspace-role]").textContent = account.role === "admin" ? "АДМИНИСТРАТОР" : "РЕДАКТОР";
     document.querySelector("[data-workspace-login]").textContent = account.login;
-    try { await window.MIDGAS_SUPABASE_DATA?.ready; await loadEntries(); }
+    try { await window.MIDGAS_SUPABASE_DATA?.ready; await Promise.all([loadEntries(), loadJournal()]); }
     catch (error) { status.textContent = error?.message || "Не удалось загрузить материалы."; }
   });
 })();

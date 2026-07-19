@@ -14,13 +14,15 @@
     ["Связи", "board.html?board=open", "board.html"],
   ];
   const params = new URLSearchParams(window.location.search);
+  const isHome = path === "index.html";
   const renderLink = ([label, href, activePath, activeType]) => {
     const active = activePath === path && (!activeType || params.get("type") === activeType);
     return `<a href="${href}"${active ? ' aria-current="page"' : ""}>${label}</a>`;
   };
 
-  header.className = "site-header unified-site-header";
+  header.className = `site-header unified-site-header${isHome ? "" : " has-back"}`;
   header.innerHTML = `
+    ${isHome ? "" : '<button class="header-back-button" type="button" aria-label="Вернуться назад" data-fallback="index.html">←</button>'}
     <button class="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="main-navigation">
       <span class="menu-icon" aria-hidden="true"><span></span><span></span><span></span></span>
     </button>

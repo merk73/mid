@@ -165,7 +165,18 @@
   })();
 
   client?.auth.onAuthStateChange((event, session) => {
+    if (event === "INITIAL_SESSION") return;
+    if (!session && window.MIDGAS_SITE_ACCESS?.getSession?.()) return;
     window.setTimeout(() => void hydrate(session, event.toLowerCase()), 0);
+  });
+
+  window.addEventListener("midgas:account-access-granted", (event) => {
+    const nextSession = event.detail?.session;
+    if (!nextSession?.access_token || !nextSession?.refresh_token) return;
+    window.setTimeout(async () => {
+      const restored = await client.auth.setSession({ access_token: nextSession.access_token, refresh_token: nextSession.refresh_token });
+      if (!restored.error && restored.data.session) await hydrate(restored.data.session, "gate-refreshed");
+    }, 0);
   });
 
   const api = Object.freeze({

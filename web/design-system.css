@@ -338,6 +338,7 @@ body {
 }
 
 /* Stage 4 — one stable header for every public surface. */
+.site-header:not(.unified-site-header) > * { visibility: hidden; }
 body .site-header.unified-site-header {
   position: sticky;
   top: 0;
@@ -383,7 +384,7 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
   border: 0;
   background: transparent;
   font-family: var(--ui-font-mono);
-  font-size: var(--ui-text-xs);
+  font-size: .74rem;
   line-height: 1;
   letter-spacing: .05em;
   text-decoration: none;
@@ -403,7 +404,8 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
 .unified-site-header .nav-group a[aria-current="page"] { color: var(--ui-accent); }
 .unified-site-header .menu-toggle,
 .unified-site-header .mobile-wordmark,
-.unified-site-header .header-account-avatar { display: none; }
+.unified-site-header .header-account-avatar,
+.unified-site-header .header-back-button { display: none; }
 
 @media (max-width: 760px) {
   body .site-header.unified-site-header,
@@ -413,6 +415,17 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
     min-height: calc(56px + env(safe-area-inset-top));
     padding-top: env(safe-area-inset-top);
   }
+
+  body .site-header.unified-site-header.has-back {
+    grid-template-columns: 44px 56px minmax(0, 1fr) 56px;
+  }
+  .unified-site-header:not(.has-back) .menu-toggle { grid-column: 1; }
+  .unified-site-header:not(.has-back) .mobile-wordmark { grid-column: 2; }
+  .unified-site-header:not(.has-back) .header-account-avatar { grid-column: 3; }
+  .unified-site-header.has-back .header-back-button { grid-column: 1; }
+  .unified-site-header.has-back .menu-toggle { grid-column: 2; }
+  .unified-site-header.has-back .mobile-wordmark { grid-column: 3; }
+  .unified-site-header.has-back .header-account-avatar { grid-column: 4; }
 
   .unified-site-header .menu-toggle,
   .unified-site-header .mobile-wordmark,
@@ -428,6 +441,20 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
     background: transparent;
     border: 0 !important;
     text-decoration: none;
+  }
+
+  .unified-site-header.has-back .header-back-button {
+    position: relative;
+    z-index: 2;
+    display: inline-grid;
+    place-items: center;
+    width: 44px;
+    min-height: 56px;
+    padding: 0;
+    color: inherit;
+    background: transparent;
+    border: 0 !important;
+    font: 400 1.15rem/1 var(--ui-font-mono);
   }
 
   .unified-site-header .mobile-wordmark {
@@ -569,6 +596,17 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
 .workspace-entry strong { font: 500 var(--ui-title-sm)/1 var(--ui-font-display); }
 .workspace-entry button { min-height: 36px; padding: 0 .75rem; color: var(--ui-ink); background: transparent; border: 1px solid var(--ui-line); }
 .workspace-status { min-height: 1.5rem; color: var(--ui-muted); font: var(--ui-text-xs)/1.4 var(--ui-font-mono); }
+.workspace-journal { margin-top: clamp(3rem, 7vw, 6rem); padding-top: 2.5rem; border-top: 1px solid var(--ui-line); scroll-margin-top: 80px; }
+.workspace-journal > header { display: flex; justify-content: space-between; align-items: end; gap: 2rem; margin-bottom: 1.25rem; }
+.workspace-journal h2 { margin: .5rem 0 0; font: 500 var(--ui-title-lg)/1 var(--ui-font-display); }
+.workspace-journal > header p { max-width: 38ch; margin: 0; color: var(--ui-muted); }
+.workspace-journal-row { display: grid; grid-template-columns: 150px minmax(0, 1fr) auto; gap: 1rem; align-items: center; min-height: 68px; border-top: 1px solid var(--ui-line); }
+.workspace-journal-row:last-child { border-bottom: 1px solid var(--ui-line); }
+.workspace-journal-row time, .workspace-journal-row span { color: var(--ui-muted); font: var(--ui-text-xs)/1.2 var(--ui-font-mono); }
+.workspace-journal-row > div { display: grid; gap: .25rem; }
+.workspace-journal-row strong { font: 500 var(--ui-title-sm)/1 var(--ui-font-display); }
+.workspace-journal-row button { min-height: 34px; padding: 0 .7rem; color: var(--ui-ink); background: transparent; border: 1px solid var(--ui-line); font: var(--ui-text-xs)/1 var(--ui-font-mono); }
+.workspace-journal-row button:is(:hover, :focus-visible) { color: var(--ui-paper); background: var(--ui-accent); border-color: var(--ui-accent); }
 .workspace-dialog { width: min(680px, calc(100% - 28px)); max-height: 90svh; padding: 0; color: var(--ui-ink); background: var(--ui-paper); border: 1px solid var(--ui-ink); }
 .workspace-dialog::backdrop { background: rgba(0, 0, 0, .62); backdrop-filter: blur(4px); }
 .workspace-dialog form > header { position: sticky; top: 0; z-index: 2; display: flex; justify-content: space-between; align-items: start; padding: 1.25rem; background: var(--ui-paper); border-bottom: 1px solid var(--ui-line); }
@@ -605,9 +643,17 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
   .workspace-dialog { width: 100%; max-height: 94svh; margin: auto 0 0; border-inline: 0; border-bottom: 0; }
   .workspace-dialog form > footer { align-items: stretch; flex-direction: column; }
   .workspace-dialog form > footer button { width: 100%; }
+  .workspace-journal > header { display: block; }
+  .workspace-journal > header p { margin-top: .75rem; }
+  .workspace-journal-row { grid-template-columns: 1fr auto; padding-block: .85rem; }
+  .workspace-journal-row time { grid-column: 1 / -1; }
 }
 
 .record-gallery { padding: clamp(2rem, 5vw, 5rem) var(--side); background: #fff; border-top: 1px solid var(--ui-line); }
+body .record-clearance { width: 100%; grid-template-columns: repeat(2, minmax(0, 1fr)); background: #fff; }
+body .record-level { min-width: 0; }
+body .record-level-scale { width: 100%; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 4px; }
+body .record-level-scale button { min-width: 0; height: 8px; box-shadow: none !important; }
 .record-gallery > header { display: flex; justify-content: space-between; align-items: end; margin-bottom: 1.25rem; }
 .record-gallery > header span { color: var(--ui-muted); font: var(--ui-text-xs)/1 var(--ui-font-mono); }
 .record-gallery h2 { margin: 0; font: 500 var(--ui-title-lg)/1 var(--ui-font-display); }

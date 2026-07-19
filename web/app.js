@@ -98,8 +98,8 @@ function clientCardLevel(value, kind) {
 }
 
 function createClientCardLevels(record) {
-  const threatValue = clientCardFieldValue(record, ["Уровень угрозы"]);
-  const accessValue = clientCardFieldValue(record, ["Уровень доступа", "Осведомленность клиента"]);
+  const threatValue = record?.threatLevel ? `T${record.threatLevel}` : clientCardFieldValue(record, ["Уровень угрозы"]);
+  const accessValue = record?.accessLevel ? `D${record.accessLevel}` : clientCardFieldValue(record, ["Уровень доступа", "Осведомленность клиента"]);
   const levels = [
     { kind: "threat", label: "УГРОЗА", prefix: "T", value: threatValue, level: clientCardLevel(threatValue, "threat") },
     { kind: "access", label: "ДОСТУП", prefix: "D", value: accessValue, level: clientCardLevel(accessValue, "access") },

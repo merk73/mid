@@ -228,6 +228,9 @@
 
   function normalizeRecord(type, record) {
     const meta = TYPE_META[type];
+    const serializedFields = JSON.stringify(record?.fields || []);
+    const threatLevel = Math.min(5, Math.max(1, Number(record?.threatLevel) || Number(serializedFields.match(/T([1-5])/i)?.[1]) || 1));
+    const accessLevel = Math.min(5, Math.max(1, Number(record?.accessLevel) || Number(serializedFields.match(/D([1-5])/i)?.[1]) || 1));
     const next = {
       ...record,
       id: String(record?.id || ""),
@@ -239,6 +242,8 @@
       name: String(record?.name || "БЕЗ НАЗВАНИЯ"),
       caption: String(record?.caption || record?.alias || record?.cardType || meta.defaultCardType),
       isPublished: record?.isPublished !== false,
+      threatLevel,
+      accessLevel,
       image: String(record?.image || ""),
       gallery: Array.isArray(record?.gallery) ? record.gallery.slice(0, 9) : [],
       summary: String(record?.summary || ""),
@@ -533,7 +538,7 @@
       ["Уровень угрозы", threat],
       ["Местоположение", location],
     ];
-    if (type === "client") fields.splice(2, 0, ["Уровень доступа", access]);
+    fields.splice(2, 0, ["Уровень доступа", access]);
     if (relations.length) fields.push(["Связанные записи", relations.map((item) => item.id).join(", ")]);
     return {
       relations,
@@ -544,6 +549,8 @@
         name,
         caption,
         isPublished: payload.isPublished !== false,
+        threatLevel: Number(threat.match(/([1-5])/i)?.[1]) || 1,
+        accessLevel: Number(access.match(/([1-5])/i)?.[1]) || 1,
         image: payload.image,
         gallery: Array.isArray(payload.gallery) ? payload.gallery.slice(0, 9) : [],
         summary,
@@ -631,7 +638,7 @@
       ["Уровень угрозы", threat],
       ["Местоположение", location],
     ];
-    if (type === "client") fields.splice(2, 0, ["Уровень доступа", access]);
+    fields.splice(2, 0, ["Уровень доступа", access]);
     if (relations.length) fields.push(["Связанные записи", relations.map((item) => item.id).join(", ")]);
 
     const record = normalizeRecord(type, {
@@ -641,6 +648,8 @@
       name,
       caption,
       isPublished: payload.isPublished !== false,
+      threatLevel: Number(threat.match(/([1-5])/i)?.[1]) || 1,
+      accessLevel: Number(access.match(/([1-5])/i)?.[1]) || 1,
       image,
       gallery: [],
       summary,

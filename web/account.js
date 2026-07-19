@@ -17,6 +17,7 @@
     elements.login.textContent = `Логин: ${account.login}`;
     elements.tools.hidden = account.role === "viewer";
     document.body.dataset.role = account.role;
+    elements.status.textContent = "";
   }
   elements.logout?.addEventListener("click", async () => {
     elements.logout.disabled = true;
