@@ -785,3 +785,30 @@ img { content-visibility: auto; }
   .workspace-relation-list { grid-template-columns: 1fr; max-height: none; }
   .workspace-relation-option { border-right: 0; }
 }
+
+/* Distinct symbols for each creation action. */
+.workspace-action-grid button > svg { width: 42px; height: 42px; color: var(--ui-muted); fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: square; stroke-linejoin: miter; transition: color var(--ui-duration-fast), transform var(--ui-duration-fast); }
+.workspace-action-grid button:is(:hover, :focus-visible) > svg { color: inherit; transform: translateY(-2px); }
+
+/* Standalone change feed. */
+.journal-shell { min-height: calc(100svh - 120px); }
+.journal-heading p { max-width: 42ch; margin: 1rem 0 0; color: var(--ui-muted); }
+.journal-heading > a { align-self: end; text-decoration: none; }
+.journal-page .workspace-journal { margin-top: 0; padding-top: 0; }
+.journal-page .workspace-journal-row > div { min-width: 0; }
+.journal-page .workspace-journal-row small { color: var(--ui-muted); font: .58rem/1 var(--ui-font-mono); }
+
+@media (max-width: 760px) {
+  .workspace-action-grid button > svg { width: 34px; height: 34px; }
+  .journal-shell { width: calc(100% - 28px); }
+  .journal-heading { display: grid; gap: 1.25rem; }
+  .journal-heading > a { width: 100%; }
+  .journal-page .workspace-journal-row { grid-template-columns: minmax(0, 1fr) auto; gap: .65rem; padding: .8rem 0; }
+  .journal-page .workspace-journal-row time { grid-column: 1 / -1; font-size: .62rem; }
+  .journal-page .workspace-journal-row strong { overflow-wrap: anywhere; font-size: 1.1rem; }
+  .journal-page .workspace-journal-row button { align-self: center; min-height: 34px; padding-inline: .55rem; font-size: .58rem; }
+  .record-editor-actions { display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)); flex-direction: initial; gap: 6px; width: 100%; }
+  .record-editor-actions[hidden] { display: none !important; }
+  .record-editor-actions button { width: auto !important; min-width: 0; padding-inline: 7px; font-size: .58rem; white-space: nowrap; }
+  .record-editor-actions button[hidden] { display: none !important; }
+}

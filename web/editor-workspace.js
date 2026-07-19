@@ -123,6 +123,7 @@
   }
 
   async function loadJournal() {
+    if (!journal) return;
     const rows = await window.MIDGAS_SUPABASE_DATA.loadChangeFeed(120);
     const labels = { record_created: "СОЗДАНО", record_updated: "ИЗМЕНЕНО", record_soft_deleted: "УДАЛЕНО", record_restored: "ВОССТАНОВЛЕНО", relationship_created: "СВЯЗЬ ДОБАВЛЕНА", relationship_deleted: "СВЯЗЬ УДАЛЕНА" };
     journal.innerHTML = rows.length ? rows.map((row) => `<article class="workspace-journal-row" data-journal-id="${escape(row.id)}"><time datetime="${escape(row.occurred_at)}">${new Date(row.occurred_at).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" })}</time><div><span>${labels[row.action] || escape(row.action)}</span><strong>${escape(row.record_name || row.record_code || "Связь карточек")}</strong></div><button type="button" data-journal-rollback>Откатить</button></article>`).join("") : "<p>Изменений пока нет.</p>";
@@ -243,7 +244,7 @@
     if (!account || !session.hasAccess("editor")) { window.location.replace("account.html"); return; }
     document.querySelector("[data-workspace-role]").textContent = account.role === "admin" ? "АДМИНИСТРАТОР" : "РЕДАКТОР";
     document.querySelector("[data-workspace-login]").textContent = account.login;
-    try { await window.MIDGAS_SUPABASE_DATA?.ready; await bootstrapGlossaryEntries(); await Promise.all([loadEntries(), loadJournal()]); }
+    try { await window.MIDGAS_SUPABASE_DATA?.ready; await bootstrapGlossaryEntries(); await loadEntries(); }
     catch (error) { status.textContent = error?.message || "Не удалось загрузить материалы."; }
   });
 })();

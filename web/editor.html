@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <script src="site-access.js?v=6"></script>
     <link rel="stylesheet" href="styles.css?v=98" />
-    <link rel="stylesheet" href="design-system.css?v=8" />
+    <link rel="stylesheet" href="design-system.css?v=9" />
   </head>
   <body class="workspace-page">
     <div class="site-shell">
@@ -22,21 +22,17 @@
         <section class="workspace-actions" aria-labelledby="workspace-actions-title">
           <header><h2 id="workspace-actions-title">Что добавить</h2><p>Выберите тип материала. В форме останутся только нужные поля.</p></header>
           <div class="workspace-action-grid">
-            <button type="button" data-editor-kind="client"><span>CLI</span><strong>Клиента</strong><small>Новое досье клиента</small></button>
-            <button type="button" data-editor-kind="incident"><span>INC</span><strong>Инцидент</strong><small>Событие и материалы</small></button>
-            <button type="button" data-editor-kind="anomaly"><span>ANO</span><strong>Аномалию</strong><small>Наблюдаемый феномен</small></button>
-            <button type="button" data-editor-kind="location"><span>LOC</span><strong>Локацию</strong><small>Точка общей карты</small></button>
-            <button type="button" data-editor-kind="glossary"><span>TXT</span><strong>Термин</strong><small>Запись глоссария</small></button>
-            <button type="button" data-editor-kind="quote"><span>QUO</span><strong>Цитату</strong><small>Случайная запись</small></button>
+            <button type="button" data-editor-kind="client"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="16" r="7"/><path d="M10 41c1-10 6-15 14-15s13 5 14 15"/></svg><strong>Клиента</strong><small>Новое досье клиента</small></button>
+            <button type="button" data-editor-kind="incident"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M26 4 10 28h13l-2 16 17-25H25l1-15Z"/></svg><strong>Инцидент</strong><small>Событие и материалы</small></button>
+            <button type="button" data-editor-kind="anomaly"><svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="17"/><circle cx="24" cy="24" r="9"/><path d="M24 3v8M24 37v8M3 24h8M37 24h8"/></svg><strong>Аномалию</strong><small>Наблюдаемый феномен</small></button>
+            <button type="button" data-editor-kind="location"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M39 20c0 12-15 24-15 24S9 32 9 20a15 15 0 1 1 30 0Z"/><circle cx="24" cy="20" r="5"/></svg><strong>Локацию</strong><small>Точка общей карты</small></button>
+            <button type="button" data-editor-kind="glossary"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M6 8h14c4 0 7 3 7 7v27c0-4-3-7-7-7H6V8Zm36 0H28M42 8v27H34c-4 0-7 3-7 7"/></svg><strong>Термин</strong><small>Запись глоссария</small></button>
+            <button type="button" data-editor-kind="quote"><svg viewBox="0 0 48 48" aria-hidden="true"><path d="M7 12h14v14H11c0 6 3 10 8 12M27 12h14v14H31c0 6 3 10 8 12"/></svg><strong>Цитату</strong><small>Случайная запись</small></button>
           </div>
         </section>
         <section class="workspace-content" aria-labelledby="workspace-content-title">
           <header><div><span class="ui-eyebrow">CONTENT</span><h2 id="workspace-content-title">Термины, цитаты и локации</h2></div><div class="workspace-tabs" role="tablist"><button type="button" data-entry-filter="all" aria-selected="true">Все</button><button type="button" data-entry-filter="glossary">Термины</button><button type="button" data-entry-filter="quote">Цитаты</button><button type="button" data-entry-filter="location">Локации</button></div></header>
           <div class="workspace-entry-list" data-entry-list><p>Загрузка материалов…</p></div>
-        </section>
-        <section class="workspace-journal" id="company-journal" aria-labelledby="workspace-journal-title">
-          <header><div><span class="ui-eyebrow">CHANGE FEED</span><h2 id="workspace-journal-title">Журнал изменений</h2></div><p>Изменения карточек и связей, сохранённые в Supabase.</p></header>
-          <div data-workspace-journal><p>Загрузка журнала…</p></div>
         </section>
         <p class="workspace-status" data-workspace-status role="status"></p>
       </main>
@@ -57,6 +53,6 @@
     <script src="supabase-config.js?v=1"></script>
     <script src="data.js"></script><script src="featured-data.js?v=8"></script><script src="client-updates.js?v=3"></script><script src="incident-updates.js?v=1"></script><script src="latest-covers.js?v=1"></script>
     <script src="editor-session.js?v=13"></script><script src="supabase-data.js?v=10"></script><script src="editor-storage.js?v=9"></script>
-    <script src="site-header.js?v=2"></script><script src="editor-workspace.js?v=5"></script><script src="site-motion.js?v=1"></script><script src="app.js?v=33"></script>
+    <script src="site-header.js?v=2"></script><script src="editor-workspace.js?v=6"></script><script src="site-motion.js?v=1"></script><script src="app.js?v=33"></script>
   </body>
 </html>
