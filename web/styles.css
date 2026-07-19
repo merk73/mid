@@ -12900,15 +12900,59 @@ textarea:focus-visible {
   .registry-page .registry-grid:not(.is-list-view) .client-card-level-scale { gap: 2px; margin-top: 8px; }
   .registry-page .registry-grid:not(.is-list-view) .client-card-level-scale > span { min-width: 0; height: 5px; }
 
-  .home-page .client-grid { grid-template-columns: 1fr; }
-  .home-page .client-grid .client-card { border-right: 0 !important; }
+  .home-page .client-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-page .client-grid .client-card,
+  .home-page .client-grid .client-card:nth-child(3n),
+  .home-page .client-grid .client-card:nth-child(4n) { border-right: 1px solid var(--ink) !important; }
+  .home-page .client-grid .client-card:nth-child(2n) { border-right: 0 !important; }
+  .home-page .client-grid .client-card { padding-bottom: 18px; }
   .home-page .client-grid .client-card img { aspect-ratio: 4 / 3; }
-  .home-page .client-card .client-card-data--levels { min-height: 64px; padding-left: 14px; }
-  .client-card-level { min-width: 74px; padding: 9px 8px 7px; }
-  .client-card-level small { font-size: 7px; }
-  .client-card-level strong { font-size: 17px; }
-  .client-card-level-scale { gap: 2px; margin-top: 7px; }
-  .client-card-level-scale > span { height: 5px; }
+  .home-page .client-grid .client-card h3 {
+    max-width: none;
+    min-height: 2em;
+    margin: 14px 10px 6px;
+    font-size: clamp(18px, 5.8vw, 24px);
+    line-height: 1;
+    overflow-wrap: anywhere;
+  }
+  .home-page .client-grid .client-card p {
+    margin: 0 10px;
+    font-size: 9px;
+    line-height: 1.4;
+  }
+  .home-page .client-grid .client-card-data {
+    min-height: 42px;
+    padding: 10px;
+    font-size: 9px;
+  }
+  .home-page .client-grid .client-card-data--levels {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: 112px;
+    padding: 0;
+  }
+  .home-page .client-grid .client-card-data--levels > span:first-child {
+    width: 100%;
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .home-page .client-grid .client-card-levels {
+    width: 100%;
+    min-height: 72px;
+    margin-left: 0;
+    border-left: 0;
+  }
+  .home-page .client-grid .client-card-level { min-width: 0; padding: 9px 7px 8px; }
+  .home-page .client-grid .client-card-level small { font-size: 7px; }
+  .home-page .client-grid .client-card-level strong { font-size: 18px; }
+  .home-page .client-grid .client-card-level-scale { gap: 2px; margin-top: 8px; }
+  .home-page .client-grid .client-card-level-scale > span { min-width: 0; height: 5px; }
+  .home-page .registry-more-card {
+    min-height: 250px;
+    padding: 18px 14px;
+  }
+  .home-page .registry-more-card span { font-size: 9px; }
+  .home-page .registry-more-card strong { font-size: clamp(23px, 7vw, 32px); }
 }
 
 /* 2026 interaction polish: tactile, accessible and deliberately restrained. */
