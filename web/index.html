@@ -11,9 +11,9 @@
     <link rel="preconnect" href="https://nominatim.openstreetmap.org" crossorigin />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
     <script src="site-access.js?v=4"></script>
-    <link rel="stylesheet" href="styles.css?v=98" />
+    <link rel="stylesheet" href="styles.css?v=100" />
   </head>
-  <body class="home-page">
+  <body class="home-page home-page--2026">
     <div class="site-shell">
       <header class="site-header">
         <button class="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="main-navigation">
@@ -43,21 +43,41 @@
             <img src="assets/images/midgas-group.webp" alt="Коллективный архивный портрет клиентской базы THE MIDGAS" width="1672" height="941" decoding="async" fetchpriority="high" />
           </figure>
           <div class="hero-cover-copy">
-            <p>THE MIDGAS / INTERNAL RESEARCH ARCHIVE</p>
-            <h1 id="hero-title">
-              <span>КЛИЕНТЫ.</span>
-              <span>АНОМАЛИИ.</span>
-              <span>ИНЦИДЕНТЫ.</span>
-            </h1>
+            <div class="hero-cover-meta">
+              <span>MIDGAS / INTERNAL RESEARCH ARCHIVE</span>
+              <span class="hero-live-status"><i aria-hidden="true"></i> СИСТЕМА ДОСТУПНА</span>
+            </div>
+            <div class="hero-cover-title">
+              <p>ЕДИНАЯ СИСТЕМА ПОЛЕВЫХ И АРХИВНЫХ ДАННЫХ</p>
+              <h1 id="hero-title">
+                <span>КЛИЕНТЫ.</span>
+                <span>АНОМАЛИИ.</span>
+                <span>ИНЦИДЕНТЫ.</span>
+              </h1>
+              <p class="hero-cover-lede">Досье, территории и события собраны в одну исследовательскую сеть.</p>
+            </div>
+            <nav class="hero-cover-actions" aria-label="Основные разделы архива">
+              <a href="#registry"><span>01</span><strong>ОТКРЫТЬ КАРТОТЕКУ</strong><b aria-hidden="true">↘</b></a>
+              <a href="#locations"><span>02</span><strong>ИССЛЕДОВАТЬ ЛОКАЦИИ</strong><b aria-hidden="true">↘</b></a>
+              <a href="board.html?board=open"><span>03</span><strong>ПОСМОТРЕТЬ СВЯЗИ</strong><b aria-hidden="true">→</b></a>
+            </nav>
           </div>
         </section>
 
         <section class="intro-section" id="company">
-          <div class="section-index">00 / ИНСТИТУТ</div>
-          <h2>АРХИВ, В КОТОРОМ<br />ВСЕ СВЯЗАНО.</h2>
+          <div class="intro-heading">
+            <span class="section-index">00 / ИНСТИТУТ</span>
+            <h2>АРХИВ, В КОТОРОМ<br />ВСЁ СВЯЗАНО.</h2>
+          </div>
           <div class="intro-copy">
             <p>THE MIDGAS систематизирует сведения о клиентах, аномальных местах и событиях, которые соединяют их в единую структуру.</p>
             <p>Штаб-квартира: Нью-Йорк, США.<br />Исследовательская база: Андреевка, Приморский край.</p>
+          </div>
+          <div class="intro-metrics" aria-label="Сводка архива">
+            <div><strong data-home-record-count="client">26</strong><span>КЛИЕНТОВ</span></div>
+            <div><strong data-home-record-count="anomaly">01</strong><span>АНОМАЛИЯ</span></div>
+            <div><strong data-home-record-count="incident">02</strong><span>ИНЦИДЕНТА</span></div>
+            <div><strong>24/7</strong><span>НАБЛЮДЕНИЕ</span></div>
           </div>
         </section>
 
@@ -86,6 +106,11 @@
         </section>
 
         <section class="current-topics" id="current-topics" aria-label="Актуальные темы">
+          <header class="current-topics-heading">
+            <span class="section-index">01 / В ФОКУСЕ</span>
+            <h2>АКТУАЛЬНЫЕ<br />МАТЕРИАЛЫ</h2>
+            <p>Записи, требующие внимания исследовательской группы прямо сейчас.</p>
+          </header>
           <a class="topic-strip" href="record.html?type=anomaly&amp;id=MID-A-0001&amp;from=topics">
             <img src="assets/topics/andreevka-anomaly.webp" alt="Андреевка ночью" loading="lazy" decoding="async" />
             <div class="topic-strip-copy">
@@ -119,21 +144,21 @@
             <span class="registry-number">01</span>
             <span class="registry-title">Клиенты</span>
             <span class="registry-description">Люди, существа и наблюдаемые субъекты</span>
-            <span class="registry-count">0026</span>
+            <span class="registry-count" data-home-record-count="client" data-count-pad="4">0026</span>
             <span class="registry-arrow" aria-hidden="true">→</span>
           </a>
           <a class="registry-row" id="anomalies" href="registry.html?type=anomaly">
             <span class="registry-number">02</span>
             <span class="registry-title">Аномалии</span>
             <span class="registry-description">Места, зоны и территориальные объекты</span>
-            <span class="registry-count">0001</span>
+            <span class="registry-count" data-home-record-count="anomaly" data-count-pad="4">0001</span>
             <span class="registry-arrow" aria-hidden="true">→</span>
           </a>
           <a class="registry-row" id="incidents" href="registry.html?type=incident">
             <span class="registry-number">03</span>
             <span class="registry-title">Инциденты</span>
             <span class="registry-description">События, объединяющие клиентов и места</span>
-            <span class="registry-count">0002</span>
+            <span class="registry-count" data-home-record-count="incident" data-count-pad="4">0002</span>
             <span class="registry-arrow" aria-hidden="true">→</span>
           </a>
         </section>
@@ -157,6 +182,7 @@
               <span class="section-index">03 / КЛИЕНТСКАЯ БАЗА / ВЫБОРКА</span>
               <h2 id="clients-title">КЛИЕНТЫ</h2>
             </div>
+            <a class="section-heading-link" href="registry.html?type=client">ВЕСЬ РЕЕСТР <span aria-hidden="true">→</span></a>
           </div>
 
           <div class="client-grid" id="client-grid" aria-live="polite"></div>
@@ -168,6 +194,7 @@
               <span class="section-index">04 / БАЗА АНОМАЛИЙ / ВЫБОРКА</span>
               <h2 id="anomalies-preview-title">АНОМАЛИИ</h2>
             </div>
+            <a class="section-heading-link" href="registry.html?type=anomaly">ВЕСЬ РЕЕСТР <span aria-hidden="true">→</span></a>
           </div>
           <div class="client-grid" id="anomaly-grid" aria-live="polite"></div>
         </section>
@@ -178,6 +205,7 @@
               <span class="section-index">05 / БАЗА ИНЦИДЕНТОВ / ВЫБОРКА</span>
               <h2 id="incidents-preview-title">ИНЦИДЕНТЫ</h2>
             </div>
+            <a class="section-heading-link" href="registry.html?type=incident">ВЕСЬ РЕЕСТР <span aria-hidden="true">→</span></a>
           </div>
           <div class="client-grid" id="incident-grid" aria-live="polite"></div>
         </section>
