@@ -3,100 +3,56 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Защищённый центр редактора THE MIDGAS." />
-    <title>Центр редактора — THE MIDGAS</title>
+    <meta name="description" content="Рабочая область редактора THE MIDGAS." />
+    <title>Редактирование сайта — THE MIDGAS</title>
+    <link rel="preconnect" href="https://skvwaovkkoxqfwkcpuvh.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <script src="site-access.js?v=5"></script>
-    <link rel="stylesheet" href="styles.css?v=97" />
+    <link rel="stylesheet" href="styles.css?v=98" />
     <link rel="stylesheet" href="design-system.css?v=1" />
   </head>
-  <body class="editor-page">
+  <body class="workspace-page">
     <div class="site-shell">
-      <header class="site-header editor-site-header">
-        <button class="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="main-navigation"><span class="menu-icon" aria-hidden="true"><span></span><span></span><span></span></span></button>
-        <a class="header-back-button" href="index.html" aria-label="Вернуться на главную">←</a>
-        <a class="mobile-wordmark" href="index.html">THE MIDGAS</a>
-        <nav class="main-navigation" id="main-navigation" aria-label="Главная навигация">
-          <div class="nav-group nav-group-left"><a href="registry.html?type=client">Клиенты</a><a href="registry.html?type=anomaly">Аномалии</a><a href="registry.html?type=incident">Инциденты</a><a href="historical-archive.html">Архив</a></div>
-          <a class="wordmark" href="index.html">THE MIDGAS</a>
-          <div class="nav-group nav-group-right"><a href="index.html#locations">Локации</a><a href="index.html#company-materials">Материалы</a><a href="board.html?board=open">Связи</a><a href="editor.html" aria-current="page">Редактор</a></div>
-        </nav>
-      </header>
-      <main id="top">
-        <section class="company-hub editor-page-hub" id="company-hub">
-          <section class="company-account company-editor-hub" id="company-account" aria-labelledby="company-account-title">
-            <header class="editor-console-intro company-reveal">
-              <div><span>ПАНЕЛЬ УПРАВЛЕНИЯ MIDGAS</span><h1 id="company-account-title">Центр редактора</h1><p>Карточки, доступ к сайту и история изменений — в одном рабочем пространстве.</p></div>
-              <div class="editor-console-state"><span>СОСТОЯНИЕ ДОСТУПА</span><i data-account-indicator>ДОСТУП ЗАКРЫТ</i></div>
-            </header>
-            <div class="editor-mode-card company-reveal">
-              <section class="editor-mode-locked" data-editor-locked><span>ЗАЩИЩЁННЫЙ ДОСТУП</span><h2>Войдите в аккаунт редактора</h2><p>Введите выданные логин и пароль. Supabase автоматически откроет разрешённый уровень доступа.</p><button type="button" data-editor-login-open>Войти в аккаунт</button></section>
-              <section class="editor-mode-home" data-editor-home hidden>
-                <div class="editor-dashboard-grid">
-                  <section class="editor-console-account">
-                    <header class="editor-console-section-copy"><span>АККАУНТ</span><h2>Профиль редактора</h2><p data-account-session-copy></p></header>
-                    <div class="editor-mode-identity"><span data-account-session-label>ВХОД ВЫПОЛНЕН</span><strong data-account-email></strong></div>
-                    <nav class="editor-account-actions"><button type="button" data-editor-password-open>Изменить пароль</button><button type="button" data-account-logout>Выйти</button></nav>
-                  </section>
-                  <section class="editor-console-site">
-                    <header class="editor-console-section-copy"><span>САЙТ</span><h2>Публичный доступ</h2><p class="editor-maintenance-status" data-maintenance-status></p></header>
-                    <button class="editor-site-switch" type="button" data-maintenance-toggle hidden><span>СОСТОЯНИЕ</span><strong>ЗАКРЫТЬ САЙТ</strong><small>Техническое обслуживание</small></button>
-                  </section>
-                </div>
-                <section class="editor-command-center">
-                  <header><div><span>ОСНОВНЫЕ ДЕЙСТВИЯ</span><h2>Работа с карточками</h2></div><p>Создайте новую публикацию или верните удалённую версию.</p></header>
-                  <nav class="editor-mode-actions" data-editor-actions aria-label="Основные действия редактора">
-                    <button type="button" data-editor-create-open><span>＋</span><strong>Создать карточку</strong><small>Пошаговая форма публикации</small></button>
-                    <button type="button" data-editor-recovery-open><span>↺</span><strong>Восстановить</strong><small>Удалённые карточки и версии</small></button>
-                  </nav>
-                </section>
-              </section>
-              <p class="company-account-status" data-account-status role="status"></p>
-            </div>
-            <section class="company-editor editor-work-panel" id="company-editor" data-editor-create-panel hidden>
-              <div class="editor-work-dialog">
-              <header class="editor-work-heading"><div><span>СОЗДАНИЕ / ПОШАГОВАЯ ФОРМА</span><h2>НОВАЯ КАРТОЧКА</h2></div><button type="button" data-editor-panel-close aria-label="Закрыть форму">×</button></header>
-              <form class="company-editor-form company-editor-form--live" id="company-editor-form" novalidate>
-                <ol class="editor-wizard-progress" aria-label="Этапы создания" hidden><li data-wizard-progress="identity">КАРТОЧКА</li><li data-wizard-progress="levels">УРОВНИ</li><li data-wizard-progress="summary">ОПИСАНИЕ</li><li data-wizard-progress="sections">РАЗДЕЛЫ</li><li data-wizard-progress="relations">СВЯЗИ</li><li data-wizard-progress="publish">ПУБЛИКАЦИЯ</li></ol>
-                <fieldset class="company-editor-types" data-wizard-stage="type"><legend>ЧТО ДОБАВЛЯЕМ?</legend><label><input type="radio" name="type" value="client" required/><span><b>КЛИЕНТА</b><small>Лицо или субъект</small></span></label><label><input type="radio" name="type" value="incident" required/><span><b>ИНЦИДЕНТ</b><small>Событие или процесс</small></span></label><label><input type="radio" name="type" value="anomaly" required/><span><b>АНОМАЛИЮ</b><small>Место, зона или явление</small></span></label></fieldset>
-                <section class="editor-identity-stage" data-wizard-stage="identity" hidden>
-                  <div class="editor-stage-copy"><span>01</span><div><strong data-editor-identity-title>КТО ЭТО?</strong><p>Только основные данные. Всё остальное добавим дальше.</p></div></div>
-                  <div class="editor-identity-grid">
-                    <div class="company-editor-fields"><label><span>ИМЯ ИЛИ НАЗВАНИЕ *</span><input name="name" required maxlength="120"/></label><label><span>ПСЕВДОНИМ</span><input name="alias" maxlength="160"/></label></div>
-                    <aside class="company-editor-upload"><label class="company-editor-drop" data-editor-drop><input type="file" name="image" accept="image/png,image/jpeg,image/webp" required/><img data-editor-preview alt="Предпросмотр" hidden/><span data-editor-upload-copy><b>ДОБАВИТЬ ФОТО</b><small>JPG, PNG или WEBP · до 15 МБ</small><i>ВЫБРАТЬ</i></span></label></aside>
-                  </div>
-                </section>
-                <section class="editor-levels-stage" data-wizard-stage="levels" hidden>
-                  <div class="editor-stage-copy"><span>02</span><div><strong>УРОВНИ ДОСТУПА И УГРОЗЫ</strong><p>Выберите по одному показателю. Их будет видно в шапке досье.</p></div></div>
-                  <div class="editor-level-pickers">
-                    <fieldset><legend>УРОВЕНЬ УГРОЗЫ</legend><label><input type="radio" name="threat" value="T1 / низкий" checked/><span>T1<small>НИЗКИЙ</small></span></label><label><input type="radio" name="threat" value="T2 / умеренный"/><span>T2<small>УМЕРЕННЫЙ</small></span></label><label><input type="radio" name="threat" value="T3 / значительный"/><span>T3<small>ЗНАЧИТЕЛЬНЫЙ</small></span></label><label><input type="radio" name="threat" value="T4 / высокий"/><span>T4<small>ВЫСОКИЙ</small></span></label><label><input type="radio" name="threat" value="T5 / критический"/><span>T5<small>КРИТИЧЕСКИЙ</small></span></label></fieldset>
-                    <fieldset data-client-access-field><legend>УРОВЕНЬ ДОСТУПА</legend><label><input type="radio" name="access" value="D1 / очень низкий" checked/><span>D1<small>ОЧЕНЬ НИЗКИЙ</small></span></label><label><input type="radio" name="access" value="D2 / низкий"/><span>D2<small>НИЗКИЙ</small></span></label><label><input type="radio" name="access" value="D3 / средний"/><span>D3<small>СРЕДНИЙ</small></span></label><label><input type="radio" name="access" value="D4 / высокий"/><span>D4<small>ВЫСОКИЙ</small></span></label><label><input type="radio" name="access" value="D5 / полный доступ"/><span>D5<small>ПОЛНЫЙ</small></span></label></fieldset>
-                  </div>
-                </section>
-                <section class="editor-summary-stage" data-wizard-stage="summary" hidden><div class="editor-stage-copy"><span data-editor-summary-number>03</span><div><strong>КРАТКОЕ ОПИСАНИЕ</strong><p>Напишите самое важное — этот текст станет началом досье.</p></div></div><label><span>ОПИСАНИЕ *</span><textarea name="summary" required maxlength="1400" rows="8" placeholder="Кратко опишите клиента, инцидент или аномалию…"></textarea></label></section>
-                <section class="company-editor-sections-builder" data-wizard-stage="sections" hidden><header><div><span data-editor-sections-number>04 / НЕОБЯЗАТЕЛЬНО</span><strong>ДОБАВИТЬ РАЗДЕЛЫ?</strong><p>Например: биография, наблюдения, материалы. Можно сразу перейти дальше.</p></div><button type="button" data-editor-add-section>+ ДОБАВИТЬ</button></header><div class="company-editor-sections-list" data-editor-sections-list></div></section>
-                <section class="company-editor-relations-picker company-editor-relations-stage" data-wizard-stage="relations" hidden><header><div><span data-editor-relations-number>05 / НЕОБЯЗАТЕЛЬНО</span><strong>ДОБАВИТЬ СВЯЗИ?</strong><p>Выбранные досье появятся в карточке и на доске связей.</p></div><button type="button" data-editor-relations-toggle>+ ВЫБРАТЬ</button></header><div class="company-editor-relations-panel" data-editor-relations-panel hidden><label class="company-editor-relations-search"><span>ПОИСК ПО ДОСЬЕ</span><input type="search" data-editor-relations-search/></label><div class="company-editor-relations-summary"><span data-editor-relations-count>ВЫБРАНО: 0</span><button type="button" data-editor-relations-clear>СБРОСИТЬ</button></div><div class="company-editor-relations-list" data-editor-relations-list></div></div></section>
-                <section class="editor-publish-stage" data-wizard-stage="publish" hidden><div class="editor-stage-copy"><span data-editor-publish-number>06</span><div><strong>ЛОКАЦИЯ И ПУБЛИКАЦИЯ</strong><p>Укажите место — метка автоматически появится на общей карте.</p></div></div><label><span>ЛОКАЦИЯ *</span><input name="location" required maxlength="180" placeholder="Город, область, страна или координаты"/></label><button type="submit" data-editor-submit>ОПУБЛИКОВАТЬ КАРТОЧКУ</button></section>
-                <nav class="editor-wizard-navigation" data-wizard-navigation hidden><button type="button" data-wizard-back>← НАЗАД</button><span data-wizard-counter>ШАГ 1 ИЗ 6</span><button type="button" data-create-next>ДАЛЕЕ →</button></nav>
-                <div class="company-editor-result" data-editor-result hidden><div><span>КАРТОЧКА СОЗДАНА</span><strong data-editor-created-id></strong></div><p data-editor-status></p><nav><a data-editor-open href="record.html">ОТКРЫТЬ ДОСЬЕ →</a><a data-editor-registry href="registry.html">ОТКРЫТЬ РЕЕСТР →</a></nav></div><p class="company-editor-error" data-editor-error role="alert" hidden></p>
-              </form>
-              </div>
-            </section>
-            <section class="company-restore editor-work-panel" data-editor-recovery-panel hidden><div class="editor-work-dialog"><header class="editor-work-heading"><div><span>ВОССТАНОВЛЕНИЕ</span><h2>ВЕРСИИ КАРТОЧЕК</h2></div><button type="button" data-editor-panel-close aria-label="Закрыть восстановление">×</button></header><div class="editor-recovery-grid"><section><header><span>01</span><div><strong>УДАЛЁННЫЕ</strong></div></header><div class="company-restore-list" data-restore-deleted-list><p data-restore-deleted-empty>УДАЛЁННЫХ КАРТОЧЕК НЕТ.</p></div></section><section><header><span>02</span><div><strong>ИЗМЕНЁННЫЕ</strong></div></header><div class="company-restore-list" data-restore-modified-list><p data-restore-modified-empty>ИЗМЕНЁННЫХ КАРТОЧЕК НЕТ.</p></div></section></div></div></section>
-            <section class="company-journal company-journal--editor editor-console-journal" id="company-journal" aria-labelledby="company-journal-title">
-              <header class="editor-journal-header">
-                <div><span>ИСТОРИЯ РАБОТЫ</span><h2 id="company-journal-title">Журнал изменений</h2></div>
-                <p>Здесь собраны изменения карточек. Разверните запись, чтобы посмотреть детали или выполнить откат.</p>
-              </header>
-              <div class="company-journal-list" id="company-journal-list" aria-live="polite"></div>
-            </section>
-          </section>
+      <header class="site-header"></header>
+      <main class="workspace-shell" id="main-content">
+        <header class="workspace-heading">
+          <div><span class="ui-eyebrow">MIDGAS / WORKSPACE</span><h1>Редактирование сайта</h1></div>
+          <div class="workspace-user"><span data-workspace-role>ПРОВЕРКА</span><strong data-workspace-login>…</strong><a href="account.html">Аккаунт</a></div>
+        </header>
+        <section class="workspace-actions" aria-labelledby="workspace-actions-title">
+          <header><h2 id="workspace-actions-title">Что добавить</h2><p>Выберите тип материала. В форме останутся только нужные поля.</p></header>
+          <div class="workspace-action-grid">
+            <button type="button" data-editor-kind="client"><span>CLI</span><strong>Клиента</strong><small>Новое досье клиента</small></button>
+            <button type="button" data-editor-kind="incident"><span>INC</span><strong>Инцидент</strong><small>Событие и материалы</small></button>
+            <button type="button" data-editor-kind="anomaly"><span>ANO</span><strong>Аномалию</strong><small>Наблюдаемый феномен</small></button>
+            <button type="button" data-editor-kind="location"><span>LOC</span><strong>Локацию</strong><small>Точка общей карты</small></button>
+            <button type="button" data-editor-kind="glossary"><span>TXT</span><strong>Термин</strong><small>Запись глоссария</small></button>
+            <button type="button" data-editor-kind="quote"><span>QUO</span><strong>Цитату</strong><small>Случайная запись</small></button>
+          </div>
         </section>
+        <section class="workspace-content" aria-labelledby="workspace-content-title">
+          <header><div><span class="ui-eyebrow">CONTENT</span><h2 id="workspace-content-title">Термины, цитаты и локации</h2></div><div class="workspace-tabs" role="tablist"><button type="button" data-entry-filter="all" aria-selected="true">Все</button><button type="button" data-entry-filter="glossary">Термины</button><button type="button" data-entry-filter="quote">Цитаты</button><button type="button" data-entry-filter="location">Локации</button></div></header>
+          <div class="workspace-entry-list" data-entry-list><p>Загрузка материалов…</p></div>
+        </section>
+        <p class="workspace-status" data-workspace-status role="status"></p>
       </main>
-      <footer class="site-footer"><span>THE MIDGAS © 2026</span><span>EDITOR CENTER</span><a href="changelog.html">ЖУРНАЛ</a><a href="#top">НАВЕРХ ↑</a></footer>
+      <footer class="site-footer"><span>THE MIDGAS © 2026</span><span>WORKSPACE</span><a href="account.html">АККАУНТ</a></footer>
     </div>
-    <dialog class="editor-login-dialog" id="editor-login-dialog"><form id="company-account-form" novalidate><header><span>MIDGAS / EDITOR ACCESS</span><button type="button" data-editor-login-close>×</button></header><div class="editor-login-copy"><span data-auth-mode-label>ЗАЩИЩЁННЫЙ ВХОД SUPABASE</span><h2 data-auth-title>ВХОД В РЕДАКТОР</h2><p data-auth-copy>Введите выданные логин и пароль. Уровень доступа определится автоматически.</p></div><label><span>ЛОГИН</span><input type="text" name="login" required pattern="[A-Za-z0-9_-]{3,40}" autocomplete="username"/></label><label><span>ПАРОЛЬ</span><input type="password" name="password" required autocomplete="current-password"/></label><p class="editor-auth-status" data-auth-status></p><button type="submit" data-auth-submit>ВОЙТИ</button></form></dialog>
-    <dialog class="editor-login-dialog editor-password-dialog" id="editor-password-dialog"><form id="editor-password-form" novalidate><header><span>MIDGAS / ACCOUNT SECURITY</span><button type="button" data-editor-password-close>×</button></header><div class="editor-login-copy"><span>ЗАЩИТА АККАУНТА</span><h2>ИЗМЕНИТЬ ПАРОЛЬ</h2></div><label><span>ТЕКУЩИЙ ПАРОЛЬ</span><input type="password" name="currentPassword" required/></label><label><span>НОВЫЙ ПАРОЛЬ</span><input type="password" name="newPassword" required minlength="8" maxlength="72"/></label><label><span>ПОВТОРИТЕ ПАРОЛЬ</span><input type="password" name="confirmation" required minlength="8" maxlength="72"/></label><p class="editor-auth-status" data-password-status></p><button type="submit" data-password-submit>ИЗМЕНИТЬ ПАРОЛЬ</button></form></dialog>
+
+    <dialog class="workspace-dialog" data-workspace-dialog aria-labelledby="workspace-dialog-title">
+      <form method="dialog" data-workspace-form novalidate>
+        <header><div><span data-dialog-code>NEW ENTRY</span><h2 id="workspace-dialog-title" data-dialog-title>Новый материал</h2></div><button type="button" data-dialog-close aria-label="Закрыть">×</button></header>
+        <input type="hidden" name="entryId" />
+        <input type="hidden" name="kind" />
+        <div class="workspace-form-fields" data-workspace-fields></div>
+        <footer><p data-form-status role="status"></p><button class="ui-button ui-button--primary" type="submit" data-form-submit>Сохранить</button></footer>
+      </form>
+    </dialog>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
-    <script src="supabase-config.js?v=1"></script><script src="data.js"></script><script src="featured-data.js?v=8"></script><script src="client-updates.js?v=3"></script><script src="incident-updates.js?v=1"></script><script src="site-completion.js?v=1"></script><script src="latest-covers.js?v=1"></script><script src="editor-session.js?v=11"></script><script src="site-gate.js?v=2"></script><script src="supabase-data.js?v=8"></script><script src="editor-storage.js?v=8"></script><script src="relations-data.js?v=1"></script><script src="company-hub.js?v=25"></script><script src="site-header.js?v=1"></script><script src="app.js?v=30"></script>
+    <script src="supabase-config.js?v=1"></script>
+    <script src="data.js"></script><script src="featured-data.js?v=8"></script><script src="client-updates.js?v=3"></script><script src="incident-updates.js?v=1"></script><script src="latest-covers.js?v=1"></script>
+    <script src="editor-session.js?v=11"></script><script src="supabase-data.js?v=8"></script><script src="editor-storage.js?v=8"></script>
+    <script src="site-header.js?v=1"></script><script src="editor-workspace.js?v=1"></script><script src="app.js?v=31"></script>
   </body>
 </html>
