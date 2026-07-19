@@ -731,3 +731,14 @@ body .record-level-scale button { min-width: 0; height: 8px; box-shadow: none !i
   :where(.registry-card, .client-card):hover { transform: translateY(-2px); }
   :where(.workspace-entry, .workspace-journal-row):hover { background: var(--ui-paper-warm); }
 }
+
+/* Stage 14 — let the browser skip off-screen layout and paint work. */
+.home-page main > :is(.client-preview, .historical-archive-cover, .company-hub, .glossary-section) {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 900px;
+}
+img { content-visibility: auto; }
+@media (max-width: 760px), (pointer: coarse) {
+  .motion-enabled .motion-reveal { transition-duration: 360ms; }
+  .company-process-shot[data-company-parallax] { transform: none !important; }
+}

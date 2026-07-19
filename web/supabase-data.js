@@ -6,6 +6,8 @@
   const RELATIONSHIPS_TABLE = "relationships";
   const MEMBERS_TABLE = "editor_members";
   const STORAGE_BUCKET = "record-covers";
+  const CACHE_KEY = "midgas_supabase_records_v3";
+  const CACHE_MAX_AGE = 2 * 60 * 1000;
   const SYNC_EVENT = "midgas:sync-status";
   const READY_EVENT = "midgas:records-ready";
   const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
@@ -316,6 +318,35 @@
     installRelationshipFacade();
   }
 
+  function applyDataset(rows, relationships) {
+    restoreOriginalOverlay();
+    rowsByCode.clear(); codeByUuid.clear(); uuidByCode.clear();
+    (rows || []).forEach((row) => {
+      const type = RECORD_TYPES.includes(row?.record_type) ? row.record_type : "";
+      const code = String(row?.record_code || "");
+      if (!type || !code) return;
+      rememberRow(row); registry[type][code] = rowToRecord(row); overlaidCodes.add(code);
+    });
+    applyRelationships(relationships || []);
+  }
+
+  function readCache() {
+    try {
+      const cached = JSON.parse(sessionStorage.getItem(CACHE_KEY) || "null");
+      if (!cached || Date.now() - Number(cached.at) > CACHE_MAX_AGE || !Array.isArray(cached.records) || !Array.isArray(cached.relationships)) return null;
+      applyDataset(cached.records, cached.relationships);
+      const result = { records: clone(cached.records), relationships: clone(cached.relationships), fallback: false, configured: true, cached: true };
+      setStatus("cached", `Supabase: быстрый кэш — ${cached.records.length} записей.`, { recordCount: cached.records.length, relationshipCount: cached.relationships.length });
+      dispatch(READY_EVENT, result);
+      return result;
+    } catch { return null; }
+  }
+
+  function writeCache(records, relationships) {
+    try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), records, relationships })); }
+    catch { /* A full or disabled sessionStorage must not block live data. */ }
+  }
+
   async function loadPublicRecords({ throwOnError = false } = {}) {
     if (!isConfigured()) {
       setStatus("disabled", "Supabase не настроен — сайт использует встроенные записи.", { remote: false });
@@ -323,6 +354,7 @@
       dispatch(READY_EVENT, result);
       return result;
     }
+    await window.MIDGAS_ACCOUNT_SESSION?.ready;
     setStatus("loading", "Загрузка записей из Supabase…");
     try {
       const client = requireClient();
@@ -333,19 +365,8 @@
       const rows = checked(recordResult, "загрузка записей") || [];
       const relationships = checked(relationshipResult, "загрузка связей") || [];
 
-      restoreOriginalOverlay();
-      rowsByCode.clear();
-      codeByUuid.clear();
-      uuidByCode.clear();
-      rows.forEach((row) => {
-        const type = RECORD_TYPES.includes(row?.record_type) ? row.record_type : "";
-        const code = String(row?.record_code || "");
-        if (!type || !code) return;
-        rememberRow(row);
-        registry[type][code] = rowToRecord(row);
-        overlaidCodes.add(code);
-      });
-      applyRelationships(relationships);
+      applyDataset(rows, relationships);
+      writeCache(rows, relationships);
       const result = { records: clone(rows), relationships: clone(relationships), fallback: false, configured: true };
       setStatus("synced", `Supabase: загружено записей — ${rows.length}, связей — ${relationships.length}.`, {
         recordCount: rows.length,
@@ -688,6 +709,7 @@
     setStatus("syncing", `${label}…`);
     try {
       const result = await operation();
+      try { sessionStorage.removeItem(CACHE_KEY); } catch { /* no-op */ }
       setStatus("synced", `${label}: данные сохранены в Supabase.`, { operation: label });
       return { ...result, sync: "remote", syncMessage: "Сохранено в Supabase." };
     } catch (cause) {
@@ -983,7 +1005,15 @@
     return status;
   }
 
-  const ready = Promise.resolve().then(() => loadPublicRecords());
+  const cachedReady = readCache();
+  const ready = cachedReady ? Promise.resolve(cachedReady) : Promise.resolve().then(() => loadPublicRecords());
+  if (cachedReady) window.setTimeout(() => void loadPublicRecords(), 0);
+  let postLoginReload = false;
+  window.addEventListener(window.MIDGAS_ACCOUNT_SESSION?.eventName || "midgas:account-session", (event) => {
+    if (!event.detail?.account || postLoginReload || ["loading", "synced"].includes(status.state)) return;
+    postLoginReload = true;
+    void loadPublicRecords().finally(() => { postLoginReload = false; });
+  });
 
   window.MIDGAS_SUPABASE_DATA = Object.freeze({
     bucket: STORAGE_BUCKET,
