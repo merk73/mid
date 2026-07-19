@@ -161,6 +161,23 @@ if (!record) {
   if (record.imageFit) image.dataset.fit = record.imageFit;
   else delete image.dataset.fit;
 
+  const galleryRoot = document.querySelector("[data-record-gallery]");
+  const galleryGrid = document.querySelector("[data-record-gallery-grid]");
+  const gallery = Array.isArray(record.gallery) ? record.gallery.filter(Boolean).slice(0, 9) : [];
+  if (galleryRoot && galleryGrid) {
+    galleryRoot.hidden = gallery.length === 0;
+    galleryGrid.replaceChildren(...gallery.map((source, index) => {
+      const figure = document.createElement("figure");
+      const photo = document.createElement("img");
+      photo.src = source;
+      photo.alt = `${record.name} — фотография ${index + 2}`;
+      photo.loading = "lazy";
+      photo.decoding = "async";
+      figure.append(photo);
+      return figure;
+    }));
+  }
+
   renderClearance(record);
 
   const location = recordFieldValue(record, ["Местоположение", "Локация"]);

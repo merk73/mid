@@ -18,7 +18,7 @@
 
   function recordFields(kind) {
     return [
-      `<section class="workspace-form-step" data-form-step="1">${field("Имя", '<input name="title" required maxlength="180" autocomplete="off" />')}${field("Подпись", '<input name="caption" required maxlength="180" autocomplete="off" />')}${field("Основное фото", '<input name="image" type="file" accept="image/*" required />')}</section>`,
+      `<section class="workspace-form-step" data-form-step="1">${field("Имя", '<input name="title" required maxlength="180" autocomplete="off" />')}${field("Подпись", '<input name="caption" required maxlength="180" autocomplete="off" />')}${field("Основное фото", '<input name="image" type="file" accept="image/*" required />')}${field("Дополнительные фото — до 9", '<input name="gallery" type="file" accept="image/*" multiple />')}</section>`,
       `<section class="workspace-form-step" data-form-step="2" hidden><div class="workspace-form-row">${field("Уровень угрозы", `<select name="threat">${[1,2,3,4,5].map((n) => `<option>T${n}</option>`).join("")}</select>`)}${field("Уровень доступа", `<select name="access">${[1,2,3,4,5].map((n) => `<option>D${n}</option>`).join("")}</select>`)}</div></section>`,
       `<section class="workspace-form-step" data-form-step="3" hidden>${field("Краткое описание", '<textarea name="body" required maxlength="1400" rows="6"></textarea>')}</section>`,
       `<section class="workspace-form-step" data-form-step="4" hidden><p>Дополнительный раздел можно пропустить.</p>${field("Название раздела", '<input name="sectionTitle" maxlength="180" />')}${field("Текст раздела", '<textarea name="sectionBody" maxlength="5000" rows="6"></textarea>')}</section>`,
@@ -95,6 +95,7 @@
 
   async function saveRecord(data, kind) {
     const image = data.get("image");
+    const gallery = data.getAll("gallery").filter((file) => file instanceof File && file.size > 0).slice(0, 9);
     const caption = String(data.get("caption") || "").trim();
     const relationIds = String(data.get("relations") || "").split(",").map((value) => value.trim().toUpperCase()).filter(Boolean);
     const relations = relationIds.map((id) => ({ id, type: id.startsWith("MID-A-") ? "anomaly" : id.startsWith("MID-I-") ? "incident" : "client", label: id }));
@@ -103,7 +104,7 @@
     const sections = sectionTitle && sectionBody ? [{ title: sectionTitle, paragraphs: sectionBody.split(/\n\s*\n/).filter(Boolean) }] : [];
     await window.MIDGAS_EDITOR_STORE.create({
       type: kind, name: String(data.get("title") || "").trim(), caption,
-      image, summary: String(data.get("body") || "").trim(), description: String(data.get("body") || "").trim(),
+      image, gallery, summary: String(data.get("body") || "").trim(), description: String(data.get("body") || "").trim(),
       threat: data.get("threat"), access: data.get("access") || "D1", location: String(data.get("location") || "").trim(), sections, relations, isPublished: data.get("published") === "on",
     });
   }

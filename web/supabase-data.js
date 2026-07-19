@@ -478,6 +478,13 @@
       record.cardImage = cardCover.value;
       if (!coverPath && cardCover.path) coverPath = cardCover.path;
     }
+    if (Array.isArray(record.gallery)) {
+      record.gallery = record.gallery.slice(0, 9);
+      for (let index = 0; index < record.gallery.length; index += 1) {
+        const uploaded = await uploadImage(client, record.gallery[index], `${type}/gallery`, memo, uploadedPaths);
+        record.gallery[index] = uploaded.value;
+      }
+    }
     if (Array.isArray(record.sections)) {
       for (let index = 0; index < record.sections.length; index += 1) {
         const section = record.sections[index];
