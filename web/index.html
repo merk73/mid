@@ -590,7 +590,6 @@
                 <div class="company-board-editor-tools" data-board-editor-tools hidden>
                   <button class="company-board-tool-icon" type="button" data-board-add-edge aria-label="Новая связь" title="Новая связь"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 14.5 14.5 9.5" /><path d="M7.2 16.8 5.5 18.5a2.8 2.8 0 0 1-4-4l3-3a2.8 2.8 0 0 1 4 0" /><path d="m16.8 7.2 1.7-1.7a2.8 2.8 0 0 1 4 4l-3 3a2.8 2.8 0 0 1-4 0" /></svg><span>НОВАЯ СВЯЗЬ</span></button>
                   <button class="company-board-tool-icon" type="button" data-board-remove-edge aria-label="Удалить связь" title="Удалить связь"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 4 16 16" /><path d="m7.2 16.8-1.7 1.7a2.8 2.8 0 0 1-4-4l3-3a2.8 2.8 0 0 1 2.4-.8M16.8 7.2l1.7-1.7a2.8 2.8 0 0 1 4 4l-3 3a2.8 2.8 0 0 1-2.4.8" /></svg><span>УДАЛИТЬ СВЯЗЬ</span></button>
-                  <button class="company-board-tool-icon" type="button" data-board-add-node aria-label="Новый узел или карточка" title="Новый узел"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="1" /><path d="M12 8v8M8 12h8" /></svg><span>НОВЫЙ УЗЕЛ</span></button>
                   <button class="company-board-tool-icon" type="button" data-board-move-nodes aria-label="Изменить положение карточек" title="Перемещение"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M2 12h20M12 2 9 5m3-3 3 3M12 22l-3-3m3 3 3-3M2 12l3-3m-3 3 3 3M22 12l-3-3m3 3-3 3" /></svg><span>ПЕРЕМЕЩЕНИЕ</span></button>
                   <button class="company-board-tool-icon" type="button" data-board-save aria-label="Сохранить все изменения" title="Сохранить"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg><span>СОХРАНИТЬ</span></button>
                   <button class="company-board-tool-icon" type="button" data-board-edit-close aria-label="Отменить все изменения" title="Отменить"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 14 14M19 5 5 19" /></svg><span>ОТМЕНИТЬ</span></button>
@@ -627,26 +626,9 @@
                   <p data-board-summary>Загрузка текущего досье…</p>
                   <dl><div><dt>ID</dt><dd data-board-id>MID-A-0001</dd></div></dl>
                   <a data-board-link href="record.html?type=anomaly&amp;id=MID-A-0001">ОТКРЫТЬ ДОСЬЕ →</a>
-                  <div class="company-board-node-actions" data-board-node-actions hidden>
-                    <button type="button" data-board-node-edit>РЕДАКТИРОВАТЬ УЗЕЛ</button>
-                    <button type="button" data-board-node-delete>УДАЛИТЬ УЗЕЛ</button>
-                  </div>
                 </aside>
               </div>
 
-              <dialog class="company-board-node-dialog" data-board-node-dialog aria-labelledby="board-node-dialog-title">
-                <form data-board-node-form>
-                  <header><span>НОВЫЙ УЗЕЛ</span><button type="button" data-board-node-cancel aria-label="Закрыть">✕</button></header>
-                  <h4 id="board-node-dialog-title" data-board-node-dialog-title>ДОБАВИТЬ НА ДОСКУ</h4>
-                  <input type="hidden" name="nodeId" />
-                  <input type="hidden" name="nodeKey" />
-                  <fieldset><legend>ТИП УЗЛА</legend><label><input type="radio" name="nodeType" value="LOC" required /><span>LOC<br /><small>ЛОКАЦИЯ</small></span></label><label><input type="radio" name="nodeType" value="SUB" required /><span>SUB<br /><small>СУБЪЕКТ</small></span></label><label><input type="radio" name="nodeType" value="client" required /><span>CLI<br /><small>КЛИЕНТ</small></span></label><label><input type="radio" name="nodeType" value="anomaly" required /><span>ANO<br /><small>АНОМАЛИЯ</small></span></label><label><input type="radio" name="nodeType" value="incident" required /><span>INC<br /><small>ИНЦИДЕНТ</small></span></label></fieldset>
-                  <label data-board-node-details><span>НАЗВАНИЕ</span><input name="title" maxlength="120" required autocomplete="off" /></label>
-                  <label data-board-node-details><span>ОПИСАНИЕ</span><textarea name="description" maxlength="1200" rows="5" required></textarea></label>
-                  <p data-board-node-error role="alert"></p>
-                  <button type="submit" data-board-node-submit>ДОБАВИТЬ УЗЕЛ</button>
-                </form>
-              </dialog>
 
               <div class="company-board-preview-meta"><span data-board-count>52 УЗЛА</span><span>КОЛЕСО / PINCH-TO-ZOOM</span></div>
             </div>
