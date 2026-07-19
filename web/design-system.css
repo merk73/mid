@@ -721,3 +721,13 @@ body .record-level-scale button { min-width: 0; height: 8px; box-shadow: none !i
   .home-page main > .company-board { padding: 14px 0; overflow: hidden; }
   .home-page main > .company-board .company-board-stage { min-height: 360px; }
 }
+
+/* Stage 13 — low-cost, one-shot motion. */
+.motion-enabled .motion-reveal { transition: opacity 520ms var(--ui-ease), transform 520ms var(--ui-ease); }
+.motion-enabled .motion-reveal:not(.is-visible) { opacity: 0; transform: translateY(18px); }
+.motion-enabled .motion-reveal.is-visible { opacity: 1; transform: none; }
+:where(.registry-card, .client-card, .workspace-entry, .workspace-journal-row) { transition: border-color var(--ui-duration-fast) var(--ui-ease), background var(--ui-duration-fast) var(--ui-ease), transform var(--ui-duration-fast) var(--ui-ease); }
+@media (hover: hover) {
+  :where(.registry-card, .client-card):hover { transform: translateY(-2px); }
+  :where(.workspace-entry, .workspace-journal-row):hover { background: var(--ui-paper-warm); }
+}
