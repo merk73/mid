@@ -1,0 +1,338 @@
+/* THE MIDGAS interface system.
+   This file owns reusable tokens and primitives. Page composition stays in styles.css. */
+
+:root {
+  --ui-paper: #ffffff;
+  --ui-ink: #090909;
+  --ui-surface: #f4f4f1;
+  --ui-surface-strong: #e9e9e4;
+  --ui-muted: #6d6d68;
+  --ui-line: #c9c9c3;
+  --ui-line-strong: #090909;
+  --ui-accent: #b42319;
+  --ui-danger: #b42319;
+  --ui-success: #24635d;
+  --ui-overlay: rgba(5, 5, 5, .72);
+  --ui-glass: rgba(255, 255, 255, .76);
+  --ui-glass-dark: rgba(10, 10, 10, .72);
+
+  --ui-font: "PT Mono", monospace;
+  --ui-text-2xs: clamp(.4375rem, .42rem + .06vw, .5rem);
+  --ui-text-xs: clamp(.5625rem, .54rem + .08vw, .625rem);
+  --ui-text-sm: clamp(.6875rem, .65rem + .12vw, .8125rem);
+  --ui-text-md: clamp(.875rem, .83rem + .16vw, 1rem);
+  --ui-text-lg: clamp(1.125rem, 1rem + .42vw, 1.5rem);
+  --ui-title-sm: clamp(1.75rem, 1.35rem + 1.4vw, 3.25rem);
+  --ui-title-md: clamp(2.75rem, 1.8rem + 3.4vw, 6.5rem);
+  --ui-title-lg: clamp(4rem, 2.1rem + 7vw, 11rem);
+
+  --ui-space-1: .25rem;
+  --ui-space-2: .5rem;
+  --ui-space-3: .75rem;
+  --ui-space-4: 1rem;
+  --ui-space-5: 1.5rem;
+  --ui-space-6: 2rem;
+  --ui-space-7: 3rem;
+  --ui-space-8: 4.5rem;
+  --ui-section-space: clamp(3.5rem, 7vw, 8.5rem);
+  --ui-gutter: clamp(1rem, 2.4vw, 2.5rem);
+  --ui-content: 100rem;
+  --ui-readable: 46rem;
+  --ui-control: 3rem;
+  --ui-control-mobile: 3.25rem;
+
+  --ui-ease: cubic-bezier(.2, .72, .2, 1);
+  --ui-duration-fast: 140ms;
+  --ui-duration: 220ms;
+  --ui-duration-slow: 480ms;
+  --ui-shadow-float: 0 1.5rem 4rem rgba(0, 0, 0, .18);
+  --ui-shadow-dialog: 0 2rem 6rem rgba(0, 0, 0, .32);
+}
+
+html {
+  text-size-adjust: 100%;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  color: var(--ui-paper);
+  background: var(--ui-ink);
+}
+
+:where(a, button, input, textarea, select, [tabindex]):focus-visible {
+  outline: 1px solid currentColor;
+  outline-offset: 3px;
+}
+
+:where(button, input, textarea, select) {
+  font: inherit;
+}
+
+:where(button, [role="button"], input[type="button"], input[type="submit"]) {
+  min-height: var(--ui-control);
+}
+
+.ui-shell {
+  width: min(100%, var(--ui-content));
+  margin-inline: auto;
+  padding-inline: var(--ui-gutter);
+}
+
+.ui-section {
+  padding-block: var(--ui-section-space);
+  border-bottom: 1px solid var(--ui-line-strong);
+}
+
+.ui-kicker {
+  margin: 0;
+  color: var(--ui-muted);
+  font-size: var(--ui-text-xs);
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.ui-title {
+  margin: 0;
+  font-family: var(--ui-font);
+  font-size: var(--ui-title-md);
+  font-weight: 700;
+  line-height: .86;
+  letter-spacing: -.07em;
+  text-wrap: balance;
+}
+
+.ui-copy {
+  max-width: var(--ui-readable);
+  margin: 0;
+  color: var(--ui-muted);
+  font-size: var(--ui-text-md);
+  line-height: 1.65;
+}
+
+.ui-button,
+.ui-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ui-ink);
+  background: transparent;
+  border: 1px solid var(--ui-line-strong);
+  cursor: pointer;
+  transition:
+    color var(--ui-duration-fast) linear,
+    background-color var(--ui-duration-fast) linear,
+    border-color var(--ui-duration-fast) linear,
+    transform var(--ui-duration) var(--ui-ease);
+}
+
+.ui-button {
+  min-height: var(--ui-control);
+  gap: var(--ui-space-5);
+  padding: 0 var(--ui-space-5);
+  font-size: var(--ui-text-xs);
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.ui-icon-button {
+  width: var(--ui-control);
+  min-width: var(--ui-control);
+  height: var(--ui-control);
+  padding: 0;
+}
+
+.ui-button:hover,
+.ui-button:focus-visible,
+.ui-icon-button:hover,
+.ui-icon-button:focus-visible,
+.ui-choice:hover,
+.ui-choice:focus-within {
+  color: var(--ui-paper);
+  background: var(--ui-accent);
+  border-color: var(--ui-accent);
+  outline-color: var(--ui-accent);
+}
+
+.ui-button:active,
+.ui-icon-button:active { transform: translateY(1px); }
+
+.ui-button:disabled,
+.ui-icon-button:disabled {
+  color: var(--ui-muted);
+  background: var(--ui-surface);
+  border-color: var(--ui-line);
+  cursor: not-allowed;
+  opacity: .68;
+}
+
+.ui-button--danger:hover,
+.ui-button--danger:focus-visible { background: var(--ui-danger); border-color: var(--ui-danger); }
+
+.ui-field {
+  display: grid;
+  gap: var(--ui-space-2);
+  min-width: 0;
+}
+
+.ui-field > span,
+.ui-field > legend {
+  color: var(--ui-muted);
+  font-size: var(--ui-text-xs);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.ui-field :where(input, textarea, select) {
+  width: 100%;
+  min-width: 0;
+  min-height: var(--ui-control);
+  padding: .8rem 1rem;
+  color: var(--ui-ink);
+  background: var(--ui-paper);
+  border: 1px solid var(--ui-line);
+  outline: 0;
+  transition: border-color var(--ui-duration-fast) linear, box-shadow var(--ui-duration-fast) linear;
+}
+
+.ui-field textarea { min-height: 8rem; resize: vertical; line-height: 1.55; }
+.ui-field :where(input, textarea, select):focus { border-color: var(--ui-ink); box-shadow: inset 3px 0 0 var(--ui-ink); }
+.ui-field :where(input, textarea, select)[aria-invalid="true"] { border-color: var(--ui-danger); box-shadow: inset 3px 0 0 var(--ui-danger); }
+
+.ui-choice {
+  position: relative;
+  display: grid;
+  min-height: 5rem;
+  align-content: space-between;
+  padding: var(--ui-space-4);
+  color: var(--ui-ink);
+  background: var(--ui-paper);
+  border: 1px solid var(--ui-line);
+  cursor: pointer;
+  transition: color var(--ui-duration-fast) linear, background-color var(--ui-duration-fast) linear, border-color var(--ui-duration-fast) linear;
+}
+
+.ui-choice:has(input:checked) {
+  color: var(--ui-paper);
+  background: var(--ui-ink);
+  border-color: var(--ui-ink);
+}
+
+.ui-choice input { position: absolute; opacity: 0; pointer-events: none; }
+
+.ui-card {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--ui-ink);
+  background: var(--ui-paper);
+  border: 1px solid var(--ui-line-strong);
+  transition: color var(--ui-duration-fast) linear, background-color var(--ui-duration-fast) linear, transform var(--ui-duration) var(--ui-ease);
+}
+
+.ui-card[data-interactive="true"]:hover,
+.ui-card[data-interactive="true"]:focus-within {
+  color: var(--ui-paper);
+  background: var(--ui-ink);
+  transform: translateY(-2px);
+}
+
+.ui-dialog {
+  width: min(calc(100% - 2rem), 46rem);
+  max-height: min(88svh, 56rem);
+  margin: auto;
+  padding: 0;
+  overflow: auto;
+  color: var(--ui-ink);
+  background: var(--ui-paper);
+  border: 1px solid var(--ui-line-strong);
+  box-shadow: var(--ui-shadow-dialog);
+}
+
+.ui-dialog::backdrop {
+  background: var(--ui-overlay);
+  backdrop-filter: blur(.5rem);
+}
+
+.ui-dialog__header {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  display: flex;
+  min-height: 3.5rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--ui-space-4);
+  padding: 0 var(--ui-space-5);
+  background: var(--ui-paper);
+  border-bottom: 1px solid var(--ui-line-strong);
+}
+
+.ui-dialog__body { padding: clamp(1.25rem, 4vw, 3rem); }
+
+.ui-glass {
+  background: var(--ui-glass);
+  border-color: rgba(0, 0, 0, .16);
+  box-shadow: 0 .5rem 2rem rgba(0, 0, 0, .08);
+  backdrop-filter: blur(1rem) saturate(1.08);
+  -webkit-backdrop-filter: blur(1rem) saturate(1.08);
+}
+
+.ui-status {
+  display: inline-flex;
+  min-height: 1.75rem;
+  align-items: center;
+  gap: .5rem;
+  padding: 0 .625rem;
+  color: var(--ui-muted);
+  border: 1px solid var(--ui-line);
+  font-size: var(--ui-text-2xs);
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.ui-status::before {
+  width: .375rem;
+  height: .375rem;
+  content: "";
+  background: currentColor;
+}
+
+.ui-status[data-tone="danger"] { color: var(--ui-danger); }
+.ui-status[data-tone="success"] { color: var(--ui-success); }
+
+@media (max-width: 760px) {
+  :root {
+    --ui-gutter: 1rem;
+    --ui-section-space: clamp(3rem, 14vw, 5.5rem);
+  }
+
+  :where(button, [role="button"], input[type="button"], input[type="submit"]) {
+    min-height: var(--ui-control-mobile);
+  }
+
+  .ui-button { min-height: var(--ui-control-mobile); }
+  .ui-icon-button { width: var(--ui-control-mobile); min-width: var(--ui-control-mobile); height: var(--ui-control-mobile); }
+  .ui-dialog { width: 100%; max-width: none; max-height: 92svh; margin: auto 0 0; }
+  .ui-dialog__body { padding: 1.25rem 1rem 2rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root { --ui-line: #6b6b67; }
+  .ui-glass { background: var(--ui-paper); backdrop-filter: none; }
+}
