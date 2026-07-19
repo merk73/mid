@@ -244,7 +244,9 @@
       isPublished: record?.isPublished !== false,
       threatLevel,
       accessLevel,
-      image: String(record?.image || ""),
+      image: typeof Blob !== "undefined" && record?.image instanceof Blob
+        ? record.image
+        : String(record?.image || ""),
       gallery: Array.isArray(record?.gallery) ? record.gallery.slice(0, 9) : [],
       summary: String(record?.summary || ""),
       fields: normalizeFields(type, record?.fields),
