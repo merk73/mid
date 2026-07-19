@@ -1138,3 +1138,42 @@ body.history-page .unified-site-header .header-account-avatar span {
   .record-editor-actions button { width: auto !important; min-width: 0; padding-inline: 7px; font-size: .58rem; white-space: nowrap; }
   .record-editor-actions button[hidden] { display: none !important; }
 }
+
+/* Editorial delete actions remain compact and visually secondary. */
+.home-editorial-entry-actions { display: flex; justify-content: flex-end; gap: .45rem; }
+.home-editorial-entry-delete,
+.home-editorial-quote-delete { color: var(--ui-accent) !important; }
+.home-editorial-entry-delete:is(:hover, :focus-visible),
+.home-editorial-quote-delete:is(:hover, :focus-visible) { color: #fff !important; background: var(--ui-accent) !important; border-color: var(--ui-accent) !important; }
+
+/* Direct editing must not collapse the dossier threat control. */
+body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-shell .record-clearance {
+  position: relative;
+  z-index: 4;
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-shell .record-level-scale,
+body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-shell .record-level-scale button {
+  display: grid !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+@media (max-width: 760px) {
+  .home-editorial-entry-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); width: 100%; }
+  .world-map .leaflet-top.leaflet-left { top: 58px; left: 10px; }
+  .world-map .leaflet-top.leaflet-left .leaflet-control { margin: 0; }
+  body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-shell .record-portrait {
+    inset: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    min-height: 0 !important;
+  }
+  body:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-shell .record-portrait img {
+    display: block;
+    width: 100%;
+    height: 100%;
+  }
+}

@@ -32,8 +32,17 @@
 
     document.querySelectorAll("[data-glossary-entry]").forEach((entry) => {
       const body = entry.querySelector(".glossary-entry-body-inner") || entry;
-      if (!body.querySelector("[data-inline-edit-glossary]")) {
-        body.append(makeButton("РЕДАКТИРОВАТЬ", "data-inline-edit-glossary", "home-editorial-entry-edit"));
+      let actions = body.querySelector(".home-editorial-entry-actions");
+      if (!actions) {
+        actions = document.createElement("div");
+        actions.className = "home-editorial-entry-actions";
+        body.append(actions);
+      }
+      if (!actions.querySelector("[data-inline-edit-glossary]")) {
+        actions.append(makeButton("РЕДАКТИРОВАТЬ", "data-inline-edit-glossary", "home-editorial-entry-edit"));
+      }
+      if (!actions.querySelector("[data-inline-delete-glossary]")) {
+        actions.append(makeButton("УДАЛИТЬ", "data-inline-delete-glossary", "home-editorial-entry-delete"));
       }
     });
 
@@ -43,7 +52,9 @@
       edit.setAttribute("aria-label", "Редактировать текущую цитату");
       const add = makeButton("+", "data-inline-add-quote", "home-editorial-quote-action");
       add.setAttribute("aria-label", "Добавить цитату");
-      quoteControls.append(edit, add);
+      const remove = makeButton("×", "data-inline-delete-quote", "home-editorial-quote-action home-editorial-quote-delete");
+      remove.setAttribute("aria-label", "Удалить текущую цитату");
+      quoteControls.append(edit, add, remove);
     }
   }
 
@@ -139,13 +150,40 @@
     installTools();
   }
 
+  async function deleteEntry(id, label) {
+    if (!account || !session.hasAccess("editor") || !id) return;
+    if (!window.confirm(`Удалить ${label}? Запись будет скрыта с сайта.`)) return;
+    const response = await client
+      .from("editorial_entries")
+      .update({ deleted_at: new Date().toISOString(), is_published: false, updated_by: account.userId })
+      .eq("id", id)
+      .select("id")
+      .single();
+    if (response.error) {
+      window.alert(response.error.message || `Не удалось удалить ${label}.`);
+      return;
+    }
+    closeForms();
+    await window.MIDGAS_RELOAD_EDITORIAL_CONTENT?.();
+    installTools();
+  }
+
   document.addEventListener("click", (event) => {
     if (!account || !session.hasAccess("editor")) return;
     if (event.target.closest("[data-inline-add-glossary]")) glossaryForm();
     const glossaryEdit = event.target.closest("[data-inline-edit-glossary]");
     if (glossaryEdit) glossaryForm(glossaryEdit.closest("[data-glossary-entry]"));
+    const glossaryDelete = event.target.closest("[data-inline-delete-glossary]");
+    if (glossaryDelete) {
+      const entry = glossaryDelete.closest("[data-glossary-entry]");
+      void deleteEntry(entry?.dataset.editorialId || "", "термин");
+    }
     if (event.target.closest("[data-inline-edit-quote]")) quoteForm(false);
     if (event.target.closest("[data-inline-add-quote]")) quoteForm(true);
+    if (event.target.closest("[data-inline-delete-quote]")) {
+      const id = document.querySelector("#company-quotes blockquote")?.dataset.editorialId || "";
+      void deleteEntry(id, "цитату");
+    }
     if (event.target.closest("[data-inline-editor-cancel]")) closeForms();
   });
 

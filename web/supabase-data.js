@@ -4,7 +4,7 @@
   const RECORD_TYPES = ["client", "anomaly", "incident"];
   const RECORDS_TABLE = "records";
   const RELATIONSHIPS_TABLE = "relationships";
-  const MEMBERS_TABLE = "editor_members";
+  const MEMBERS_TABLE = "account_members";
   const STORAGE_BUCKET = "record-covers";
   const CACHE_KEY = "midgas_supabase_records_v3";
   const CACHE_MAX_AGE = 2 * 60 * 1000;
