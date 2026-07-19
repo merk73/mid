@@ -80,10 +80,14 @@ function renderClearance(sourceRecord) {
   const root = document.querySelector("[data-record-clearance]");
   if (!root) return;
   root.hidden = false;
+  const threatOnly = type !== "client";
+  root.classList.toggle("record-clearance--threat-only", threatOnly);
   const threat = `T${Math.min(5, Math.max(1, Number(sourceRecord?.threatLevel) || levelFromValue(recordFieldValue(sourceRecord, ["Уровень угрозы"]), "threat") || 1))}`;
   const access = `D${Math.min(5, Math.max(1, Number(sourceRecord?.accessLevel) || levelFromValue(recordFieldValue(sourceRecord, ["Уровень доступа", "Осведомленность клиента"]), "access") || 1))}`;
   renderLevel(root.querySelector("[data-record-threat]"), threat, "T", "threat");
-  renderLevel(root.querySelector("[data-record-access]"), access, "D", "access");
+  const accessRoot = root.querySelector("[data-record-access]");
+  if (accessRoot) accessRoot.hidden = threatOnly;
+  if (!threatOnly) renderLevel(accessRoot, access, "D", "access");
 }
 
 function createMediaGrid(items, context = {}) {

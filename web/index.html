@@ -10,9 +10,9 @@
     <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin />
     <link rel="preconnect" href="https://nominatim.openstreetmap.org" crossorigin />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
-    <script src="site-access.js?v=5"></script>
+    <script src="site-access.js?v=6"></script>
     <link rel="stylesheet" href="styles.css?v=98" />
-    <link rel="stylesheet" href="design-system.css?v=7" />
+    <link rel="stylesheet" href="design-system.css?v=8" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -43,13 +43,9 @@
           <figure class="hero-media hero-group-photo">
             <img src="assets/images/midgas-group.webp" alt="Коллективный архивный портрет THE MIDGAS" width="1672" height="941" decoding="async" fetchpriority="high" />
           </figure>
-          <div class="hero-topics" data-hero-topics>
-            <div class="hero-topics-copy"><span>АКТУАЛЬНЫЕ ТЕМЫ</span><h1 id="hero-title" data-hero-heading>КЛИЕНТЫ</h1><p data-hero-summary>Наблюдаемые субъекты внутреннего архива.</p></div>
-            <a class="hero-topic-card" data-hero-card href="record.html?type=client&amp;id=MID-C-0024&amp;from=topics">
-              <figure><img data-hero-image src="assets/topics/anna-matskevich-topic.webp" alt="Анна Мацкевич" width="1200" height="900" decoding="async" fetchpriority="high" /></figure>
-              <div><span data-hero-code>MID-C-0024</span><h2 data-hero-name>Анна Мацкевич</h2><p data-hero-caption>Клиент / наблюдаемый субъект</p></div><b aria-hidden="true">→</b>
-            </a>
-            <nav class="hero-topic-nav" aria-label="Переключить актуальную тему"><button type="button" data-hero-topic="0" aria-label="Клиенты" aria-current="true"></button><button type="button" data-hero-topic="1" aria-label="Аномалии"></button><button type="button" data-hero-topic="2" aria-label="Инциденты"></button></nav>
+          <div class="hero-cover-copy">
+            <p>THE MIDGAS / INTERNAL RESEARCH ARCHIVE</p>
+            <h1 id="hero-title"><span>КЛИЕНТЫ.</span><span>АНОМАЛИИ.</span><span>ИНЦИДЕНТЫ.</span></h1>
           </div>
         </section>
 
@@ -585,7 +581,7 @@
                     <path d="M78 382 286 128 512 298 746 92 924 346" />
                     <path d="M286 128 746 92M512 298 924 346M78 382 512 298" />
                   </svg>
-                  <i style="--x:8%;--y:73%"></i><i style="--x:28%;--y:22%"></i><i style="--x:51%;--y:55%"></i><i style="--x:74%;--y:15%"></i><i style="--x:92%;--y:66%"></i>
+                  <i style="--x:8%;--y:73%"><b>MID-C-0024</b><small>АННА МАЦКЕВИЧ</small></i><i style="--x:28%;--y:22%"><b>MID-A-0001</b><small>АНДРЕЕВКА</small></i><i style="--x:51%;--y:55%"><b>MID-I-0001</b><small>СТРАХОМАХА</small></i><i style="--x:74%;--y:15%"><b>MID-C-0031</b><small>СУБЪЕКТ</small></i><i style="--x:92%;--y:66%"><b>MID-C-0018</b><small>НАБЛЮДЕНИЕ</small></i>
                 </div>
                 <h3 id="company-board-title">ДОСКА СВЯЗЕЙ</h3>
                 <button type="button" data-board-open>ПЕРЕЙТИ</button>
@@ -593,6 +589,7 @@
 
               <nav class="company-board-fullscreen-controls" data-board-controls aria-label="Управление полноэкранной доской">
                 <button class="company-board-tool-icon" type="button" data-board-close aria-label="Назад" title="Назад"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7M8 12h12" /></svg><span>НАЗАД</span></button>
+                <label class="company-board-search"><span>НАЙТИ УЗЕЛ</span><input type="search" data-board-search autocomplete="off" placeholder="Имя, номер или локация" /></label>
                 <button class="company-board-tool-icon" type="button" data-board-edit hidden aria-label="Редактировать доску" title="Редактировать"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z" /><path d="m14 7 3 3" /></svg><span>РЕДАКТИРОВАТЬ</span></button>
                 <div class="company-board-editor-tools" data-board-editor-tools hidden>
                   <button class="company-board-tool-icon" type="button" data-board-add-edge aria-label="Новая связь" title="Новая связь"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 14.5 14.5 9.5" /><path d="M7.2 16.8 5.5 18.5a2.8 2.8 0 0 1-4-4l3-3a2.8 2.8 0 0 1 4 0" /><path d="m16.8 7.2 1.7-1.7a2.8 2.8 0 0 1 4 4l-3 3a2.8 2.8 0 0 1-4 0" /></svg><span>НОВАЯ СВЯЗЬ</span></button>
@@ -603,18 +600,6 @@
                 </div>
                 <span data-board-edit-status></span>
               </nav>
-
-              <section class="company-board-discovery" aria-label="Поиск и фильтры доски">
-                <label><span>НАЙТИ УЗЕЛ</span><input type="search" data-board-search autocomplete="off" placeholder="Имя, номер или локация" /></label>
-                <div data-board-filters>
-                  <button type="button" data-board-filter="all" class="is-active">ВСЕ</button>
-                  <button type="button" data-board-filter="client">КЛИЕНТЫ</button>
-                  <button type="button" data-board-filter="anomaly">АНОМАЛИИ</button>
-                  <button type="button" data-board-filter="incident">ИНЦИДЕНТЫ</button>
-                  <button type="button" data-board-filter="place">ЛОКАЦИИ</button>
-                </div>
-                <span data-board-visible-count></span>
-              </section>
 
               <div class="company-board-workspace">
                 <div class="company-board-canvas company-board-viewport" id="company-board-canvas" tabindex="0" aria-label="Перемещаемая карта связей">
@@ -854,7 +839,7 @@
     <script src="site-completion.js?v=1"></script>
     <script src="latest-covers.js?v=1"></script>
     <script src="krovolunanie-research.js?v=1"></script>
-    <script src="editor-session.js?v=12"></script>
+    <script src="editor-session.js?v=13"></script>
     <script src="site-gate.js?v=2"></script>
     <script src="supabase-data.js?v=10"></script>
     <script src="editor-storage.js?v=9"></script>
@@ -863,10 +848,9 @@
     <script src="investigation-board.js?v=25"></script>
     <script src="geo-seeds.js?v=1"></script>
     <script src="world-map.js?v=6"></script>
-    <script src="home-content.js?v=2"></script>
+    <script src="home-content.js?v=3"></script>
     <script src="site-header.js?v=2"></script>
-    <script src="home-hero.js?v=1"></script>
     <script src="site-motion.js?v=1"></script>
-    <script src="app.js?v=32"></script>
+    <script src="app.js?v=33"></script>
   </body>
 </html>

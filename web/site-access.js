@@ -6,6 +6,8 @@
   const PUBLISHABLE_KEY = "sb_publishable_VzgpYoXN_0lM414FnMWp2A_ZU8ucWDv";
   const originalTitle = document.title;
   let accountSession = null;
+  let resolveReady;
+  const ready = new Promise((resolve) => { resolveReady = resolve; });
 
   document.documentElement.classList.add("site-access-locked");
   document.title = "Вход — THE MIDGAS";
@@ -72,7 +74,17 @@
     document.documentElement.dataset.accountRole = account?.role || "viewer";
     document.querySelector(".site-access-gate")?.remove();
     document.title = originalTitle;
+    resolveReady?.({ account, session });
+    resolveReady = null;
     window.dispatchEvent(new CustomEvent("midgas:account-access-granted", { detail: { account, session } }));
+  }
+
+  function renderLoading() {
+    if (document.querySelector(".site-access-gate")) return;
+    const gate = document.createElement("div");
+    gate.className = "site-access-gate";
+    gate.innerHTML = '<section class="site-access-panel" aria-live="polite"><div class="site-access-heading"><span>MIDGAS / ACCOUNT ACCESS</span><h1>ОТКРЫВАЕМ АРХИВ</h1><p>Восстанавливаем защищённый сеанс…</p></div></section>';
+    document.body.append(gate);
   }
 
   function renderGate(messageText = "") {
@@ -116,6 +128,7 @@
   async function start() {
     const session = storedSession();
     if (session) {
+      renderLoading();
       try {
         const result = await request({
           action: "validate",
@@ -136,6 +149,7 @@
   }
 
   window.MIDGAS_SITE_ACCESS = Object.freeze({
+    ready,
     getSession: () => accountSession || storedSession(),
     setSession: saveSession,
     clear: () => saveSession(null),

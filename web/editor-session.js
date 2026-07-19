@@ -151,7 +151,8 @@
 
   const ready = (async () => {
     if (!client) return null;
-    const gateSession = window.MIDGAS_SITE_ACCESS?.getSession?.();
+    const gateResult = await window.MIDGAS_SITE_ACCESS?.ready;
+    const gateSession = gateResult?.session || window.MIDGAS_SITE_ACCESS?.getSession?.();
     if (gateSession?.access_token && gateSession?.refresh_token) {
       const restored = await client.auth.setSession({
         access_token: gateSession.access_token,

@@ -113,10 +113,8 @@ function createRegistryCard(record) {
   const id = document.createElement("span");
   id.textContent = record.id;
   data.append(id);
-  if (registryType === "client") {
-    data.classList.add("client-card-data--levels");
-    data.append(window.MIDGAS_CREATE_CLIENT_CARD_LEVELS(record));
-  }
+  data.classList.add("client-card-data--levels");
+  data.append(window.MIDGAS_CREATE_CLIENT_CARD_LEVELS(record, { threatOnly: registryType !== "client" }));
 
   const heading = document.createElement("h3");
   heading.textContent = record.name;

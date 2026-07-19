@@ -97,16 +97,18 @@ function clientCardLevel(value, kind) {
   return 0;
 }
 
-function createClientCardLevels(record) {
+function createClientCardLevels(record, options = {}) {
   const threatValue = record?.threatLevel ? `T${record.threatLevel}` : clientCardFieldValue(record, ["Уровень угрозы"]);
   const accessValue = record?.accessLevel ? `D${record.accessLevel}` : clientCardFieldValue(record, ["Уровень доступа", "Осведомленность клиента"]);
   const levels = [
     { kind: "threat", label: "УГРОЗА", prefix: "T", value: threatValue, level: clientCardLevel(threatValue, "threat") },
     { kind: "access", label: "ДОСТУП", prefix: "D", value: accessValue, level: clientCardLevel(accessValue, "access") },
-  ];
+  ].filter((entry) => !options.threatOnly || entry.kind === "threat");
   const root = document.createElement("div");
-  root.className = "client-card-levels";
-  root.setAttribute("aria-label", `Уровень угрозы: ${threatValue || "не указан"}. Уровень доступа: ${accessValue || "не указан"}.`);
+  root.className = `client-card-levels${options.threatOnly ? " client-card-levels--threat-only" : ""}`;
+  root.setAttribute("aria-label", options.threatOnly
+    ? `Уровень угрозы: ${threatValue || "не указан"}.`
+    : `Уровень угрозы: ${threatValue || "не указан"}. Уровень доступа: ${accessValue || "не указан"}.`);
   levels.forEach((entry) => {
     const item = document.createElement("span");
     item.className = `client-card-level client-card-level--${entry.kind}`;
@@ -157,10 +159,8 @@ function renderPreviewGrid(grid, records, recordType, limit) {
     const id = document.createElement("span");
     id.textContent = record.id;
     data.append(id);
-    if (recordType === "client") {
-      data.classList.add("client-card-data--levels");
-      data.append(createClientCardLevels(record));
-    }
+    data.classList.add("client-card-data--levels");
+    data.append(createClientCardLevels(record, { threatOnly: recordType !== "client" }));
 
     const heading = document.createElement("h3");
     heading.textContent = record.name;

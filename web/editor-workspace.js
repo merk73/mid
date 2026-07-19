@@ -17,13 +17,26 @@
   const escape = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
   const field = (label, input) => `<label class="ui-field"><span>${label}</span>${input}</label>`;
 
+  function relationPicker() {
+    const typeLabels = { client: "КЛИЕНТ", anomaly: "АНОМАЛИЯ", incident: "ИНЦИДЕНТ" };
+    const records = ["client", "anomaly", "incident"].flatMap((type) =>
+      Object.values(window.MIDGAS_RECORDS?.[type] || {}).map((record) => ({ ...record, type })),
+    ).sort((left, right) => String(left.name || left.id).localeCompare(String(right.name || right.id), "ru"));
+    if (!records.length) return '<p class="workspace-relation-empty">Карточки ещё загружаются. Закройте форму и откройте её снова.</p>';
+    return `<div class="workspace-relation-picker" data-workspace-relations>
+      <label class="workspace-relation-search"><span>НАЙТИ</span><input type="search" data-relation-search placeholder="Имя или номер досье" autocomplete="off" /></label>
+      <div class="workspace-relation-list">${records.map((record) => `<label class="workspace-relation-option" data-relation-option data-search="${escape(`${record.id} ${record.name}`.toLocaleLowerCase("ru"))}"><input type="checkbox" name="relations" value="${escape(record.id)}" /><span><small>${typeLabels[record.type]} / ${escape(record.id)}</small><strong>${escape(record.name)}</strong></span></label>`).join("")}</div>
+      <p data-relation-count>ВЫБРАНО: 0</p>
+    </div>`;
+  }
+
   function recordFields(kind) {
     return [
       `<section class="workspace-form-step" data-form-step="1">${field("Имя", '<input name="title" required maxlength="180" autocomplete="off" />')}${field("Подпись", '<input name="caption" required maxlength="180" autocomplete="off" />')}${field("Основное фото", '<input name="image" type="file" accept="image/*" required />')}${field("Дополнительные фото — до 9", '<input name="gallery" type="file" accept="image/*" multiple />')}</section>`,
-      `<section class="workspace-form-step" data-form-step="2" hidden><div class="workspace-form-row">${field("Уровень угрозы", `<select name="threat">${[1,2,3,4,5].map((n) => `<option>T${n}</option>`).join("")}</select>`)}${field("Уровень доступа", `<select name="access">${[1,2,3,4,5].map((n) => `<option>D${n}</option>`).join("")}</select>`)}</div></section>`,
+      `<section class="workspace-form-step" data-form-step="2" hidden><div class="workspace-form-row">${field("Уровень угрозы", `<select name="threat">${[1,2,3,4,5].map((n) => `<option>T${n}</option>`).join("")}</select>`)}${kind === "client" ? field("Уровень доступа", `<select name="access">${[1,2,3,4,5].map((n) => `<option>D${n}</option>`).join("")}</select>`) : ""}</div></section>`,
       `<section class="workspace-form-step" data-form-step="3" hidden>${field("Краткое описание", '<textarea name="body" required maxlength="1400" rows="6"></textarea>')}</section>`,
       `<section class="workspace-form-step" data-form-step="4" hidden><p>Дополнительный раздел можно пропустить.</p>${field("Название раздела", '<input name="sectionTitle" maxlength="180" />')}${field("Текст раздела", '<textarea name="sectionBody" maxlength="5000" rows="6"></textarea>')}</section>`,
-      `<section class="workspace-form-step" data-form-step="5" hidden><p>Укажите номера досье через запятую. Связи сразу попадут на доску.</p>${field("Связанные досье", '<input name="relations" placeholder="MID-C-0001, MID-A-0001" />')}</section>`,
+      `<section class="workspace-form-step" data-form-step="5" hidden><p>Выберите существующие карточки. После публикации связи появятся на доске.</p>${relationPicker()}</section>`,
       `<section class="workspace-form-step" data-form-step="6" hidden>${field("Локация", '<input name="location" maxlength="180" placeholder="Город, область или координаты" />')}<label class="ui-check"><input type="checkbox" name="published" checked /><span>Опубликовать сразу</span></label></section>`,
     ].join("");
   }
@@ -70,6 +83,18 @@
     dialog.showModal();
     fields.querySelector("input, textarea, select")?.focus();
   }
+
+  fields?.addEventListener("input", (event) => {
+    const picker = event.target.closest("[data-workspace-relations]");
+    if (!picker) return;
+    if (event.target.matches("[data-relation-search]")) {
+      const query = String(event.target.value || "").trim().toLocaleLowerCase("ru");
+      picker.querySelectorAll("[data-relation-option]").forEach((option) => { option.hidden = Boolean(query) && !option.dataset.search.includes(query); });
+    }
+    const count = picker.querySelectorAll('input[name="relations"]:checked').length;
+    const output = picker.querySelector("[data-relation-count]");
+    if (output) output.textContent = `ВЫБРАНО: ${count}`;
+  });
 
   async function loadEntries() {
     const response = await client.from("editorial_entries").select("id,entry_type,title,body,metadata,is_published,updated_at").is("deleted_at", null).order("updated_at", { ascending: false });
@@ -139,7 +164,7 @@
     const image = data.get("image");
     const gallery = data.getAll("gallery").filter((file) => file instanceof File && file.size > 0).slice(0, 9);
     const caption = String(data.get("caption") || "").trim();
-    const relationIds = String(data.get("relations") || "").split(",").map((value) => value.trim().toUpperCase()).filter(Boolean);
+    const relationIds = [...new Set(data.getAll("relations").map((value) => String(value).trim().toUpperCase()).filter(Boolean))];
     const relations = relationIds.map((id) => ({ id, type: id.startsWith("MID-A-") ? "anomaly" : id.startsWith("MID-I-") ? "incident" : "client", label: id }));
     const sectionTitle = String(data.get("sectionTitle") || "").trim();
     const sectionBody = String(data.get("sectionBody") || "").trim();
