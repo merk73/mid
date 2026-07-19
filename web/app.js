@@ -191,14 +191,6 @@ function renderRecordPreviews() {
   renderPreviewGrid(clientGrid, clientRecords, "client", document.body.classList.contains("home-page") ? 7 : clientRecords.length);
   renderPreviewGrid(document.querySelector("#anomaly-grid"), Object.values(window.MIDGAS_RECORDS?.anomaly || {}), "anomaly", 4);
   renderPreviewGrid(document.querySelector("#incident-grid"), Object.values(window.MIDGAS_RECORDS?.incident || {}), "incident", 4);
-
-  ["client", "anomaly", "incident"].forEach((recordType) => {
-    const count = Object.values(window.MIDGAS_RECORDS?.[recordType] || {}).length;
-    document.querySelectorAll(`[data-home-record-count="${recordType}"]`).forEach((element) => {
-      const pad = Number(element.dataset.countPad || 0);
-      element.textContent = pad ? String(count).padStart(pad, "0") : String(count).padStart(2, "0");
-    });
-  });
 }
 
 renderRecordPreviews();
