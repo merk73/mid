@@ -4,7 +4,7 @@
   if (!main) return;
   const byId = (id) => document.getElementById(id);
   const support = document.querySelector(".support-section");
-  const ordered = [byId("client-preview"), byId("anomaly-preview"), byId("incident-preview"), byId("company-board"), byId("historical-archive"), byId("locations"), byId("company-hub"), byId("glossary"), byId("company-quotes")].filter(Boolean);
+  const ordered = [byId("company-board"), byId("client-preview"), byId("anomaly-preview"), byId("incident-preview"), byId("historical-archive"), byId("locations"), byId("company-hub"), byId("glossary"), byId("company-quotes")].filter(Boolean);
   support?.after(...ordered);
   byId("registry")?.remove();
   byId("current-topics")?.remove();

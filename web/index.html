@@ -12,7 +12,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
     <script src="site-access.js?v=5"></script>
     <link rel="stylesheet" href="styles.css?v=98" />
-    <link rel="stylesheet" href="design-system.css?v=6" />
+    <link rel="stylesheet" href="design-system.css?v=7" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -46,7 +46,7 @@
           <div class="hero-topics" data-hero-topics>
             <div class="hero-topics-copy"><span>АКТУАЛЬНЫЕ ТЕМЫ</span><h1 id="hero-title" data-hero-heading>КЛИЕНТЫ</h1><p data-hero-summary>Наблюдаемые субъекты внутреннего архива.</p></div>
             <a class="hero-topic-card" data-hero-card href="record.html?type=client&amp;id=MID-C-0024&amp;from=topics">
-              <figure><img data-hero-image src="assets/topics/anna-matskevich-topic.webp" alt="Анна Мацкевич" width="900" height="900" decoding="async" fetchpriority="high" /></figure>
+              <figure><img data-hero-image src="assets/topics/anna-matskevich-topic.webp" alt="Анна Мацкевич" width="1200" height="900" decoding="async" fetchpriority="high" /></figure>
               <div><span data-hero-code>MID-C-0024</span><h2 data-hero-name>Анна Мацкевич</h2><p data-hero-caption>Клиент / наблюдаемый субъект</p></div><b aria-hidden="true">→</b>
             </a>
             <nav class="hero-topic-nav" aria-label="Переключить актуальную тему"><button type="button" data-hero-topic="0" aria-label="Клиенты" aria-current="true"></button><button type="button" data-hero-topic="1" aria-label="Аномалии"></button><button type="button" data-hero-topic="2" aria-label="Инциденты"></button></nav>
@@ -580,6 +580,13 @@
             <div class="company-board-stage company-reveal" data-board-stage>
               <div class="company-board-preview-cover" data-board-preview-cover>
                 <span>MIDGAS / INTERACTIVE GRAPH</span>
+                <div class="company-board-preview-graph" aria-hidden="true">
+                  <svg viewBox="0 0 1000 520" preserveAspectRatio="none">
+                    <path d="M78 382 286 128 512 298 746 92 924 346" />
+                    <path d="M286 128 746 92M512 298 924 346M78 382 512 298" />
+                  </svg>
+                  <i style="--x:8%;--y:73%"></i><i style="--x:28%;--y:22%"></i><i style="--x:51%;--y:55%"></i><i style="--x:74%;--y:15%"></i><i style="--x:92%;--y:66%"></i>
+                </div>
                 <h3 id="company-board-title">ДОСКА СВЯЗЕЙ</h3>
                 <button type="button" data-board-open>ПЕРЕЙТИ</button>
               </div>
