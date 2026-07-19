@@ -78,6 +78,20 @@
     renderEntries();
   }
 
+  async function bootstrapGlossaryEntries() {
+    const existing = await client.from("editorial_entries").select("id", { count: "exact", head: true }).eq("entry_type", "glossary");
+    if (existing.error || Number(existing.count) > 0) return;
+    const html = await fetch("index.html", { cache: "no-store" }).then((response) => response.text());
+    const documentCopy = new DOMParser().parseFromString(html, "text/html");
+    const rows = [...documentCopy.querySelectorAll("[data-glossary-entry]")].map((entry) => ({
+      entry_type: "glossary", title: entry.querySelector("h4")?.textContent?.trim(), body: entry.querySelector("p")?.textContent?.trim() || "",
+      metadata: { group: entry.dataset.group || "registry", domId: entry.id || "" }, is_published: true, created_by: account.userId, updated_by: account.userId,
+    })).filter((entry) => entry.title && entry.body);
+    if (!rows.length) return;
+    const inserted = await client.from("editorial_entries").insert(rows);
+    if (inserted.error) throw inserted.error;
+  }
+
   function renderEntries() {
     const visible = entries.filter((entry) => filter === "all" || entry.entry_type === filter);
     list.innerHTML = visible.length ? visible.map((entry) => `<article class="workspace-entry" data-entry-id="${entry.id}"><span>${entry.entry_type.toUpperCase()}</span><div><strong>${escape(entry.title)}</strong><small>${entry.is_published ? "ОПУБЛИКОВАНО" : "ЧЕРНОВИК"}</small></div><button type="button" data-entry-edit>Изменить</button>${account?.role === "admin" ? '<button type="button" data-entry-delete aria-label="Удалить">×</button>' : ""}</article>`).join("") : "<p>Материалов этого типа пока нет.</p>";
@@ -204,7 +218,7 @@
     if (!account || !session.hasAccess("editor")) { window.location.replace("account.html"); return; }
     document.querySelector("[data-workspace-role]").textContent = account.role === "admin" ? "АДМИНИСТРАТОР" : "РЕДАКТОР";
     document.querySelector("[data-workspace-login]").textContent = account.login;
-    try { await window.MIDGAS_SUPABASE_DATA?.ready; await Promise.all([loadEntries(), loadJournal()]); }
+    try { await window.MIDGAS_SUPABASE_DATA?.ready; await bootstrapGlossaryEntries(); await Promise.all([loadEntries(), loadJournal()]); }
     catch (error) { status.textContent = error?.message || "Не удалось загрузить материалы."; }
   });
 })();

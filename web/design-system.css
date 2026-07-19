@@ -705,3 +705,19 @@ body .record-level-scale button { min-width: 0; height: 8px; box-shadow: none !i
   .hero-topic-nav { justify-content: flex-end; }
   .hero-topic-nav button { width: 46px; }
 }
+
+/* Stage 11 — deliberate home-page sequence and shared rhythm. */
+.home-page main > :is(.client-preview, .company-board, .historical-archive-cover, .world-locations, .company-hub, .glossary-section, .company-quotes) { position: relative; border-top: 1px solid var(--ui-ink); }
+.home-page main > .client-preview { padding-block: clamp(3rem, 7vw, 7rem); }
+.home-page main > .client-preview + .client-preview { border-top-color: var(--ui-line); }
+.home-page main > .company-board { width: 100%; margin: 0; padding: clamp(2.5rem, 6vw, 6rem) var(--side); background: #111; }
+.home-page main > .company-board .company-board-stage { width: 100%; margin: 0; }
+.company-hub--materials-only { border-bottom: 0; }
+.company-hub--materials-only .company-process { margin-bottom: 0; }
+.home-page main > .glossary-section { background: var(--ui-paper); }
+.home-page main > .company-quotes { width: 100%; margin: 0; }
+@media (max-width: 760px) {
+  .home-page main > .client-preview { padding-block: 2.5rem; }
+  .home-page main > .company-board { padding: 14px 0; overflow: hidden; }
+  .home-page main > .company-board .company-board-stage { min-height: 360px; }
+}

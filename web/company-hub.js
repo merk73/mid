@@ -643,7 +643,7 @@
     }, 30000);
   }
 
-  const quotes = [
+  let quotes = [
     ["Я целый месяц жил на Урале. Там была строительная площадка. Волшебный город для сериала. Там и играл в пинг-понг. Ещё приезжал на КАМАЗе Баста.", "СЛУЧАЙНАЯ ЗАПИСЬ / 01"],
     ["Мохнатая ОПГ не выкупает прикола чилить целый день.", "СЛУЧАЙНАЯ ЗАПИСЬ / 02"],
     ["Видимо, началось.", "СЛУЧАЙНАЯ ЗАПИСЬ / 03"],
@@ -716,6 +716,15 @@
     if (reducedMotion || document.hidden || !quoteFrame) return;
     quoteTimer = window.setInterval(() => { void showQuote(quoteIndex + 1); }, QUOTE_ROTATION_MS);
   }
+
+  window.MIDGAS_SET_QUOTES = (items) => {
+    const next = Array.isArray(items) ? items.filter((item) => Array.isArray(item) && item[0]) : [];
+    if (!next.length) return;
+    quotes = next;
+    quoteIndex = 0;
+    renderQuote(0);
+    restartQuoteTimer();
+  };
 
   document.querySelector("[data-quote-prev]")?.addEventListener("click", () => {
     void showQuote(quoteIndex - 1);

@@ -103,20 +103,22 @@ async function login(request: Request, payload: Record<string, unknown>, ipHash:
     authPassword,
     String(account.auth_user_id || ""),
   );
-  const updated = await service.auth.admin.updateUserById(user.id, {
-    email: String(account.internal_email),
-    password: authPassword,
-    email_confirm: true,
-    app_metadata: { account_login: loginValue, account_role: account.access_role },
-    user_metadata: { display_name: loginValue },
-  });
-  if (updated.error) throw updated.error;
-
   const binding = await service.rpc("bind_account_auth_user", { p_login: loginValue, p_user_id: user.id });
   if (binding.error) throw binding.error;
 
   const authClient = createClient(supabaseUrl, publishableKey, { auth: { persistSession: false, autoRefreshToken: false } });
-  const signedIn = await authClient.auth.signInWithPassword({ email: String(account.internal_email), password: authPassword });
+  let signedIn = await authClient.auth.signInWithPassword({ email: String(account.internal_email), password: authPassword });
+  if (signedIn.error) {
+    const repaired = await service.auth.admin.updateUserById(user.id, {
+      email: String(account.internal_email),
+      password: authPassword,
+      email_confirm: true,
+      app_metadata: { account_login: loginValue, account_role: account.access_role },
+      user_metadata: { display_name: loginValue },
+    });
+    if (repaired.error) throw repaired.error;
+    signedIn = await authClient.auth.signInWithPassword({ email: String(account.internal_email), password: authPassword });
+  }
   if (signedIn.error || !signedIn.data.session) throw signedIn.error || new Error("Account session was not created.");
 
   return json(request, 200, {
