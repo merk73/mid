@@ -237,13 +237,19 @@
       loreNote: record?.loreNote || "Карточка подготовлена в редакционном модуле MIDGAS.",
       duplicateOf: record?.duplicateOf || null,
       name: String(record?.name || "БЕЗ НАЗВАНИЯ"),
-      alias: String(record?.alias || record?.name || "БЕЗ НАЗВАНИЯ"),
-      cardType: String(record?.cardType || meta.defaultCardType),
+      caption: String(record?.caption || record?.alias || record?.cardType || meta.defaultCardType),
+      isPublished: record?.isPublished !== false,
       image: String(record?.image || ""),
       summary: String(record?.summary || ""),
       fields: normalizeFields(type, record?.fields),
       sections: Array.isArray(record?.sections) ? record.sections : [],
     };
+    delete next.alias;
+    delete next.cardType;
+    Object.defineProperties(next, {
+      alias: { value: next.caption, enumerable: false, configurable: true },
+      cardType: { value: next.caption, enumerable: false, configurable: true },
+    });
     if (Array.isArray(record?.editorRelations)) next.editorRelations = normalizeRelations(record.editorRelations);
     return next;
   }
@@ -511,9 +517,8 @@
 
   function remoteCreateDraft(payload, type) {
     const now = new Date().toISOString();
-    const cardType = String(payload.cardType || TYPE_META[type].defaultCardType).trim();
+    const caption = String(payload.caption || payload.alias || payload.cardType || TYPE_META[type].defaultCardType).trim();
     const name = String(payload.name || "").trim();
-    const alias = String(payload.alias || name).trim();
     const location = String(payload.location || "Не раскрывается").trim();
     const threat = String(payload.threat || "T1 / низкий").trim();
     const access = normalizeClientAccess(payload.access || "D1 / очень низкий");
@@ -524,7 +529,6 @@
       throw new Error("Заполните обязательные поля и загрузите изображение.");
     }
     const fields = [
-      ["Тип", cardType],
       ["Уровень угрозы", threat],
       ["Местоположение", location],
     ];
@@ -537,8 +541,8 @@
         kind: TYPE_META[type].kind,
         stage: "НА САЙТЕ",
         name,
-        alias,
-        cardType,
+        caption,
+        isPublished: payload.isPublished !== false,
         image: payload.image,
         summary,
         editorCreatedAt: now,
@@ -607,9 +611,8 @@
     await externalizeImages(next, imageMemo);
     const id = nextId(type, next);
     const now = new Date().toISOString();
-    const cardType = String(payload.cardType || TYPE_META[type].defaultCardType).trim();
+    const caption = String(payload.caption || payload.alias || payload.cardType || TYPE_META[type].defaultCardType).trim();
     const name = String(payload.name || "").trim();
-    const alias = String(payload.alias || name).trim();
     const location = String(payload.location || "Не раскрывается").trim();
     const threat = String(payload.threat || "T1 / низкий").trim();
     const access = normalizeClientAccess(payload.access || "D1 / очень низкий");
@@ -623,7 +626,6 @@
     const image = await externalizeInlineImage(String(payload.image), imageMemo);
 
     const fields = [
-      ["Тип", cardType],
       ["Уровень угрозы", threat],
       ["Местоположение", location],
     ];
@@ -635,8 +637,8 @@
       kind: TYPE_META[type].kind,
       stage: "НА САЙТЕ",
       name,
-      alias,
-      cardType,
+      caption,
+      isPublished: payload.isPublished !== false,
       image,
       summary,
       editorCreatedAt: now,

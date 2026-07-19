@@ -209,6 +209,14 @@
     const code = String(row?.record_code || record.id || "").trim();
     const coverUrl = publicUrlForPath(row?.cover_path);
     record.id = code;
+    record.caption = String(record.caption || record.alias || record.cardType || "").trim();
+    record.isPublished = record.isPublished !== false;
+    delete record.alias;
+    delete record.cardType;
+    Object.defineProperties(record, {
+      alias: { value: record.caption, enumerable: false, configurable: true },
+      cardType: { value: record.caption, enumerable: false, configurable: true },
+    });
     if (!record.kind && type) record.kind = type.toUpperCase();
     Object.defineProperties(record, {
       supabaseCreatedAt: { value: String(row?.created_at || ""), enumerable: false, configurable: true },
@@ -604,6 +612,11 @@
     delete content.recordCode;
     delete content.recordUuid;
     delete content._supabase;
+    content.caption = String(content.caption || content.alias || content.cardType || "").trim();
+    content.isPublished = content.isPublished !== false;
+    delete content.alias;
+    delete content.cardType;
+    delete content.type;
     return content;
   }
 

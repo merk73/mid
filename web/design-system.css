@@ -345,22 +345,22 @@ body .site-header.unified-site-header {
   display: block;
   min-height: 62px;
   color: var(--ui-ink);
-  background: color-mix(in srgb, var(--ui-paper) 78%, transparent);
+  background: var(--ui-paper);
   border-bottom: 1px solid color-mix(in srgb, var(--ui-ink) 16%, transparent);
-  backdrop-filter: blur(18px) saturate(120%);
-  -webkit-backdrop-filter: blur(18px) saturate(120%);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 body.home-page .site-header.unified-site-header {
   position: fixed;
   color: var(--ui-paper);
-  background: linear-gradient(180deg, rgba(0, 0, 0, .4), rgba(0, 0, 0, .08));
+  background: transparent;
   border-bottom-color: rgba(255, 255, 255, .24);
 }
 
 body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
   color: var(--ui-ink);
-  background: color-mix(in srgb, var(--ui-paper) 86%, transparent);
+  background: var(--ui-paper);
   border-bottom-color: color-mix(in srgb, var(--ui-ink) 16%, transparent);
 }
 
@@ -371,9 +371,7 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
   align-items: stretch;
 }
 
-.unified-site-header .nav-group { display: flex; align-items: stretch; }
-.unified-site-header .nav-group-left { justify-content: flex-end; }
-.unified-site-header .nav-group-right { justify-content: flex-start; }
+.unified-site-header .nav-group { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); align-items: stretch; }
 .unified-site-header .nav-group a,
 .unified-site-header .wordmark {
   display: inline-flex;
@@ -434,7 +432,7 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
 
   .unified-site-header .mobile-wordmark {
     font-family: var(--ui-font-display);
-    font-size: .9rem;
+    font-size: 1.02rem;
     letter-spacing: .1em;
   }
 
@@ -467,12 +465,12 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
     color: var(--ui-ink);
     background: color-mix(in srgb, var(--ui-paper) 94%, transparent);
     border-bottom: 1px solid var(--ui-line);
-    backdrop-filter: blur(18px);
+    backdrop-filter: none;
   }
 
   .unified-site-header .main-navigation.is-open { display: grid; }
   .unified-site-header .main-navigation .wordmark { display: none; }
-  .unified-site-header .nav-group { display: grid; }
+  .unified-site-header .nav-group { display: grid; grid-template-columns: 1fr; }
   .unified-site-header .nav-group a {
     justify-content: flex-start;
     min-height: 48px;
@@ -489,6 +487,11 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
   body .record-level strong { font-size: 29px; }
   body .record-level-scale { gap: 3px; margin-block: 12px 8px; }
   body .record-level-scale button { min-height: 0; height: 7px; }
+
+  body.home-page .hero-cover .hero-group-photo {
+    top: calc(-1 * (56px + env(safe-area-inset-top)));
+    height: calc(100% + 56px + env(safe-area-inset-top));
+  }
 }
 
 .account-shell {
@@ -573,9 +576,14 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
 .workspace-dialog h2 { margin: .45rem 0 0; font: 500 var(--ui-title-md)/1 var(--ui-font-display); }
 .workspace-dialog header button { width: 36px; min-height: 36px; color: inherit; background: transparent; border: 1px solid var(--ui-line); }
 .workspace-form-fields { display: grid; gap: 1rem; padding: 1.25rem; }
+.workspace-form-step { display: grid; gap: 1rem; min-height: 310px; align-content: start; }
+.workspace-form-step[hidden] { display: none; }
+.workspace-form-step > p { margin: 0 0 .5rem; color: var(--ui-muted); font: var(--ui-text-sm)/1.5 var(--ui-font-mono); }
 .workspace-form-row { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
 .workspace-dialog form > footer { position: sticky; bottom: 0; display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: 1rem 1.25rem; background: var(--ui-paper); border-top: 1px solid var(--ui-line); }
 .workspace-dialog form > footer p { margin: 0; color: var(--ui-danger); font: var(--ui-text-xs)/1.3 var(--ui-font-mono); }
+.workspace-form-nav { display: flex; align-items: center; gap: .65rem; margin-left: auto; }
+.workspace-form-nav > span { min-width: 42px; text-align: center; color: var(--ui-muted); font: var(--ui-text-xs)/1 var(--ui-font-mono); }
 .ui-check { display: flex; gap: .65rem; align-items: center; font: var(--ui-text-sm)/1.2 var(--ui-font-mono); }
 .ui-check input { width: 18px; height: 18px; accent-color: var(--ui-accent); }
 

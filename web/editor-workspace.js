@@ -10,22 +10,35 @@
   let account = null;
   let entries = [];
   let filter = "all";
+  let formStep = 1;
 
   const names = { client: "клиента", incident: "инцидент", anomaly: "аномалию", location: "локацию", glossary: "термин", quote: "цитату" };
   const escape = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
   const field = (label, input) => `<label class="ui-field"><span>${label}</span>${input}</label>`;
 
   function recordFields(kind) {
-    const access = kind === "client" ? field("Уровень доступа", `<select name="access">${[1,2,3,4,5].map((n) => `<option>D${n}</option>`).join("")}</select>`) : "";
     return [
-      field("Имя", '<input name="title" required maxlength="180" autocomplete="off" />'),
-      field("Подпись", '<input name="caption" required maxlength="180" autocomplete="off" />'),
-      field("Основное фото", '<input name="image" type="file" accept="image/*" required />'),
-      field("Краткое описание", '<textarea name="body" required maxlength="1400" rows="5"></textarea>'),
-      `<div class="workspace-form-row">${field("Уровень угрозы", `<select name="threat">${[1,2,3,4,5].map((n) => `<option>T${n}</option>`).join("")}</select>`)}${access}</div>`,
-      field("Локация", '<input name="location" maxlength="180" placeholder="Город, область или координаты" />'),
-      '<label class="ui-check"><input type="checkbox" name="published" checked /><span>Опубликовать сразу</span></label>',
+      `<section class="workspace-form-step" data-form-step="1">${field("Имя", '<input name="title" required maxlength="180" autocomplete="off" />')}${field("Подпись", '<input name="caption" required maxlength="180" autocomplete="off" />')}${field("Основное фото", '<input name="image" type="file" accept="image/*" required />')}</section>`,
+      `<section class="workspace-form-step" data-form-step="2" hidden><div class="workspace-form-row">${field("Уровень угрозы", `<select name="threat">${[1,2,3,4,5].map((n) => `<option>T${n}</option>`).join("")}</select>`)}${field("Уровень доступа", `<select name="access">${[1,2,3,4,5].map((n) => `<option>D${n}</option>`).join("")}</select>`)}</div></section>`,
+      `<section class="workspace-form-step" data-form-step="3" hidden>${field("Краткое описание", '<textarea name="body" required maxlength="1400" rows="6"></textarea>')}</section>`,
+      `<section class="workspace-form-step" data-form-step="4" hidden><p>Дополнительный раздел можно пропустить.</p>${field("Название раздела", '<input name="sectionTitle" maxlength="180" />')}${field("Текст раздела", '<textarea name="sectionBody" maxlength="5000" rows="6"></textarea>')}</section>`,
+      `<section class="workspace-form-step" data-form-step="5" hidden><p>Укажите номера досье через запятую. Связи сразу попадут на доску.</p>${field("Связанные досье", '<input name="relations" placeholder="MID-C-0001, MID-A-0001" />')}</section>`,
+      `<section class="workspace-form-step" data-form-step="6" hidden>${field("Локация", '<input name="location" maxlength="180" placeholder="Город, область или координаты" />')}<label class="ui-check"><input type="checkbox" name="published" checked /><span>Опубликовать сразу</span></label></section>`,
     ].join("");
+  }
+
+  function updateFormStep() {
+    const steps = [...fields.querySelectorAll("[data-form-step]")];
+    steps.forEach((step) => { step.hidden = Number(step.dataset.formStep) !== formStep; });
+    const nav = form.querySelector("[data-form-nav]");
+    const back = form.querySelector("[data-form-back]");
+    const next = form.querySelector("[data-form-next]");
+    const submit = form.querySelector("[data-form-submit]");
+    nav.hidden = !steps.length;
+    back.disabled = formStep === 1;
+    next.hidden = formStep === steps.length;
+    submit.hidden = Boolean(steps.length) && formStep !== steps.length;
+    form.querySelector("[data-form-step-label]").textContent = `${formStep} / ${steps.length || 1}`;
   }
 
   function editorialFields(kind, entry = {}) {
@@ -51,6 +64,8 @@
     document.querySelector("[data-dialog-code]").textContent = entry ? "EDIT ENTRY" : "NEW ENTRY";
     document.querySelector("[data-dialog-title]").textContent = `${entry ? "Изменить" : "Добавить"} ${names[kind]}`;
     fields.innerHTML = ["client", "incident", "anomaly"].includes(kind) ? recordFields(kind) : editorialFields(kind, entry || {});
+    formStep = 1;
+    updateFormStep();
     dialog.showModal();
     fields.querySelector("input, textarea, select")?.focus();
   }
@@ -81,15 +96,27 @@
   async function saveRecord(data, kind) {
     const image = data.get("image");
     const caption = String(data.get("caption") || "").trim();
+    const relationIds = String(data.get("relations") || "").split(",").map((value) => value.trim().toUpperCase()).filter(Boolean);
+    const relations = relationIds.map((id) => ({ id, type: id.startsWith("MID-A-") ? "anomaly" : id.startsWith("MID-I-") ? "incident" : "client", label: id }));
+    const sectionTitle = String(data.get("sectionTitle") || "").trim();
+    const sectionBody = String(data.get("sectionBody") || "").trim();
+    const sections = sectionTitle && sectionBody ? [{ title: sectionTitle, paragraphs: sectionBody.split(/\n\s*\n/).filter(Boolean) }] : [];
     await window.MIDGAS_EDITOR_STORE.create({
-      type: kind, name: String(data.get("title") || "").trim(), alias: caption, cardType: caption,
+      type: kind, name: String(data.get("title") || "").trim(), caption,
       image, summary: String(data.get("body") || "").trim(), description: String(data.get("body") || "").trim(),
-      threat: data.get("threat"), access: data.get("access") || "D1", location: String(data.get("location") || "").trim(), sections: [], relations: [],
+      threat: data.get("threat"), access: data.get("access") || "D1", location: String(data.get("location") || "").trim(), sections, relations, isPublished: data.get("published") === "on",
     });
   }
 
   document.querySelectorAll("[data-editor-kind]").forEach((button) => button.addEventListener("click", () => openForm(button.dataset.editorKind)));
   document.querySelector("[data-dialog-close]")?.addEventListener("click", () => dialog.close());
+  form.querySelector("[data-form-back]")?.addEventListener("click", () => { formStep = Math.max(1, formStep - 1); updateFormStep(); });
+  form.querySelector("[data-form-next]")?.addEventListener("click", () => {
+    const current = fields.querySelector(`[data-form-step="${formStep}"]`);
+    const invalid = [...current.querySelectorAll("input, textarea, select")].find((control) => !control.checkValidity());
+    if (invalid) { invalid.reportValidity(); return; }
+    formStep = Math.min(6, formStep + 1); updateFormStep();
+  });
   document.querySelectorAll("[data-entry-filter]").forEach((button) => button.addEventListener("click", () => {
     filter = button.dataset.entryFilter;
     document.querySelectorAll("[data-entry-filter]").forEach((item) => item.setAttribute("aria-selected", String(item === button)));
