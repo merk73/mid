@@ -6,6 +6,7 @@
     <meta name="description" content="Личный кабинет THE MIDGAS." />
     <title>Аккаунт — THE MIDGAS</title>
     <link rel="preconnect" href="https://skvwaovkkoxqfwkcpuvh.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <script src="site-access.js?v=5"></script>
     <link rel="stylesheet" href="styles.css?v=98" />
     <link rel="stylesheet" href="design-system.css?v=1" />
@@ -14,16 +15,36 @@
     <div class="site-shell">
       <header class="site-header"></header>
       <main class="account-shell" id="main-content">
-        <span class="ui-eyebrow">MIDGAS / ACCOUNT</span>
-        <h1>Личный кабинет</h1>
-        <p>Загружаем сведения об аккаунте и доступные действия.</p>
+        <header class="account-heading">
+          <div><span class="ui-eyebrow">MIDGAS / ACCOUNT</span><h1>Личный кабинет</h1></div>
+          <p>Профиль и рабочие инструменты, доступные вашей роли.</p>
+        </header>
+        <section class="account-profile" aria-labelledby="account-profile-title">
+          <div class="account-profile-avatar" aria-hidden="true" data-account-avatar>•</div>
+          <div class="account-profile-copy">
+            <span data-account-role>ПРОВЕРКА ДОСТУПА</span>
+            <h2 id="account-profile-title" data-account-name>Загрузка…</h2>
+            <p data-account-login></p>
+          </div>
+          <button class="ui-button ui-button--quiet account-logout" type="button" data-account-logout>Выйти</button>
+        </section>
+        <section class="account-tools" data-account-tools hidden aria-labelledby="account-tools-title">
+          <header><span class="ui-eyebrow">WORKSPACE</span><h2 id="account-tools-title">Работа с сайтом</h2></header>
+          <nav class="account-actions" aria-label="Инструменты аккаунта">
+            <a class="account-action account-action--primary" href="editor.html"><span>01</span><strong>Редактировать сайт</strong><small>Добавление и изменение материалов</small><b>→</b></a>
+            <a class="account-action" href="editor.html#company-journal"><span>02</span><strong>Журнал изменений</strong><small>История действий с контентом</small><b>→</b></a>
+            <a class="account-action" href="changelog.html"><span>03</span><strong>Журнал обновлений</strong><small>Изменения версий сайта</small><b>→</b></a>
+          </nav>
+        </section>
+        <p class="account-status" data-account-status role="status"></p>
       </main>
-      <footer class="site-footer"><span>THE MIDGAS © 2026</span><a href="index.html">НА ГЛАВНУЮ</a></footer>
+      <footer class="site-footer"><span>THE MIDGAS © 2026</span><span>ACCOUNT</span><a href="index.html">НА ГЛАВНУЮ</a></footer>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
     <script src="supabase-config.js?v=1"></script>
     <script src="editor-session.js?v=11"></script>
     <script src="site-header.js?v=1"></script>
+    <script src="account.js?v=1"></script>
     <script src="app.js?v=31"></script>
   </body>
 </html>
