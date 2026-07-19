@@ -119,7 +119,7 @@
 
   function renderEntries() {
     const visible = entries.filter((entry) => filter === "all" || entry.entry_type === filter);
-    list.innerHTML = visible.length ? visible.map((entry) => `<article class="workspace-entry" data-entry-id="${entry.id}"><span>${entry.entry_type.toUpperCase()}</span><div><strong>${escape(entry.title)}</strong><small>${entry.is_published ? "ОПУБЛИКОВАНО" : "ЧЕРНОВИК"}</small></div><button type="button" data-entry-edit>Изменить</button>${account?.role === "admin" ? '<button type="button" data-entry-delete aria-label="Удалить">×</button>' : ""}</article>`).join("") : "<p>Материалов этого типа пока нет.</p>";
+    list.innerHTML = visible.length ? visible.map((entry) => `<article class="workspace-entry" data-entry-id="${entry.id}"><span>${entry.entry_type.toUpperCase()}</span><div><strong>${escape(entry.title)}</strong><small>${entry.is_published ? "ОПУБЛИКОВАНО" : "ЧЕРНОВИК"}</small></div><button type="button" data-entry-edit>Изменить</button><button type="button" data-entry-delete aria-label="Удалить">×</button></article>`).join("") : "<p>Материалов этого типа пока нет.</p>";
   }
 
   async function loadJournal() {
@@ -196,8 +196,8 @@
     const entry = entries.find((item) => item.id === row?.dataset.entryId);
     if (!entry) return;
     if (event.target.closest("[data-entry-edit]")) openForm(entry.entry_type, entry);
-    if (event.target.closest("[data-entry-delete]") && account?.role === "admin" && window.confirm(`Удалить «${entry.title}»?`)) {
-      const response = await client.from("editorial_entries").delete().eq("id", entry.id);
+    if (event.target.closest("[data-entry-delete]") && session.hasAccess("editor") && window.confirm(`Удалить «${entry.title}»?`)) {
+      const response = await client.from("editorial_entries").update({ deleted_at: new Date().toISOString(), is_published: false, updated_by: account.userId }).eq("id", entry.id);
       if (response.error) status.textContent = response.error.message;
       else await loadEntries();
     }

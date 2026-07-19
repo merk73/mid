@@ -463,7 +463,7 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
     letter-spacing: .1em;
   }
 
-  .unified-site-header .header-account-avatar span {
+.unified-site-header .header-account-avatar span {
     display: grid;
     place-items: center;
     width: 32px;
@@ -520,6 +520,7 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
     height: calc(100% + 56px + env(safe-area-inset-top));
   }
 }
+.unified-site-header .header-account-avatar span.has-image { color: transparent; background-position: center; background-size: cover; }
 
 .account-shell {
   width: min(1180px, calc(100% - 40px));
@@ -532,6 +533,13 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
 .account-heading > p { max-width: 38ch; margin: 0; color: var(--ui-muted); }
 .account-profile { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 1.25rem; align-items: center; padding: clamp(1.25rem, 3vw, 2rem) 0; border-bottom: 1px solid var(--ui-line); }
 .account-profile-avatar { display: grid; place-items: center; width: 64px; height: 64px; color: var(--ui-paper); background: var(--ui-ink); border-radius: 50%; font: 500 1.35rem/1 var(--ui-font-display); }
+.account-avatar-control { display: grid; justify-items: center; gap: .45rem; cursor: pointer; }
+.account-avatar-control small { color: var(--ui-muted); font: 600 .58rem/1 var(--ui-font-mono); text-transform: uppercase; letter-spacing: .06em; }
+.account-avatar-control:is(:hover, :focus-within) small { color: var(--ui-accent); }
+.account-profile-avatar { overflow: hidden; }
+.account-profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.account-profile-avatar b { font: inherit; }
+.account-profile-avatar img:not([hidden]) + b { display: none; }
 .account-profile-copy span { color: var(--ui-muted); font: 600 var(--ui-text-xs)/1 var(--ui-font-mono); letter-spacing: .08em; }
 .account-profile-copy h2 { margin: .35rem 0 .25rem; font: 500 var(--ui-title-md)/1 var(--ui-font-display); }
 .account-profile-copy p { margin: 0; color: var(--ui-muted); font: var(--ui-text-sm)/1.3 var(--ui-font-mono); }

@@ -19,6 +19,8 @@
   let cachedAccount = null;
   let authSession = null;
   let hydrationSequence = 0;
+  let hydrationPromise = null;
+  let hydrationToken = "";
 
   window.MIDGAS_SUPABASE_CLIENT = client;
 
@@ -68,6 +70,10 @@
   }
 
   async function hydrate(nextSession, reason = "updated") {
+    const nextToken = String(nextSession?.access_token || "");
+    if (nextToken && hydrationPromise && hydrationToken === nextToken) return hydrationPromise;
+    hydrationToken = nextToken;
+    const activeHydration = (async () => {
     authSession = nextSession || null;
     const sequence = ++hydrationSequence;
     if (!authSession?.user?.id) {
@@ -77,18 +83,19 @@
     }
 
     try {
-      const verified = await client.auth.getUser(authSession.access_token);
-      if (verified.error || !verified.data.user) throw verified.error || new Error("Сеанс не подтверждён.");
-      const membership = await requestAccount(verified.data.user.id);
+      const membership = await requestAccount(authSession.user.id);
       if (!membership) throw new Error("Аккаунт отключён.");
       if (sequence !== hydrationSequence) return cachedAccount;
+      const avatarPath = membership.avatar_path || "";
+      const avatarUrl = avatarPath ? client.storage.from("account-avatars").getPublicUrl(avatarPath).data.publicUrl : "";
       cachedAccount = Object.freeze({
         userId: membership.user_id,
         login: membership.login,
         role: normalizeRole(membership.role),
         roleLabel: ROLE_LABELS[normalizeRole(membership.role)],
         displayName: membership.display_name || membership.login,
-        avatarPath: membership.avatar_path || "",
+        avatarPath,
+        avatarUrl,
         approvedAt: membership.approved_at,
         memberSince: membership.created_at,
         authenticated: true,
@@ -98,10 +105,20 @@
       notify(cachedAccount, reason);
       return cachedAccount;
     } catch (error) {
+      if (sequence !== hydrationSequence) return cachedAccount;
       console.error("MIDGAS: account hydration failed.", error);
       cachedAccount = null;
       notify(null, "account-disabled");
       return null;
+    }
+    })();
+    hydrationPromise = activeHydration;
+    try { return await activeHydration; }
+    finally {
+      if (hydrationPromise === activeHydration) {
+        hydrationPromise = null;
+        hydrationToken = "";
+      }
     }
   }
 
@@ -168,12 +185,18 @@
   client?.auth.onAuthStateChange((event, session) => {
     if (event === "INITIAL_SESSION") return;
     if (!session && window.MIDGAS_SITE_ACCESS?.getSession?.()) return;
+    if (event === "TOKEN_REFRESHED" && cachedAccount?.userId === session?.user?.id) {
+      authSession = session;
+      window.MIDGAS_SITE_ACCESS?.setSession?.(session);
+      return;
+    }
     window.setTimeout(() => void hydrate(session, event.toLowerCase()), 0);
   });
 
   window.addEventListener("midgas:account-access-granted", (event) => {
     const nextSession = event.detail?.session;
     if (!nextSession?.access_token || !nextSession?.refresh_token) return;
+    if (nextSession.access_token === authSession?.access_token && cachedAccount) return;
     window.setTimeout(async () => {
       const restored = await client.auth.setSession({ access_token: nextSession.access_token, refresh_token: nextSession.refresh_token });
       if (!restored.error && restored.data.session) await hydrate(restored.data.session, "gate-refreshed");

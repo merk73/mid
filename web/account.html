@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <script src="site-access.js?v=6"></script>
     <link rel="stylesheet" href="styles.css?v=98" />
-    <link rel="stylesheet" href="design-system.css?v=12" />
+    <link rel="stylesheet" href="design-system.css?v=13" />
   </head>
   <body class="account-page">
     <div class="site-shell">
@@ -20,7 +20,11 @@
           <p>Профиль и рабочие инструменты, доступные вашей роли.</p>
         </header>
         <section class="account-profile" aria-labelledby="account-profile-title">
-          <div class="account-profile-avatar" aria-hidden="true" data-account-avatar>•</div>
+          <label class="account-avatar-control" title="Загрузить аватарку">
+            <span class="account-profile-avatar" data-account-avatar><img data-account-avatar-image alt="" hidden /><b data-account-avatar-fallback>•</b></span>
+            <input type="file" accept="image/jpeg,image/png,image/webp,image/avif" data-account-avatar-input hidden />
+            <small>Сменить фото</small>
+          </label>
           <div class="account-profile-copy">
             <span data-account-role>ПРОВЕРКА ДОСТУПА</span>
             <h2 id="account-profile-title" data-account-name>Загрузка…</h2>
@@ -42,9 +46,9 @@
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
     <script src="supabase-config.js?v=1"></script>
-    <script src="editor-session.js?v=13"></script>
-    <script src="site-header.js?v=2"></script>
-    <script src="account.js?v=2"></script>
+    <script src="editor-session.js?v=14"></script>
+    <script src="site-header.js?v=3"></script>
+    <script src="account.js?v=3"></script>
     <script src="site-motion.js?v=3"></script>
     <script src="app.js?v=36"></script>
   </body>
