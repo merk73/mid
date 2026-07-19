@@ -104,6 +104,10 @@ function createRegistryCard(record) {
   image.decoding = "async";
   if (record.imageFit) image.dataset.fit = record.imageFit;
 
+  const idOverlay = document.createElement("span");
+  idOverlay.className = "client-card-id-overlay";
+  idOverlay.textContent = record.id;
+
   const data = document.createElement("div");
   data.className = "client-card-data";
   const id = document.createElement("span");
@@ -118,7 +122,7 @@ function createRegistryCard(record) {
   heading.textContent = record.name;
   const type = document.createElement("p");
   type.textContent = record.cardType;
-  card.append(image, data, heading, type);
+  card.append(image, idOverlay, data, heading, type);
   return card;
 }
 

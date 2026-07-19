@@ -6,7 +6,7 @@
     <meta name="description" content="Интерактивная доска связей THE MIDGAS." />
     <title>Доска связей — THE MIDGAS</title>
     <script src="site-access.js?v=4"></script>
-    <link rel="stylesheet" href="styles.css?v=93" />
+    <link rel="stylesheet" href="styles.css?v=95" />
   </head>
   <body class="board-page">
     <div class="site-shell">
@@ -25,6 +25,7 @@
             <div class="company-board-preview-cover" data-board-preview-cover><span>MIDGAS / INTERACTIVE GRAPH</span><h1 id="company-board-title">ДОСКА СВЯЗЕЙ</h1><button type="button" data-board-open>ПЕРЕЙТИ</button></div>
             <nav class="company-board-fullscreen-controls" data-board-controls aria-label="Управление доской">
               <button class="company-board-tool-icon" type="button" data-board-close aria-label="Назад"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7M8 12h12" /></svg><span>НАЗАД</span></button>
+              <label class="company-board-search"><span>НАЙТИ УЗЕЛ</span><input type="search" data-board-search autocomplete="off" placeholder="Имя, номер или локация"/></label>
               <button class="company-board-tool-icon" type="button" data-board-edit hidden aria-label="Редактировать доску"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z" /><path d="m14 7 3 3" /></svg><span>РЕДАКТИРОВАТЬ</span></button>
               <div class="company-board-editor-tools" data-board-editor-tools hidden>
                 <button class="company-board-tool-icon" type="button" data-board-add-edge><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 14.5 14.5 9.5M7.2 16.8 5.5 18.5a2.8 2.8 0 0 1-4-4l3-3a2.8 2.8 0 0 1 4 0m8.3-4.3 1.7-1.7a2.8 2.8 0 0 1 4 4l-3 3a2.8 2.8 0 0 1-4 0"/></svg><span>НОВАЯ СВЯЗЬ</span></button>
@@ -35,7 +36,6 @@
                 <button class="company-board-tool-icon" type="button" data-board-edit-close aria-label="Отменить все изменения"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 14 14M19 5 5 19"/></svg><span>ОТМЕНИТЬ</span></button>
               </div><span data-board-edit-status></span>
             </nav>
-            <section class="company-board-discovery" aria-label="Поиск и фильтры доски"><label><span>НАЙТИ УЗЕЛ</span><input type="search" data-board-search autocomplete="off" placeholder="Имя, номер или локация"/></label><div data-board-filters><button type="button" data-board-filter="all" class="is-active">ВСЕ</button><button type="button" data-board-filter="client">КЛИЕНТЫ</button><button type="button" data-board-filter="anomaly">АНОМАЛИИ</button><button type="button" data-board-filter="incident">ИНЦИДЕНТЫ</button><button type="button" data-board-filter="place">ЛОКАЦИИ</button></div><span data-board-visible-count></span></section>
             <div class="company-board-workspace">
               <div class="company-board-canvas company-board-viewport" id="company-board-canvas" tabindex="0" aria-label="Перемещаемая карта связей"><div class="company-board-world" id="company-board-world"><svg class="company-board-lines" viewBox="0 0 3600 2400" aria-hidden="true"></svg></div></div>
               <aside class="company-board-inspector" data-board-inspector aria-live="polite">
@@ -51,6 +51,6 @@
       </main>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
-    <script src="supabase-config.js?v=1"></script><script src="data.js"></script><script src="featured-data.js?v=8"></script><script src="client-updates.js?v=3"></script><script src="incident-updates.js?v=1"></script><script src="site-completion.js?v=1"></script><script src="latest-covers.js?v=1"></script><script src="editor-session.js?v=10"></script><script src="site-gate.js?v=2"></script><script src="supabase-data.js?v=8"></script><script src="editor-storage.js?v=8"></script><script src="relations-data.js?v=1"></script><script src="investigation-board.js?v=25"></script><script src="app.js?v=30"></script>
+    <script src="supabase-config.js?v=1"></script><script src="data.js"></script><script src="featured-data.js?v=8"></script><script src="client-updates.js?v=3"></script><script src="incident-updates.js?v=1"></script><script src="site-completion.js?v=1"></script><script src="latest-covers.js?v=1"></script><script src="editor-session.js?v=10"></script><script src="site-gate.js?v=2"></script><script src="supabase-data.js?v=8"></script><script src="editor-storage.js?v=8"></script><script src="relations-data.js?v=1"></script><script src="investigation-board.js?v=26"></script><script src="app.js?v=30"></script>
   </body>
 </html>

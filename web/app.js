@@ -148,6 +148,10 @@ function renderPreviewGrid(grid, records, recordType, limit) {
     image.decoding = "async";
     if (record.imageFit) image.dataset.fit = record.imageFit;
 
+    const idOverlay = document.createElement("span");
+    idOverlay.className = "client-card-id-overlay";
+    idOverlay.textContent = record.id;
+
     const data = document.createElement("div");
     data.className = "client-card-data";
     const id = document.createElement("span");
@@ -163,7 +167,7 @@ function renderPreviewGrid(grid, records, recordType, limit) {
     const type = document.createElement("p");
     type.textContent = record.cardType;
 
-    card.append(image, data, heading, type);
+    card.append(image, idOverlay, data, heading, type);
     grid.append(card);
   });
 

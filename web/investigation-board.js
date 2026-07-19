@@ -21,10 +21,7 @@
   const clientId = (number) => `MID-C-${String(number).padStart(4, "0")}`;
   const mobileQuery = window.matchMedia("(max-width: 760px)");
   const boardSearch = document.querySelector("[data-board-search]");
-  const boardFilterButtons = [...document.querySelectorAll("[data-board-filter]")];
-  const boardVisibleCount = document.querySelector("[data-board-visible-count]");
   let boardQuery = "";
-  let boardType = "all";
 
   function hash(value) {
     let result = 2166136261;
@@ -151,8 +148,8 @@
     if (node.image) {
       const image = document.createElement("img");
       image.dataset.src = node.image;
-      if (!mobileQuery.matches) image.src = node.image;
-      image.alt = ""; image.loading = "lazy"; image.decoding = "async"; button.append(image);
+      image.src = node.image;
+      image.alt = ""; image.loading = "eager"; image.decoding = "async"; button.append(image);
     }
     const code = document.createElement("span");
     const title = document.createElement("strong");
@@ -234,10 +231,8 @@
   }
 
   function nodeMatchesBoardFilter(node) {
-    const typeMatch = boardType === "all" || node.kind === boardType || (boardType === "place" && node.kind === "subject");
     const query = normaliseBoardText(boardQuery);
-    const textMatch = !query || normaliseBoardText(`${node.id} ${node.title} ${node.summary}`).includes(query);
-    return typeMatch && textMatch;
+    return !query || normaliseBoardText(`${node.id} ${node.title} ${node.summary}`).includes(query);
   }
 
   function applyBoardFilter({ focusFirst = false } = {}) {
@@ -251,7 +246,6 @@
       const visible = visibleKeys.has(group.dataset.source) && visibleKeys.has(group.dataset.target);
       group.classList.toggle("is-filtered-out", !visible);
     });
-    if (boardVisibleCount) boardVisibleCount.textContent = `${visibleKeys.size} ИЗ ${nodes.length} УЗЛОВ`;
     if (focusFirst && !visibleKeys.has(activeKey)) {
       const first = nodes.find((node) => visibleKeys.has(node.key));
       if (first) {
@@ -896,12 +890,6 @@
     boardQuery = boardSearch.value;
     applyBoardFilter({ focusFirst: true });
   });
-  boardFilterButtons.forEach((button) => button.addEventListener("click", () => {
-    boardType = button.dataset.boardFilter || "all";
-    boardFilterButtons.forEach((item) => item.classList.toggle("is-active", item === button));
-    applyBoardFilter({ focusFirst: true });
-  }));
-
   document.querySelector("[data-board-open]")?.addEventListener("click", openBoard);
   document.querySelector("[data-board-close]")?.addEventListener("click", closeBoard);
   document.querySelector("[data-board-edit]")?.addEventListener("click", () => { void enterEditor(); });
