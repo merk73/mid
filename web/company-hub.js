@@ -1270,7 +1270,16 @@
 
   const parallaxElements = [...document.querySelectorAll("[data-company-parallax]")];
   const saveData = Boolean(navigator.connection?.saveData);
+  const galleryToggle = document.querySelector("[data-company-gallery-toggle]");
+  const gallery = document.querySelector(".company-process-grid");
   let parallaxFrame = 0;
+
+  galleryToggle?.addEventListener("click", () => {
+    const expanded = gallery?.classList.toggle("is-expanded") || false;
+    galleryToggle.setAttribute("aria-expanded", String(expanded));
+    galleryToggle.querySelector("span").textContent = expanded ? "СВЕРНУТЬ МЕДИАФОНД" : "ПОКАЗАТЬ ВЕСЬ МЕДИАФОНД";
+    galleryToggle.querySelector("b").textContent = expanded ? "ПОКАЗАНЫ ВСЕ ↑" : "20 МАТЕРИАЛОВ ↓";
+  });
 
   function updateParallax() {
     parallaxFrame = 0;
@@ -1290,7 +1299,7 @@
     if (!parallaxFrame) parallaxFrame = window.requestAnimationFrame(updateParallax);
   }
 
-  if (!reducedMotion && !saveData && parallaxElements.length) {
+  if (!reducedMotion && !saveData && parallaxElements.length && window.innerWidth > 760) {
     updateParallax();
     window.addEventListener("scroll", requestParallax, { passive: true });
     window.addEventListener("resize", requestParallax);

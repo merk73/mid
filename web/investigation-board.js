@@ -20,6 +20,11 @@
   const keyFromId = (id) => recordKey(id.includes("-C-") ? "client" : id.includes("-A-") ? "anomaly" : "incident", id);
   const clientId = (number) => `MID-C-${String(number).padStart(4, "0")}`;
   const mobileQuery = window.matchMedia("(max-width: 760px)");
+  const boardSearch = document.querySelector("[data-board-search]");
+  const boardFilterButtons = [...document.querySelectorAll("[data-board-filter]")];
+  const boardVisibleCount = document.querySelector("[data-board-visible-count]");
+  let boardQuery = "";
+  let boardType = "all";
 
   function hash(value) {
     let result = 2166136261;
@@ -157,42 +162,13 @@
 
   nodes.forEach(createNodeElement);
 
-  let imageHydrationTimer = 0;
-  const queuedImageKeys = new Set();
-
   function ensureNodeImage(key, priority = "high") {
     const image = nodeElements.get(key)?.querySelector("img[data-src]");
-    if (!image || image.getAttribute("src")) {
-      queuedImageKeys.delete(key);
-      return false;
-    }
+    if (!image || image.getAttribute("src")) return false;
     image.loading = "eager";
     image.fetchPriority = priority;
     image.src = image.dataset.src;
-    queuedImageKeys.delete(key);
     return true;
-  }
-
-  function hydrateQueuedImages() {
-    imageHydrationTimer = 0;
-    if (!mobileQuery.matches || !queuedImageKeys.size) return;
-    let loaded = 0;
-    for (const key of queuedImageKeys) {
-      ensureNodeImage(key, "low");
-      loaded += 1;
-      if (loaded >= 2) break;
-    }
-    if (queuedImageKeys.size) imageHydrationTimer = window.setTimeout(hydrateQueuedImages, 160);
-  }
-
-  function scheduleAllNodeImages() {
-    if (!mobileQuery.matches) return;
-    nodeElements.forEach((element, key) => {
-      if (element.querySelector("img[data-src]:not([src])")) queuedImageKeys.add(key);
-    });
-    if (!imageHydrationTimer && queuedImageKeys.size) {
-      imageHydrationTimer = window.setTimeout(hydrateQueuedImages, 80);
-    }
   }
 
   function syncRecordNodesFromRegistry() {
@@ -212,7 +188,7 @@
     rebuildDataEdges();
     renderThreads();
     updateCounter();
-    scheduleAllNodeImages();
+    applyBoardFilter();
     if (!nodeMap.has(activeKey)) activeKey = nodeMap.has("anomaly:MID-A-0001") ? "anomaly:MID-A-0001" : nodes[0]?.key;
     selectNode(activeKey);
   }
@@ -238,7 +214,7 @@
     const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
     group.classList.add("company-board-thread", `company-board-thread--${edge.kind}`);
     group.dataset.edgeId = edge.id; group.dataset.source = edge.source; group.dataset.target = edge.target;
-    ["shadow", "base"].forEach((layer) => {
+    (mobileQuery.matches ? ["base"] : ["shadow", "base"]).forEach((layer) => {
       const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
       path.setAttribute("d", pathData); path.classList.add(`company-board-thread-${layer}`); group.append(path);
     });
@@ -250,6 +226,39 @@
     threadGroups = [...edgeMap.values()].map((edge) => {
       const group = makeThread(edge); svg.prepend(group); return group;
     });
+    applyBoardFilter();
+  }
+
+  function normaliseBoardText(value) {
+    return String(value || "").toLocaleLowerCase("ru").replaceAll("ё", "е").trim();
+  }
+
+  function nodeMatchesBoardFilter(node) {
+    const typeMatch = boardType === "all" || node.kind === boardType || (boardType === "place" && node.kind === "subject");
+    const query = normaliseBoardText(boardQuery);
+    const textMatch = !query || normaliseBoardText(`${node.id} ${node.title} ${node.summary}`).includes(query);
+    return typeMatch && textMatch;
+  }
+
+  function applyBoardFilter({ focusFirst = false } = {}) {
+    const visibleKeys = new Set();
+    nodes.forEach((node) => {
+      const visible = nodeMatchesBoardFilter(node);
+      nodeElements.get(node.key)?.classList.toggle("is-filtered-out", !visible);
+      if (visible) visibleKeys.add(node.key);
+    });
+    threadGroups.forEach((group) => {
+      const visible = visibleKeys.has(group.dataset.source) && visibleKeys.has(group.dataset.target);
+      group.classList.toggle("is-filtered-out", !visible);
+    });
+    if (boardVisibleCount) boardVisibleCount.textContent = `${visibleKeys.size} ИЗ ${nodes.length} УЗЛОВ`;
+    if (focusFirst && !visibleKeys.has(activeKey)) {
+      const first = nodes.find((node) => visibleKeys.has(node.key));
+      if (first) {
+        selectNode(first.key);
+        if (isFullscreen) centerOn(first.key);
+      }
+    }
   }
 
   function updateThreadsForNode(key) {
@@ -472,7 +481,8 @@
     isFullscreen = true;
     stage.classList.add("is-fullscreen");
     document.documentElement.classList.add("board-fullscreen-open");
-    scheduleAllNodeImages();
+    ensureNodeImage(activeKey);
+    connectedKeys(activeKey).forEach((key) => ensureNodeImage(key, "low"));
     requestAnimationFrame(() => centerOn(activeKey, true));
   }
   function closeBoard() {
@@ -882,6 +892,16 @@
     if (counter) counter.textContent = `${nodes.length} УЗЛОВ / ${edgeMap.size} СВЯЗЕЙ`;
   }
 
+  boardSearch?.addEventListener("input", () => {
+    boardQuery = boardSearch.value;
+    applyBoardFilter({ focusFirst: true });
+  });
+  boardFilterButtons.forEach((button) => button.addEventListener("click", () => {
+    boardType = button.dataset.boardFilter || "all";
+    boardFilterButtons.forEach((item) => item.classList.toggle("is-active", item === button));
+    applyBoardFilter({ focusFirst: true });
+  }));
+
   document.querySelector("[data-board-open]")?.addEventListener("click", openBoard);
   document.querySelector("[data-board-close]")?.addEventListener("click", closeBoard);
   document.querySelector("[data-board-edit]")?.addEventListener("click", () => { void enterEditor(); });
@@ -939,7 +959,7 @@
   window.addEventListener(sessionApi?.eventName || "midgas:editor-session", updateEditorAccess);
   sessionApi?.ready?.then(updateEditorAccess);
 
-  renderThreads(); updateCounter(); selectNode(activeKey);
+  renderThreads(); updateCounter(); selectNode(activeKey); applyBoardFilter();
   requestAnimationFrame(() => centerOn(activeKey, true));
   if (new URLSearchParams(window.location.search).get("board") === "open") openBoard();
 

@@ -5,6 +5,11 @@
   const countLabel = document.querySelector("[data-world-map-count]");
   const stateLabel = document.querySelector("[data-world-map-state]");
   const resetButton = document.querySelector("[data-world-map-reset]");
+  const listToggle = document.querySelector("[data-world-map-list-toggle]");
+  const listPanel = document.querySelector("[data-world-map-list]");
+  const listClose = document.querySelector("[data-world-map-list-close]");
+  const listItems = document.querySelector("[data-world-map-list-items]");
+  const listSearch = document.querySelector("[data-world-map-search]");
   if (!canvas) return;
 
   const TYPES = ["client", "anomaly"];
@@ -18,6 +23,38 @@
   let tileErrorCount = 0;
   let fallbackTiles = false;
   let renderFrame = 0;
+  let activated = false;
+  let leafletPromise = null;
+  let currentItems = [];
+
+  function loadLeaflet() {
+    if (window.L) return Promise.resolve(window.L);
+    if (leafletPromise) return leafletPromise;
+    leafletPromise = new Promise((resolve, reject) => {
+      const script = document.createElement("script");
+      script.src = "https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js";
+      script.integrity = "sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=";
+      script.crossOrigin = "anonymous";
+      script.onload = () => resolve(window.L);
+      script.onerror = () => reject(new Error("Leaflet unavailable"));
+      document.head.append(script);
+    });
+    return leafletPromise;
+  }
+
+  async function activateMap() {
+    if (activated && window.L) return;
+    activated = true;
+    if (stateLabel) stateLabel.textContent = "ЗАГРУЖАЮ КАРТУ…";
+    try {
+      await loadLeaflet();
+      render();
+    } catch {
+      if (stateLabel) stateLabel.textContent = "КАРТА НЕ ЗАГРУЗИЛАСЬ · ЛОКАЦИИ ДОСТУПНЫ СПИСКОМ";
+      listPanel.hidden = false;
+      listToggle?.setAttribute("aria-expanded", "true");
+    }
+  }
 
   function visibleSize() {
     const rect = canvas.getBoundingClientRect();
@@ -93,8 +130,8 @@
       return window.L.divIcon({
         className: `world-map-marker is-compact ${typeClass}`,
         html: `<span aria-hidden="true"></span>`,
-        iconSize: [18, 18],
-        iconAnchor: [9, 9],
+        iconSize: [30, 30],
+        iconAnchor: [15, 15],
       });
     }
     const media = item.image
@@ -176,8 +213,8 @@
       zoomAnimation: false,
       fadeAnimation: false,
       markerZoomAnimation: false,
+      attributionControl: false,
     });
-    map.attributionControl?.setPrefix(false);
     addTiles(false);
     markerLayer = window.L.featureGroup().addTo(map);
     map.on("zoomend", updateMarkerIcons);
@@ -188,6 +225,10 @@
   }
 
   function render() {
+    currentItems = spreadCoincident(collectRecords());
+    renderLocationList(currentItems);
+    if (countLabel) countLabel.textContent = `${String(currentItems.length).padStart(2, "0")} ЛОКАЦИЙ`;
+    if (!activated || !window.L) return;
     if (!visibleSize()) {
       if (stateLabel) stateLabel.textContent = "КАРТА ЗАГРУЗИТСЯ ПОСЛЕ ОТКРЫТИЯ САЙТА";
       return;
@@ -199,14 +240,13 @@
     }
     markerLayer.clearLayers();
     markerItems = [];
-    const items = spreadCoincident(collectRecords());
+    const items = currentItems;
     items.forEach((item) => {
       const marker = window.L.marker([item.displayLat, item.displayLng], { icon: iconFor(item, instance.getZoom() >= 7), riseOnHover: true })
         .bindPopup(popupFor(item), { className: "world-map-leaflet-popup", maxWidth: 340 })
         .addTo(markerLayer);
       markerItems.push({ marker, item });
     });
-    if (countLabel) countLabel.textContent = `${String(items.length).padStart(2, "0")} ЛОКАЦИЙ`;
     if (stateLabel) stateLabel.textContent = items.length
       ? (supabaseReady ? "ДАННЫЕ СИНХРОНИЗИРОВАНЫ С SUPABASE" : "БЫСТРЫЙ КЭШ · ОБНОВЛЯЮ SUPABASE")
       : "ЛОКАЦИИ ПОКА НЕ УКАЗАНЫ";
@@ -215,6 +255,50 @@
       initialFitComplete = true;
     }
     updateMarkerIcons();
+  }
+
+  function normalise(value) {
+    return String(value || "").toLocaleLowerCase("ru").replaceAll("ё", "е");
+  }
+
+  function focusLocation(item) {
+    void activateMap().then(() => {
+      const target = markerItems.find(({ item: markerItem }) => markerItem.id === item.id && markerItem.type === item.type);
+      if (!target || !map) return;
+      map.setView([item.displayLat, item.displayLng], Math.max(map.getZoom(), 8), { animate: false });
+      target.marker.openPopup();
+      listPanel.hidden = true;
+      listToggle?.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  function renderLocationList(items) {
+    if (!listItems) return;
+    const query = normalise(listSearch?.value).trim();
+    const visible = items.filter((item) => !query || normalise(`${item.name} ${item.location} ${item.id}`).includes(query));
+    listItems.replaceChildren(...visible.map((item) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = `world-map-list-item is-${item.type}`;
+      const media = item.image ? document.createElement("img") : document.createElement("i");
+      if (item.image) {
+        media.src = item.image;
+        media.alt = "";
+        media.loading = "lazy";
+        media.decoding = "async";
+      } else media.textContent = item.name.slice(0, 1);
+      const copy = document.createElement("span");
+      copy.innerHTML = `<small>${escapeHtml(TYPE_LABELS[item.type])} / ${escapeHtml(item.id)}</small><strong>${escapeHtml(item.name)}</strong><em>${escapeHtml(item.location)}</em>`;
+      button.append(media, copy);
+      button.addEventListener("click", () => focusLocation(item));
+      return button;
+    }));
+    if (!visible.length) {
+      const empty = document.createElement("p");
+      empty.className = "world-map-list-empty";
+      empty.textContent = "ЛОКАЦИИ НЕ НАЙДЕНЫ";
+      listItems.append(empty);
+    }
   }
 
   function restoreMap() {
@@ -238,7 +322,18 @@
     });
   }
 
-  resetButton?.addEventListener("click", () => fitAll(true));
+  resetButton?.addEventListener("click", () => { void activateMap().then(() => fitAll(true)); });
+  listToggle?.addEventListener("click", () => {
+    const willOpen = listPanel.hidden;
+    listPanel.hidden = !willOpen;
+    listToggle.setAttribute("aria-expanded", String(willOpen));
+    if (willOpen) listSearch?.focus({ preventScroll: true });
+  });
+  listClose?.addEventListener("click", () => {
+    listPanel.hidden = true;
+    listToggle?.setAttribute("aria-expanded", "false");
+  });
+  listSearch?.addEventListener("input", () => renderLocationList(currentItems));
   window.addEventListener("midgas:records-ready", () => { supabaseReady = true; render(); });
   window.addEventListener("midgas:record-mutated", render);
   window.addEventListener("midgas:site-access-granted", scheduleRestore);
@@ -248,6 +343,12 @@
     if (document.visibilityState === "visible") scheduleRestore();
   });
   if ("ResizeObserver" in window) new ResizeObserver(scheduleRestore).observe(canvas);
+  const activationObserver = new IntersectionObserver((entries, observer) => {
+    if (!entries.some((entry) => entry.isIntersecting)) return;
+    observer.disconnect();
+    void activateMap();
+  }, { rootMargin: "420px 0px" });
+  activationObserver.observe(canvas);
   Promise.resolve(window.MIDGAS_SUPABASE_DATA?.ready).finally(() => { supabaseReady = true; render(); });
   render();
 })();

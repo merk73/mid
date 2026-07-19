@@ -92,7 +92,7 @@ class Builder {
 
   execute(single) {
     if (this.table === "editor_members") {
-      return { data: { role: "editor", approved_at: now }, error: null };
+      return { data: { role: "full", approved_at: now }, error: null };
     }
     if (this.table === "records") return this.executeRecords(single);
     if (this.table === "relationships") return this.executeRelationships(single);
@@ -189,7 +189,7 @@ const context = {
   MIDGAS_SUPABASE_CLIENT: mockClient,
   MIDGAS_EDITOR_SESSION: {
     isEditor: () => true,
-    read: () => ({ email: "editor@example.test", role: "editor" }),
+    read: () => ({ email: "editor@example.test", role: "full" }),
   },
   localStorage: {
     getItem(key) { return storageValues.has(key) ? storageValues.get(key) : null; },

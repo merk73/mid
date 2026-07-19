@@ -10,8 +10,8 @@
     <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin />
     <link rel="preconnect" href="https://nominatim.openstreetmap.org" crossorigin />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
-    <script src="site-access.js?v=3"></script>
-    <link rel="stylesheet" href="styles.css?v=91" />
+    <script src="site-access.js?v=4"></script>
+    <link rel="stylesheet" href="styles.css?v=92" />
   </head>
   <body class="home-page">
     <div class="site-shell">
@@ -428,8 +428,13 @@
           </header>
           <div class="world-map-shell company-reveal">
             <div class="world-map" data-world-map aria-label="Мировая карта локаций клиентов и аномалий"></div>
-            <div class="world-map-toolbar"><span data-world-map-count>00 ЛОКАЦИЙ</span><button type="button" data-world-map-reset>ПОКАЗАТЬ ВСЕ</button></div>
-            <span class="world-map-state" data-world-map-state>ЗАГРУЖАЮ ДАННЫЕ SUPABASE…</span>
+            <div class="world-map-toolbar"><span data-world-map-count>00 ЛОКАЦИЙ</span><div><button type="button" data-world-map-list-toggle aria-expanded="false">СПИСОК</button><button type="button" data-world-map-reset>ПОКАЗАТЬ ВСЕ</button></div></div>
+            <aside class="world-map-list" data-world-map-list hidden aria-label="Список локаций">
+              <header><strong>ЛОКАЦИИ АРХИВА</strong><button type="button" data-world-map-list-close aria-label="Закрыть список">×</button></header>
+              <label><span>НАЙТИ ЛОКАЦИЮ</span><input type="search" data-world-map-search autocomplete="off" placeholder="Название, место или номер" /></label>
+              <div data-world-map-list-items></div>
+            </aside>
+            <span class="world-map-state" data-world-map-state>КАРТА ЗАГРУЗИТСЯ ПРИ ПРИБЛИЖЕНИИ К РАЗДЕЛУ</span>
           </div>
           <footer class="world-map-legend"><span><i class="is-client"></i> КЛИЕНТЫ</span><span><i class="is-anomaly"></i> АНОМАЛИИ</span><p>Точка назначается в режиме редактирования досье и сохраняется вместе с карточкой.</p></footer>
         </section>
@@ -547,6 +552,7 @@
                 <figcaption><span>20 / АНАЛИТИЧЕСКИЙ СТЕНД</span><strong>МОДЕЛЬ ЦИКЛОВ</strong><em>ХУДОЖЕСТВЕННАЯ РЕКОНСТРУКЦИЯ</em></figcaption>
               </figure>
             </div>
+            <button class="company-process-toggle" type="button" data-company-gallery-toggle aria-expanded="false"><span>ПОКАЗАТЬ ВЕСЬ МЕДИАФОНД</span><b>20 МАТЕРИАЛОВ ↓</b></button>
           </section>
 
           <section class="company-quotes" id="company-quotes" aria-labelledby="company-quotes-title">
@@ -590,6 +596,18 @@
                 </div>
                 <span data-board-edit-status></span>
               </nav>
+
+              <section class="company-board-discovery" aria-label="Поиск и фильтры доски">
+                <label><span>НАЙТИ УЗЕЛ</span><input type="search" data-board-search autocomplete="off" placeholder="Имя, номер или локация" /></label>
+                <div data-board-filters>
+                  <button type="button" data-board-filter="all" class="is-active">ВСЕ</button>
+                  <button type="button" data-board-filter="client">КЛИЕНТЫ</button>
+                  <button type="button" data-board-filter="anomaly">АНОМАЛИИ</button>
+                  <button type="button" data-board-filter="incident">ИНЦИДЕНТЫ</button>
+                  <button type="button" data-board-filter="place">ЛОКАЦИИ</button>
+                </div>
+                <span data-board-visible-count></span>
+              </section>
 
               <div class="company-board-workspace">
                 <div class="company-board-canvas company-board-viewport" id="company-board-canvas" tabindex="0" aria-label="Перемещаемая карта связей">
@@ -851,11 +869,10 @@
     <script src="supabase-data.js?v=8"></script>
     <script src="editor-storage.js?v=8"></script>
     <script src="relations-data.js?v=1"></script>
-    <script src="company-hub.js?v=24"></script>
-    <script src="investigation-board.js?v=24"></script>
+    <script src="company-hub.js?v=25"></script>
+    <script src="investigation-board.js?v=25"></script>
     <script src="geo-seeds.js?v=1"></script>
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
-    <script src="world-map.js?v=5"></script>
+    <script src="world-map.js?v=6"></script>
     <script src="app.js?v=30"></script>
   </body>
 </html>

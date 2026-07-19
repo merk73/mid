@@ -20,24 +20,75 @@ const registryConfig = {
   },
 };
 
-const registryRecords = Object.values(window.MIDGAS_RECORDS?.[registryType] || {})
-  .sort((left, right) => left.id.localeCompare(right.id, "ru"));
-const registryGrid = document.querySelector("#registry-grid");
-const registryEmpty = document.querySelector("#catalog-empty");
-const controls = document.querySelector("#catalog-controls");
+const grid = document.querySelector("#registry-grid");
+const empty = document.querySelector("#catalog-empty");
 const filters = document.querySelector("#catalog-filters");
+const search = document.querySelector("#catalog-search");
+const searchClear = document.querySelector("#catalog-search-clear");
+const sort = document.querySelector("#catalog-sort");
+const reset = document.querySelector("#catalog-reset");
+const visibleCount = document.querySelector("#catalog-visible-count");
+const viewButtons = [...document.querySelectorAll("[data-catalog-view]")];
+const state = { query: "", filter: "all", sort: "id", view: "grid" };
+let records = [];
 
 document.body.dataset.registryType = registryType;
 document.title = `${registryConfig[registryType].title} — THE MIDGAS`;
 document.querySelector("#catalog-code").textContent = registryConfig[registryType].code;
 document.querySelector("#catalog-title").textContent = registryConfig[registryType].title;
 document.querySelector("#catalog-description").textContent = registryConfig[registryType].description;
-document.querySelector("#catalog-count").textContent = `${String(registryRecords.length).padStart(4, "0")} ЗАПИСЕЙ`;
+
+function normalise(value) {
+  return String(value || "").toLocaleLowerCase("ru").replaceAll("ё", "е").trim();
+}
+
+function fieldValue(record, pattern) {
+  const pair = (record.fields || []).find(([name]) => pattern.test(String(name || "")));
+  return String(pair?.[1] || "");
+}
+
+function recordLevel(record, kind) {
+  const value = fieldValue(record, kind === "threat" ? /уровень угрозы/i : /уровень доступа|осведомленность клиента/i);
+  const match = value.match(new RegExp(`${kind === "threat" ? "T" : "D"}([1-5])`, "i"));
+  return match ? Number(match[1]) : 0;
+}
+
+function hasLocation(record) {
+  const lat = Number(record?.geo?.lat);
+  const lng = Number(record?.geo?.lng);
+  return (Number.isFinite(lat) && Number.isFinite(lng)) || Boolean(fieldValue(record, /местополож|локац|город|регион/i).trim());
+}
+
+function hasRelations(record) {
+  if (Array.isArray(record.editorRelations) && record.editorRelations.length) return true;
+  return (record.sections || []).some((section) => Array.isArray(section.relatedRecords) && section.relatedRecords.length);
+}
+
+function matchesSmartFilter(record, filter) {
+  if (filter === "danger") return recordLevel(record, "threat") >= 4;
+  if (filter === "access") return recordLevel(record, "access") >= 4;
+  if (filter === "located") return hasLocation(record);
+  if (filter === "linked") return hasRelations(record);
+  return true;
+}
+
+function searchText(record) {
+  return normalise([
+    record.id, record.name, record.alias, record.cardType, record.summary,
+    fieldValue(record, /местополож|локац|город|регион/i),
+  ].join(" "));
+}
+
+function updatedTime(record) {
+  const raw = record.updatedAt || record.updated_at || record.createdAt || record.created_at || "";
+  const time = Date.parse(raw);
+  return Number.isFinite(time) ? time : 0;
+}
 
 function createRegistryCard(record) {
   const card = document.createElement("a");
   card.className = "client-card registry-card";
-  card.dataset.status = record.sections?.length ? "lore" : "missing";
+  card.dataset.search = searchText(record);
   card.href = `record.html?type=${encodeURIComponent(registryType)}&id=${encodeURIComponent(record.id)}`;
 
   const image = document.createElement("img");
@@ -79,16 +130,106 @@ function createRegistryAddCard() {
   return link;
 }
 
-registryRecords.forEach((record) => registryGrid.append(createRegistryCard(record)));
-registryGrid.append(createRegistryAddCard());
-registryEmpty.hidden = registryRecords.length > 0;
-
-function refreshRegistryFromSource() {
-  const records = Object.values(window.MIDGAS_RECORDS?.[registryType] || {})
-    .sort((left, right) => left.id.localeCompare(right.id, "ru"));
-  registryGrid.replaceChildren(...records.map(createRegistryCard), createRegistryAddCard());
-  registryEmpty.hidden = records.length > 0;
-  document.querySelector("#catalog-count").textContent = `${String(records.length).padStart(4, "0")} ЗАПИСЕЙ`;
+function filterDefinitions() {
+  if (registryType === "client") return [
+    ["all", "ВСЕ"], ["danger", "УГРОЗА T4–T5"], ["access", "ДОСТУП D4–D5"], ["located", "ЕСТЬ ЛОКАЦИЯ"], ["linked", "ЕСТЬ СВЯЗИ"],
+  ];
+  return [["all", "ВСЕ"], ["located", "ЕСТЬ ЛОКАЦИЯ"], ["linked", "ЕСТЬ СВЯЗИ"]];
 }
 
+function renderFilters() {
+  filters.replaceChildren();
+  filterDefinitions().forEach(([value, label]) => {
+    const count = records.filter((record) => matchesSmartFilter(record, value)).length;
+    const button = document.createElement("button");
+    button.className = `filter-button${state.filter === value ? " is-active" : ""}`;
+    button.type = "button";
+    button.dataset.filter = value;
+    button.textContent = `${label} / ${count}`;
+    button.addEventListener("click", () => {
+      state.filter = value;
+      renderFilters();
+      renderRecords();
+    });
+    filters.append(button);
+  });
+}
+
+function sortedVisibleRecords() {
+  const query = normalise(state.query);
+  return records
+    .filter((record) => matchesSmartFilter(record, state.filter))
+    .filter((record) => !query || searchText(record).includes(query))
+    .sort((left, right) => {
+      if (state.sort === "name") return String(left.name).localeCompare(String(right.name), "ru");
+      if (state.sort === "updated") return updatedTime(right) - updatedTime(left) || String(left.id).localeCompare(String(right.id), "ru");
+      return String(left.id).localeCompare(String(right.id), "ru");
+    });
+}
+
+function updateView() {
+  grid.classList.toggle("is-list-view", state.view === "list");
+  viewButtons.forEach((button) => {
+    const active = button.dataset.catalogView === state.view;
+    button.classList.toggle("is-active", active);
+    button.setAttribute("aria-pressed", String(active));
+  });
+}
+
+function renderRecords() {
+  const visible = sortedVisibleRecords();
+  const nodes = visible.map(createRegistryCard);
+  if (!state.query && state.filter === "all") nodes.push(createRegistryAddCard());
+  grid.replaceChildren(...nodes);
+  empty.hidden = visible.length > 0;
+  visibleCount.textContent = `ПОКАЗАНО: ${String(visible.length).padStart(4, "0")} ИЗ ${String(records.length).padStart(4, "0")}`;
+  document.querySelector("#catalog-count").textContent = `${String(records.length).padStart(4, "0")} ЗАПИСЕЙ`;
+  searchClear.hidden = !state.query;
+  reset.hidden = !state.query && state.filter === "all" && state.sort === "id";
+  updateView();
+}
+
+function refreshRegistryFromSource() {
+  records = Object.values(window.MIDGAS_RECORDS?.[registryType] || {});
+  renderFilters();
+  renderRecords();
+}
+
+search.addEventListener("input", () => {
+  state.query = search.value;
+  renderRecords();
+});
+searchClear.addEventListener("click", () => {
+  search.value = "";
+  state.query = "";
+  search.focus();
+  renderRecords();
+});
+sort.addEventListener("change", () => {
+  state.sort = sort.value;
+  renderRecords();
+});
+reset.addEventListener("click", () => {
+  state.query = "";
+  state.filter = "all";
+  state.sort = "id";
+  search.value = "";
+  sort.value = "id";
+  renderFilters();
+  renderRecords();
+});
+viewButtons.forEach((button) => button.addEventListener("click", () => {
+  state.view = button.dataset.catalogView;
+  try { localStorage.setItem("midgas:registry-view", state.view); } catch { /* storage can be blocked */ }
+  updateView();
+}));
+
+try {
+  const savedView = localStorage.getItem("midgas:registry-view");
+  if (["grid", "list"].includes(savedView)) state.view = savedView;
+  else if (window.matchMedia("(max-width: 520px)").matches) state.view = "list";
+} catch { /* storage can be blocked */ }
+
+refreshRegistryFromSource();
 window.addEventListener("midgas:records-ready", refreshRegistryFromSource);
+window.addEventListener("midgas:record-mutated", refreshRegistryFromSource);

@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Интерактивная доска связей THE MIDGAS." />
     <title>Доска связей — THE MIDGAS</title>
-    <script src="site-access.js?v=3"></script>
-    <link rel="stylesheet" href="styles.css?v=91" />
+    <script src="site-access.js?v=4"></script>
+    <link rel="stylesheet" href="styles.css?v=92" />
   </head>
   <body class="board-page">
     <div class="site-shell">
@@ -16,7 +16,7 @@
         <nav class="main-navigation" aria-label="Главная навигация">
           <div class="nav-group nav-group-left"><a href="registry.html?type=client">Клиенты</a><a href="registry.html?type=anomaly">Аномалии</a><a href="registry.html?type=incident">Инциденты</a><a href="historical-archive.html">Архив</a></div>
           <a class="wordmark" href="index.html">THE MIDGAS</a>
-          <div class="nav-group nav-group-right"><a href="index.html#company-materials">Материалы</a><a href="editor.html#company-journal">Журнал</a><a href="editor.html">Редактор</a></div>
+          <div class="nav-group nav-group-right"><a href="index.html#locations">Локации</a><a href="index.html#company-materials">Материалы</a><a href="board.html?board=open" aria-current="page">Связи</a><a href="editor.html">Редактор</a></div>
         </nav>
       </header>
       <main>
@@ -35,6 +35,7 @@
                 <button class="company-board-tool-icon" type="button" data-board-edit-close aria-label="Отменить все изменения"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 14 14M19 5 5 19"/></svg><span>ОТМЕНИТЬ</span></button>
               </div><span data-board-edit-status></span>
             </nav>
+            <section class="company-board-discovery" aria-label="Поиск и фильтры доски"><label><span>НАЙТИ УЗЕЛ</span><input type="search" data-board-search autocomplete="off" placeholder="Имя, номер или локация"/></label><div data-board-filters><button type="button" data-board-filter="all" class="is-active">ВСЕ</button><button type="button" data-board-filter="client">КЛИЕНТЫ</button><button type="button" data-board-filter="anomaly">АНОМАЛИИ</button><button type="button" data-board-filter="incident">ИНЦИДЕНТЫ</button><button type="button" data-board-filter="place">ЛОКАЦИИ</button></div><span data-board-visible-count></span></section>
             <div class="company-board-workspace">
               <div class="company-board-canvas company-board-viewport" id="company-board-canvas" tabindex="0" aria-label="Перемещаемая карта связей"><div class="company-board-world" id="company-board-world"><svg class="company-board-lines" viewBox="0 0 3600 2400" aria-hidden="true"></svg></div></div>
               <aside class="company-board-inspector" data-board-inspector aria-live="polite">
@@ -50,6 +51,6 @@
       </main>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
-    <script src="supabase-config.js?v=1"></script><script src="data.js"></script><script src="featured-data.js?v=8"></script><script src="client-updates.js?v=3"></script><script src="incident-updates.js?v=1"></script><script src="site-completion.js?v=1"></script><script src="latest-covers.js?v=1"></script><script src="editor-session.js?v=10"></script><script src="site-gate.js?v=2"></script><script src="supabase-data.js?v=8"></script><script src="editor-storage.js?v=8"></script><script src="relations-data.js?v=1"></script><script src="investigation-board.js?v=24"></script><script src="app.js?v=30"></script>
+    <script src="supabase-config.js?v=1"></script><script src="data.js"></script><script src="featured-data.js?v=8"></script><script src="client-updates.js?v=3"></script><script src="incident-updates.js?v=1"></script><script src="site-completion.js?v=1"></script><script src="latest-covers.js?v=1"></script><script src="editor-session.js?v=10"></script><script src="site-gate.js?v=2"></script><script src="supabase-data.js?v=8"></script><script src="editor-storage.js?v=8"></script><script src="relations-data.js?v=1"></script><script src="investigation-board.js?v=25"></script><script src="app.js?v=30"></script>
   </body>
 </html>

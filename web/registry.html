@@ -5,8 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Полный реестр клиентов, аномалий и инцидентов THE MIDGAS." />
     <title>Реестр — THE MIDGAS</title>
-    <script src="site-access.js?v=3"></script>
-    <link rel="stylesheet" href="styles.css?v=91" />
+    <script src="site-access.js?v=4"></script>
+    <link rel="stylesheet" href="styles.css?v=92" />
   </head>
   <body class="registry-page">
     <div class="site-shell">
@@ -25,8 +25,8 @@
           </div>
           <a class="wordmark" href="index.html">THE MIDGAS</a>
           <div class="nav-group nav-group-right">
+            <a href="index.html#locations">Локации</a>
             <a href="index.html#company-materials">Материалы</a>
-            <a href="editor.html#company-journal">Журнал</a>
             <a href="board.html?board=open">Связи</a>
             <a href="editor.html">Редактор</a>
           </div>
@@ -46,14 +46,34 @@
           </div>
         </section>
 
-        <section class="catalog-controls" id="catalog-controls" hidden>
-          <span class="section-index">ФИЛЬТР МАТЕРИАЛОВ</span>
-          <div class="filters" id="catalog-filters"></div>
+        <section class="catalog-controls" id="catalog-controls">
+          <div class="catalog-search-wrap">
+            <label for="catalog-search">ПОИСК ПО РЕЕСТРУ</label>
+            <div class="catalog-search-field">
+              <input id="catalog-search" type="search" inputmode="search" autocomplete="off" placeholder="Имя, псевдоним или номер досье" />
+              <button type="button" id="catalog-search-clear" aria-label="Очистить поиск" hidden>×</button>
+            </div>
+          </div>
+          <div class="catalog-control-row">
+            <div class="filters" id="catalog-filters" aria-label="Фильтр записей"></div>
+            <label class="catalog-sort">СОРТИРОВКА
+              <select id="catalog-sort">
+                <option value="id">ПО НОМЕРУ</option>
+                <option value="name">ПО НАЗВАНИЮ</option>
+                <option value="updated">СНАЧАЛА НОВЫЕ</option>
+              </select>
+            </label>
+            <div class="catalog-view" aria-label="Вид реестра">
+              <button type="button" data-catalog-view="grid" aria-label="Сетка" class="is-active">▦</button>
+              <button type="button" data-catalog-view="list" aria-label="Список">☰</button>
+            </div>
+          </div>
         </section>
 
         <section class="catalog-results" aria-live="polite">
+          <div class="catalog-results-meta"><span id="catalog-visible-count">ПОКАЗАНО: 0000</span><button type="button" id="catalog-reset" hidden>СБРОСИТЬ ФИЛЬТРЫ</button></div>
           <div class="client-grid registry-grid" id="registry-grid"></div>
-          <div class="catalog-empty" id="catalog-empty" hidden>ЗАПИСИ ЭТОГО ТИПА ПОКА НЕ ВНЕСЕНЫ.</div>
+          <div class="catalog-empty" id="catalog-empty" hidden>ПО ЗАДАННЫМ УСЛОВИЯМ НИЧЕГО НЕ НАЙДЕНО.</div>
         </section>
       </main>
 
@@ -79,6 +99,6 @@
     <script src="supabase-data.js?v=8"></script>
     <script src="editor-storage.js?v=8"></script>
     <script src="app.js?v=30"></script>
-    <script src="registry.js?v=16"></script>
+    <script src="registry.js?v=18"></script>
   </body>
 </html>
