@@ -13165,42 +13165,43 @@ html { scrollbar-gutter: stable; }
   .company-board-stage.is-fullscreen:not(.is-editor-mode) .company-board-viewport { padding-top: 58px; }
 
   .registry-grid.is-list-view .registry-card {
-    height: 96px;
-    min-height: 96px;
-    grid-template-columns: 96px minmax(0, 1fr);
-    grid-template-rows: 36px minmax(0, 1fr);
+    height: 112px;
+    min-height: 112px;
+    grid-template-columns: 112px minmax(0, 1fr);
+    grid-template-rows: 38px minmax(0, 1fr) 18px;
   }
-  .registry-grid.is-list-view .registry-card img { width: 96px; height: 96px; min-height: 0; aspect-ratio: 1 / 1; }
+  .registry-grid.is-list-view .registry-card img { width: 112px; height: 112px; min-height: 0; aspect-ratio: 1 / 1; }
   .registry-grid.is-list-view .registry-card .client-card-data > span:first-child { display: none; }
   .registry-grid.is-list-view .registry-card .client-card-data:not(.client-card-data--levels) { display: none; }
   .registry-grid.is-list-view .registry-card .client-card-id-overlay {
-    position: absolute;
+    position: static;
     z-index: 3;
-    top: 0;
-    left: 0;
-    display: flex;
-    width: 96px;
-    height: 96px;
-    align-items: flex-end;
-    padding: 7px;
-    color: #fff;
+    display: block;
+    width: auto;
+    height: auto;
+    grid-column: 2;
+    grid-row: 3;
+    align-self: start;
+    margin: 0 9px;
+    padding: 0;
+    color: #77766f;
     font: 7px/1 var(--mono);
     text-shadow: none;
     pointer-events: none;
   }
-  .registry-grid.is-list-view .registry-card .client-card-data { min-height: 36px; padding: 0 0 0 6px; font-size: 8px; }
+  .registry-grid.is-list-view .registry-card .client-card-data { min-height: 38px; padding: 0; font-size: 8px; }
   .registry-grid.is-list-view .registry-card .client-card-data--levels { display: flex; }
-  .registry-grid.is-list-view .registry-card .client-card-levels { margin-left: 5px; }
+  .registry-grid.is-list-view .registry-card .client-card-levels { width: 100%; margin-left: 0; border-left: 0; }
   .registry-grid.is-list-view .registry-card .client-card-level { min-width: 0; padding: 4px 3px; }
   .registry-grid.is-list-view .registry-card .client-card-level small { display: none; }
   .registry-grid.is-list-view .registry-card .client-card-level strong { font-size: 14px; }
   .registry-grid.is-list-view .registry-card .client-card-level-scale { gap: 1px; margin-top: 3px; }
   .registry-grid.is-list-view .registry-card .client-card-level-scale > span { min-width: 0; height: 3px; }
-  .registry-grid.is-list-view .registry-card h3 { margin: 5px 9px 7px; font-size: clamp(17px, 5.4vw, 23px); line-height: .95; }
+  .registry-grid.is-list-view .registry-card h3 { grid-row: 2; margin: 5px 9px 3px; font-size: clamp(17px, 5.4vw, 23px); line-height: .95; }
 
   body.registry-page[data-registry-type="anomaly"] .registry-grid.is-list-view .registry-card h3,
   body.registry-page[data-registry-type="incident"] .registry-grid.is-list-view .registry-card h3 {
-    grid-row: 1 / -1;
+    grid-row: 1 / 3;
   }
 }
 
