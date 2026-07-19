@@ -13039,6 +13039,13 @@ html { scrollbar-gutter: stable; }
   }
 }
 
+@media (max-width: 760px) {
+  .site-header .menu-toggle,
+  .site-header .header-back-button {
+    border-right: 0 !important;
+  }
+}
+
 /* Compact board search bar and deterministic registry list mode. */
 .company-board-stage.is-fullscreen .company-board-fullscreen-controls {
   right: 358px;
