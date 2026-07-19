@@ -4,11 +4,10 @@
   if (!main) return;
   const byId = (id) => document.getElementById(id);
   const support = document.querySelector(".support-section");
-  const hero = document.querySelector(".hero-cover");
   const topics = byId("current-topics");
   const ordered = [byId("company-board"), byId("client-preview"), byId("anomaly-preview"), byId("incident-preview"), byId("historical-archive"), byId("locations"), byId("company-hub"), byId("glossary"), byId("company-quotes")].filter(Boolean);
   support?.after(...ordered);
-  if (hero && topics) hero.after(topics);
+  if (support && topics) support.after(topics);
   byId("registry")?.remove();
   byId("company-account")?.remove();
   byId("company-hub")?.classList.add("company-hub--materials-only");
