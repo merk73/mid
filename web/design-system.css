@@ -1295,17 +1295,39 @@ body.history-page .unified-site-header .header-account-avatar span {
 
 /* Direct editing must not collapse the dossier threat control. */
 body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-shell .record-clearance {
-  position: relative;
-  z-index: 4;
+  position: fixed !important;
+  top: 84px;
+  right: 18px;
+  z-index: 90020;
   display: grid !important;
+  width: min(360px, calc(100vw - 36px)) !important;
+  margin: 0 !important;
+  padding: 14px;
+  color: #f1eee7;
+  background: rgba(15, 15, 15, .96) !important;
+  border: 1px solid #5a5954;
+  border-radius: 10px;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, .38);
+  backdrop-filter: blur(14px);
   visibility: visible !important;
   opacity: 1 !important;
+}
+body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-shell .record-level {
+  padding: 0;
 }
 body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-shell .record-level-scale,
 body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-shell .record-level-scale button {
   display: grid !important;
   visibility: visible !important;
   opacity: 1 !important;
+}
+
+@media (max-width: 760px) {
+  body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type="incident"]) .record-shell .record-clearance {
+    top: 66px;
+    right: 10px;
+    width: calc(100vw - 20px) !important;
+  }
 }
 
 @media (max-width: 760px) {

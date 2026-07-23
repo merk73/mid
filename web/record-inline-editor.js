@@ -166,6 +166,21 @@
     document.querySelectorAll(".record-clearance .record-level-scale button").forEach((button) => { button.disabled = !nextEditing; });
   }
 
+  function prepareLevelControlsForEditing() {
+    const clearance = document.querySelector("[data-record-clearance]");
+    if (!clearance) return;
+    clearance.hidden = false;
+    clearance.classList.toggle("record-clearance--threat-only", type !== "client");
+    const threatRoot = clearance.querySelector("[data-record-threat]");
+    const accessRoot = clearance.querySelector("[data-record-access]");
+    if (threatRoot) threatRoot.hidden = false;
+    if (accessRoot) accessRoot.hidden = type !== "client";
+    clearance.querySelectorAll(".record-level-scale button").forEach((button) => {
+      button.disabled = false;
+      button.setAttribute("aria-disabled", "false");
+    });
+  }
+
   function fieldLocationValue() {
     const row = [...document.querySelectorAll("[data-record-field-row]")]
       .find((item) => /местополож|локаци/i.test(text(item.querySelector("dt"))));
@@ -573,6 +588,7 @@
     renderSelectedLevel("access", selectedAccess);
     document.body.classList.add("is-record-inline-editing");
     setButtons(true);
+    prepareLevelControlsForEditing();
     setEditable(document.querySelector("#record-name"), false);
     setEditable(document.querySelector("#record-alias"), true);
     setEditable(document.querySelector("#record-summary"), true);
