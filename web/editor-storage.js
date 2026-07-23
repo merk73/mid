@@ -64,6 +64,15 @@
     return new Blob([bytes], { type: mimeType });
   }
 
+  function blobDataUrl(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(String(reader.result || ""));
+      reader.onerror = () => reject(reader.error || new Error("Не удалось прочитать изображение."));
+      reader.readAsDataURL(blob);
+    });
+  }
+
   function imageToken() {
     return window.crypto?.randomUUID?.()
       || `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
@@ -115,11 +124,12 @@
 
   async function externalizeImages(value, memo = new Map()) {
     if (isInlineImage(value)) return externalizeInlineImage(value, memo);
+    if (typeof Blob !== "undefined" && value instanceof Blob) return externalizeInlineImage(await blobDataUrl(value), memo);
     if (Array.isArray(value)) {
       for (let index = 0; index < value.length; index += 1) value[index] = await externalizeImages(value[index], memo);
       return value;
     }
-    if (!value || typeof value !== "object" || (typeof Blob !== "undefined" && value instanceof Blob)) return value;
+    if (!value || typeof value !== "object") return value;
     for (const key of Object.keys(value)) value[key] = await externalizeImages(value[key], memo);
     return value;
   }
@@ -250,7 +260,10 @@
       gallery: Array.isArray(record?.gallery) ? record.gallery.slice(0, 9) : [],
       summary: String(record?.summary || ""),
       fields: normalizeFields(type, record?.fields),
-      sections: Array.isArray(record?.sections) ? record.sections : [],
+      sections: Array.isArray(record?.sections) ? record.sections.map((section) => ({
+        ...section,
+        media: Array.isArray(section?.media) ? section.media.slice(0, 9) : section?.media,
+      })) : [],
     };
     delete next.alias;
     delete next.cardType;
@@ -515,6 +528,8 @@
       paragraphs: (Array.isArray(section?.paragraphs) ? section.paragraphs : [])
         .map((paragraph) => String(paragraph || "").trim())
         .filter(Boolean),
+      ...(section?.image ? { image: section.image } : {}),
+      ...(Array.isArray(section?.media) && section.media.length ? { media: section.media.slice(0, 9) } : {}),
     })).filter((section) => section.paragraphs.length);
     return [{
       title: "ПЕРВИЧНАЯ РЕГИСТРАЦИЯ",
@@ -634,7 +649,10 @@
     if (!name || !summary || !description || !payload.image) {
       throw new Error("Заполните обязательные поля и загрузите изображение.");
     }
-    const image = await externalizeInlineImage(String(payload.image), imageMemo);
+    const image = await externalizeImages(payload.image, imageMemo);
+    const gallery = await externalizeImages(Array.isArray(payload.gallery) ? payload.gallery.slice(0, 9) : [], imageMemo);
+    const sections = buildCreatedSections(payload.sections, description, relations);
+    await externalizeImages(sections, imageMemo);
 
     const fields = [
       ["Уровень угрозы", threat],
@@ -653,7 +671,7 @@
       threatLevel: Number(threat.match(/([1-5])/i)?.[1]) || 1,
       accessLevel: Number(access.match(/([1-5])/i)?.[1]) || 1,
       image,
-      gallery: [],
+      gallery,
       summary,
       editorCreatedAt: now,
       editorUpdatedAt: now,
@@ -661,7 +679,7 @@
       editorRelationsVersion: 1,
       geo: payload.geo || null,
       fields,
-      sections: buildCreatedSections(payload.sections, description, relations),
+      sections,
     });
 
     next.lastIssued[type] = numericId(type, id);

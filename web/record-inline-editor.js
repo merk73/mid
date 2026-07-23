@@ -307,6 +307,17 @@
   function setupMediaFigure(figure, article, kind, mediaIndex) {
     if (!figure || figure.querySelector(":scope > .record-inline-media-tools")) return;
     const image = figure.querySelector("img");
+    const caption = figure.querySelector("figcaption");
+    if (caption) {
+      setEditable(caption, false);
+      caption.addEventListener("input", () => {
+        const previous = mediaValue(article, kind, mediaIndex);
+        const next = typeof previous === "object" && previous
+          ? { ...previous, caption: text(caption) }
+          : { src: previous || image?.src || "", caption: text(caption), alt: image?.alt || "Фотография раздела", aspect: "wide" };
+        setMediaValue(article, kind, mediaIndex, next);
+      });
+    }
     const tools = document.createElement("div");
     tools.className = "record-inline-media-tools";
     const file = document.createElement("input");
@@ -338,39 +349,57 @@
     figure.append(tools);
   }
 
+  function appendSectionMedia(article, src) {
+    const section = article._sectionDraft;
+    if (!Array.isArray(section.media)) section.media = [];
+    const emptyIndex = section.media.findIndex((item) => !item);
+    const mediaIndex = emptyIndex >= 0 ? emptyIndex : section.media.length;
+    const item = { src, caption: "ФОТОМАТЕРИАЛ MIDGAS", alt: text(article.querySelector("h3")), aspect: "wide" };
+    section.media[mediaIndex] = item;
+    const body = article.querySelector(":scope > div");
+    if (!body) return;
+    let grid = body.querySelector("[data-record-added-media-grid]");
+    if (!grid) {
+      grid = document.createElement("div");
+      grid.dataset.recordAddedMediaGrid = "";
+      body.append(grid);
+    }
+    const figure = document.createElement("figure");
+    figure.className = "lore-media lore-media-wide";
+    figure.dataset.recordSectionMedia = "";
+    figure.dataset.mediaKind = "media";
+    figure.dataset.mediaIndex = String(mediaIndex);
+    const image = document.createElement("img");
+    image.src = src;
+    image.alt = item.alt;
+    const caption = document.createElement("figcaption");
+    caption.textContent = item.caption;
+    figure.append(image, caption);
+    grid.append(figure);
+    const count = grid.querySelectorAll(":scope > .lore-media").length;
+    grid.className = `lore-media-grid lore-media-count-${count}`;
+    setupMediaFigure(figure, article, "media", mediaIndex);
+    caption.focus();
+  }
+
   function addSectionPhoto(article) {
     const file = document.createElement("input");
     file.type = "file";
     file.accept = "image/png,image/jpeg,image/webp";
-    file.addEventListener("change", () => {
-      const selected = file.files?.[0];
-      if (!selected) return;
-      withPreparedImage(selected, (src) => {
-        const section = article._sectionDraft;
-        section.image = { src, caption: "ФОТОМАТЕРИАЛ MIDGAS", alt: text(article.querySelector("h3")), aspect: "wide" };
-        let grid = article.querySelector(".lore-section-image");
-        if (!grid) {
-          grid = document.createElement("div");
-          grid.className = "lore-media-grid lore-media-count-1 lore-section-image";
-          const figure = document.createElement("figure");
-          figure.className = "lore-media lore-media-wide";
-          figure.dataset.recordSectionMedia = "";
-          figure.dataset.mediaKind = "image";
-          figure.dataset.mediaIndex = "0";
-          const image = document.createElement("img");
-          image.alt = section.image.alt;
-          const caption = document.createElement("figcaption");
-          caption.textContent = section.image.caption;
-          figure.append(image, caption);
-          grid.append(figure);
-          const body = article.querySelector(":scope > div");
-          body?.insertBefore(grid, body.querySelector("[data-record-section-paragraph]") || null);
-          setupMediaFigure(figure, article, "image", 0);
-        }
-        const image = grid.querySelector("img");
-        if (image) { image.src = src; image.hidden = false; }
-        grid.querySelector("figure")?.classList.remove("is-inline-image-removed");
-      });
+    file.multiple = true;
+    file.addEventListener("change", async () => {
+      const section = article._sectionDraft;
+      const currentCount = (section.image ? 1 : 0) + (Array.isArray(section.media) ? section.media.filter(Boolean).length : 0);
+      const remaining = Math.max(0, 9 - currentCount);
+      const selected = [...(file.files || [])].filter((item) => item.type.startsWith("image/")).slice(0, remaining);
+      if (!remaining) {
+        setStatus("В ОДНОМ РАЗДЕЛЕ МОЖНО СОХРАНИТЬ НЕ БОЛЬШЕ ДЕВЯТИ ФОТОГРАФИЙ.", "error");
+        return;
+      }
+      for (const selectedFile of selected) {
+        await withPreparedImage(selectedFile, (src) => appendSectionMedia(article, src));
+      }
+      if ((file.files?.length || 0) > remaining) setStatus("ДОБАВЛЕНЫ ПЕРВЫЕ ДЕВЯТЬ ФОТОГРАФИЙ РАЗДЕЛА.", "editing");
     });
     file.click();
   }

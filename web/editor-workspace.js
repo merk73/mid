@@ -12,6 +12,7 @@
   let entries = [];
   let filter = "all";
   let formStep = 1;
+  let sectionSequence = 0;
 
   const names = { client: "клиента", incident: "инцидент", anomaly: "аномалию", location: "локацию", glossary: "термин", quote: "цитату" };
   const escape = (value) => String(value ?? "").replace(/[&<>"']/g, (char) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char]);
@@ -35,10 +36,91 @@
       `<section class="workspace-form-step" data-form-step="1">${field("Имя", '<input name="title" required maxlength="180" autocomplete="off" />')}${field("Подпись", '<input name="caption" required maxlength="180" autocomplete="off" />')}${field("Основное фото", '<input name="image" type="file" accept="image/*" required />')}${field("Дополнительные фото — до 9", '<input name="gallery" type="file" accept="image/*" multiple />')}</section>`,
       `<section class="workspace-form-step" data-form-step="2" hidden><div class="workspace-form-row">${field("Уровень угрозы", `<select name="threat">${[1,2,3,4,5].map((n) => `<option>T${n}</option>`).join("")}</select>`)}${kind === "client" ? field("Уровень доступа", `<select name="access">${[1,2,3,4,5].map((n) => `<option>D${n}</option>`).join("")}</select>`) : ""}</div></section>`,
       `<section class="workspace-form-step" data-form-step="3" hidden>${field("Краткое описание", '<textarea name="body" required maxlength="1400" rows="6"></textarea>')}</section>`,
-      `<section class="workspace-form-step" data-form-step="4" hidden><p>Дополнительный раздел можно пропустить.</p>${field("Название раздела", '<input name="sectionTitle" maxlength="180" />')}${field("Текст раздела", '<textarea name="sectionBody" maxlength="5000" rows="6"></textarea>')}</section>`,
+      `<section class="workspace-form-step" data-form-step="4" hidden><div class="workspace-section-builder" data-workspace-section-builder><header><div><strong>Разделы досье</strong><p>Создайте несколько разделов. К каждому можно прикрепить до девяти фотографий и подписать каждый снимок.</p></div><button class="ui-button ui-button--quiet" type="button" data-workspace-section-add>+ Раздел</button></header><div class="workspace-section-list" data-workspace-section-list></div></div></section>`,
       `<section class="workspace-form-step" data-form-step="5" hidden><p>Выберите существующие карточки. После публикации связи появятся на доске.</p>${relationPicker()}</section>`,
       `<section class="workspace-form-step" data-form-step="6" hidden>${field("Локация", '<input name="location" maxlength="180" placeholder="Город, область или координаты" />')}<label class="ui-check"><input type="checkbox" name="published" checked /><span>Опубликовать сразу</span></label></section>`,
     ].join("");
+  }
+
+  function renumberWorkspaceSections() {
+    fields.querySelectorAll("[data-workspace-section]").forEach((section, index) => {
+      const number = section.querySelector("[data-workspace-section-number]");
+      if (number) number.textContent = String(index + 1).padStart(2, "0");
+    });
+  }
+
+  function revokeSectionPreviews(root = fields) {
+    root.querySelectorAll("[data-workspace-section]").forEach((section) => {
+      (section._workspaceMedia || []).forEach((item) => {
+        if (item.previewUrl) URL.revokeObjectURL(item.previewUrl);
+      });
+      section._workspaceMedia = [];
+    });
+  }
+
+  function updateSectionMedia(section) {
+    const media = section._workspaceMedia || [];
+    const list = section.querySelector("[data-section-media-list]");
+    const count = section.querySelector("[data-section-media-count]");
+    const add = section.querySelector("[data-section-media-add]");
+    if (count) count.textContent = `${media.length} / 9`;
+    if (add) add.disabled = media.length >= 9;
+    if (!list) return;
+    list.replaceChildren(...media.map((item, index) => {
+      const card = document.createElement("article");
+      card.className = "workspace-section-media-card";
+      card.dataset.sectionMediaIndex = String(index);
+      const image = document.createElement("img");
+      image.src = item.previewUrl;
+      image.alt = "Предпросмотр фотографии раздела";
+      const copy = document.createElement("div");
+      const label = document.createElement("label");
+      const labelText = document.createElement("span");
+      const caption = document.createElement("input");
+      labelText.textContent = `ПОДПИСЬ К ФОТО ${index + 1}`;
+      caption.type = "text";
+      caption.maxLength = 240;
+      caption.placeholder = "Что изображено на снимке";
+      caption.value = item.caption || "";
+      caption.addEventListener("input", () => { item.caption = caption.value; });
+      label.append(labelText, caption);
+      const remove = document.createElement("button");
+      remove.type = "button";
+      remove.dataset.sectionMediaRemove = String(index);
+      remove.textContent = "УДАЛИТЬ ФОТО";
+      copy.append(label, remove);
+      card.append(image, copy);
+      return card;
+    }));
+  }
+
+  function addWorkspaceSection() {
+    const list = fields.querySelector("[data-workspace-section-list]");
+    if (!list) return;
+    sectionSequence += 1;
+    const section = document.createElement("article");
+    section.className = "workspace-section-editor";
+    section.dataset.workspaceSection = String(sectionSequence);
+    section._workspaceMedia = [];
+    section.innerHTML = `<header><span data-workspace-section-number></span><strong>РАЗДЕЛ ДОСЬЕ</strong><button type="button" data-workspace-section-remove aria-label="Удалить раздел">×</button></header><div class="workspace-section-copy">${field("Название раздела", '<input data-section-title required maxlength="180" placeholder="Например: Хронология наблюдения" />')}${field("Текст раздела", '<textarea data-section-body required maxlength="12000" rows="6" placeholder="Пустая строка создаёт новый абзац"></textarea>')}</div><div class="workspace-section-media"><header><div><strong>ФОТОМАТЕРИАЛЫ</strong><span data-section-media-count>0 / 9</span></div><button type="button" data-section-media-add>+ ДОБАВИТЬ ФОТО</button><input type="file" accept="image/png,image/jpeg,image/webp" multiple data-section-media-input hidden /></header><div data-section-media-list></div></div>`;
+    list.append(section);
+    renumberWorkspaceSections();
+    section.querySelector("[data-section-title]")?.focus();
+  }
+
+  function collectWorkspaceSections() {
+    return [...fields.querySelectorAll("[data-workspace-section]")].map((section) => {
+      const title = String(section.querySelector("[data-section-title]")?.value || "").trim();
+      const paragraphs = String(section.querySelector("[data-section-body]")?.value || "")
+        .split(/\n\s*\n/)
+        .map((paragraph) => paragraph.trim())
+        .filter(Boolean);
+      const media = (section._workspaceMedia || []).slice(0, 9).map((item, index) => {
+        const caption = String(item.caption || "").trim();
+        return { src: item.file, caption, alt: caption || `${title} — фотография ${index + 1}`, aspect: "wide" };
+      });
+      return { title: title || "НОВЫЙ РАЗДЕЛ", paragraphs, media };
+    }).filter((section) => section.paragraphs.length);
   }
 
   function updateFormStep() {
@@ -72,7 +154,9 @@
   }
 
   function openForm(kind, entry = null) {
+    revokeSectionPreviews();
     form.reset();
+    form.querySelector("[data-form-status]").textContent = "";
     form.elements.kind.value = kind;
     form.elements.entryId.value = entry?.id || "";
     document.querySelector("[data-dialog-code]").textContent = entry ? "EDIT ENTRY" : "NEW ENTRY";
@@ -83,6 +167,46 @@
     dialog.showModal();
     fields.querySelector("input, textarea, select")?.focus();
   }
+
+  fields?.addEventListener("click", (event) => {
+    if (event.target.closest("[data-workspace-section-add]")) {
+      addWorkspaceSection();
+      return;
+    }
+    const section = event.target.closest("[data-workspace-section]");
+    if (!section) return;
+    if (event.target.closest("[data-workspace-section-remove]")) {
+      (section._workspaceMedia || []).forEach((item) => item.previewUrl && URL.revokeObjectURL(item.previewUrl));
+      section.remove();
+      renumberWorkspaceSections();
+      return;
+    }
+    if (event.target.closest("[data-section-media-add]")) {
+      section.querySelector("[data-section-media-input]")?.click();
+      return;
+    }
+    const remove = event.target.closest("[data-section-media-remove]");
+    if (remove) {
+      const index = Number(remove.dataset.sectionMediaRemove);
+      const [removed] = section._workspaceMedia.splice(index, 1);
+      if (removed?.previewUrl) URL.revokeObjectURL(removed.previewUrl);
+      updateSectionMedia(section);
+    }
+  });
+
+  fields?.addEventListener("change", (event) => {
+    const input = event.target.closest("[data-section-media-input]");
+    if (!input) return;
+    const section = input.closest("[data-workspace-section]");
+    const media = section._workspaceMedia || (section._workspaceMedia = []);
+    const remaining = Math.max(0, 9 - media.length);
+    const selected = [...(input.files || [])].filter((file) => file.type.startsWith("image/")).slice(0, remaining);
+    selected.forEach((file) => media.push({ file, caption: "", previewUrl: URL.createObjectURL(file) }));
+    if ((input.files?.length || 0) > remaining) form.querySelector("[data-form-status]").textContent = "В одном разделе можно сохранить не больше девяти фотографий.";
+    else form.querySelector("[data-form-status]").textContent = "";
+    input.value = "";
+    updateSectionMedia(section);
+  });
 
   fields?.addEventListener("input", (event) => {
     const picker = event.target.closest("[data-workspace-relations]");
@@ -167,9 +291,7 @@
     const caption = String(data.get("caption") || "").trim();
     const relationIds = [...new Set(data.getAll("relations").map((value) => String(value).trim().toUpperCase()).filter(Boolean))];
     const relations = relationIds.map((id) => ({ id, type: id.startsWith("MID-A-") ? "anomaly" : id.startsWith("MID-I-") ? "incident" : "client", label: id }));
-    const sectionTitle = String(data.get("sectionTitle") || "").trim();
-    const sectionBody = String(data.get("sectionBody") || "").trim();
-    const sections = sectionTitle && sectionBody ? [{ title: sectionTitle, paragraphs: sectionBody.split(/\n\s*\n/).filter(Boolean) }] : [];
+    const sections = collectWorkspaceSections();
     await window.MIDGAS_EDITOR_STORE.create({
       type: kind, name: String(data.get("title") || "").trim(), caption,
       image, gallery, summary: String(data.get("body") || "").trim(), description: String(data.get("body") || "").trim(),
@@ -178,7 +300,8 @@
   }
 
   document.querySelectorAll("[data-editor-kind]").forEach((button) => button.addEventListener("click", () => openForm(button.dataset.editorKind)));
-  document.querySelector("[data-dialog-close]")?.addEventListener("click", () => dialog.close());
+  document.querySelector("[data-dialog-close]")?.addEventListener("click", () => { revokeSectionPreviews(); dialog.close(); });
+  dialog?.addEventListener("close", () => revokeSectionPreviews());
   form.querySelector("[data-form-back]")?.addEventListener("click", () => { formStep = Math.max(1, formStep - 1); updateFormStep(); });
   form.querySelector("[data-form-next]")?.addEventListener("click", () => {
     const current = fields.querySelector(`[data-form-step="${formStep}"]`);

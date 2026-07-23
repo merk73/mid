@@ -29,9 +29,9 @@
     <a class="mobile-wordmark" href="${homeHref}" aria-label="THE MIDGAS — главная">THE MIDGAS</a>
     <a class="header-account-avatar" href="account.html" aria-label="Открыть аккаунт"><span data-header-account-initial>•</span></a>
     <nav class="main-navigation" id="main-navigation" aria-label="Главная навигация">
-      <div class="nav-group nav-group-left">${links.slice(0, 4).map(renderLink).join("")}</div>
-      <a class="wordmark" href="${homeHref}" aria-label="THE MIDGAS — главная">THE MIDGAS</a>
-      <div class="nav-group nav-group-right">${links.slice(4).map(renderLink).join("")}<a class="header-account-link" href="account.html" aria-label="Открыть профиль"><span data-header-account-initial>•</span><b data-header-account-name>Профиль</b></a></div>
+      <a class="wordmark" href="${homeHref}" aria-label="THE MIDGAS — главная"><strong>THE MIDGAS</strong><small>RESEARCH ARCHIVE / 2026</small></a>
+      <div class="nav-group nav-group-primary">${links.map(renderLink).join("")}</div>
+      <a class="header-account-link" href="account.html" aria-label="Открыть профиль"><span data-header-account-initial>•</span><b><small>АККАУНТ</small><em data-header-account-name>Профиль</em></b></a>
     </nav>`;
 
   const initials = [...header.querySelectorAll("[data-header-account-initial]")];

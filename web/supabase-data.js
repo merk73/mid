@@ -511,13 +511,29 @@
     if (Array.isArray(record.sections)) {
       for (let index = 0; index < record.sections.length; index += 1) {
         const section = record.sections[index];
-        if (!section || typeof section !== "object" || section.image === undefined) continue;
-        if (typeof section.image === "string" || (typeof Blob !== "undefined" && section.image instanceof Blob)) {
-          const uploaded = await uploadImage(client, section.image, `${type}/sections`, memo, uploadedPaths);
-          section.image = uploaded.value;
-        } else if (section.image && typeof section.image === "object" && section.image.src !== undefined) {
-          const uploaded = await uploadImage(client, section.image.src, `${type}/sections`, memo, uploadedPaths);
-          section.image.src = uploaded.value;
+        if (!section || typeof section !== "object") continue;
+        if (section.image !== undefined) {
+          if (typeof section.image === "string" || (typeof Blob !== "undefined" && section.image instanceof Blob)) {
+            const uploaded = await uploadImage(client, section.image, `${type}/sections`, memo, uploadedPaths);
+            section.image = uploaded.value;
+          } else if (section.image && typeof section.image === "object" && section.image.src !== undefined) {
+            const uploaded = await uploadImage(client, section.image.src, `${type}/sections`, memo, uploadedPaths);
+            section.image.src = uploaded.value;
+          }
+        }
+        if (Array.isArray(section.media)) {
+          section.media = section.media.slice(0, 9);
+          for (let mediaIndex = 0; mediaIndex < section.media.length; mediaIndex += 1) {
+            const media = section.media[mediaIndex];
+            if (!media) continue;
+            if (typeof media === "string" || (typeof Blob !== "undefined" && media instanceof Blob)) {
+              const uploaded = await uploadImage(client, media, `${type}/sections`, memo, uploadedPaths);
+              section.media[mediaIndex] = { src: uploaded.value, caption: "", alt: section.title || "Фотография раздела", aspect: "wide" };
+            } else if (typeof media === "object" && media.src !== undefined) {
+              const uploaded = await uploadImage(client, media.src, `${type}/sections`, memo, uploadedPaths);
+              media.src = uploaded.value;
+            }
+          }
         }
       }
     }
