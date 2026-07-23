@@ -1467,13 +1467,13 @@ body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type
   transform: translate3d(12vw, 0, 0);
   pointer-events: none;
 }
-.hero-portal-scene--all { align-items: center; justify-content: center; }
+.hero-portal-scene--all { align-items: flex-start; justify-content: center; }
 .home-page .hero-cover-copy h1.hero-portal-all-links {
   display: flex;
   max-width: 1540px;
   margin: 0;
   flex-flow: column nowrap;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
   gap: .03em;
   font-family: var(--ui-font-display);
@@ -1481,7 +1481,7 @@ body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type
   font-weight: 700;
   line-height: .88;
   letter-spacing: -.055em;
-  text-align: center;
+  text-align: left;
 }
 .hero-portal-all-links a,
 .hero-portal-title {
