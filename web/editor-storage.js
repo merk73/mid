@@ -236,11 +236,20 @@
     });
   }
 
+  function storedLevelFromFields(fields, kind) {
+    const labelPattern = kind === "threat"
+      ? /^уровень угрозы$/i
+      : /^(?:уровень доступа|осведомленность клиента)$/i;
+    const prefix = kind === "threat" ? "T" : "D";
+    const pair = fields.find((field) => Array.isArray(field) && labelPattern.test(String(field[0] || "").trim()));
+    return Number(String(pair?.[1] || "").match(new RegExp(`\\b${prefix}([1-5])\\b`, "i"))?.[1]) || 0;
+  }
+
   function normalizeRecord(type, record) {
     const meta = TYPE_META[type];
-    const serializedFields = JSON.stringify(record?.fields || []);
-    const threatLevel = Math.min(5, Math.max(1, Number(record?.threatLevel) || Number(serializedFields.match(/T([1-5])/i)?.[1]) || 1));
-    const accessLevel = Math.min(5, Math.max(1, Number(record?.accessLevel) || Number(serializedFields.match(/D([1-5])/i)?.[1]) || 1));
+    const fields = normalizeFields(type, record?.fields);
+    const threatLevel = Math.min(5, Math.max(1, storedLevelFromFields(fields, "threat") || Number(record?.threatLevel) || 1));
+    const accessLevel = Math.min(5, Math.max(1, storedLevelFromFields(fields, "access") || Number(record?.accessLevel) || 1));
     const next = {
       ...record,
       id: String(record?.id || ""),
@@ -259,7 +268,7 @@
         : String(record?.image || ""),
       gallery: Array.isArray(record?.gallery) ? record.gallery.slice(0, 9) : [],
       summary: String(record?.summary || ""),
-      fields: normalizeFields(type, record?.fields),
+      fields,
       sections: Array.isArray(record?.sections) ? record.sections.map((section) => ({
         ...section,
         media: Array.isArray(section?.media) ? section.media.slice(0, 9) : section?.media,

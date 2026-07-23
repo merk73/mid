@@ -91,8 +91,8 @@ class Builder {
   }
 
   execute(single) {
-    if (this.table === "editor_members") {
-      return { data: { role: "full", approved_at: now }, error: null };
+    if (this.table === "account_members") {
+      return { data: { role: "editor", approved_at: now }, error: null };
     }
     if (this.table === "records") return this.executeRecords(single);
     if (this.table === "relationships") return this.executeRelationships(single);

@@ -515,10 +515,11 @@
     ]).filter(([term, value]) => {
       const label = normalized(term);
       if (!term || !value || label === "связанные записи") return false;
-      if (type === "client" && ["уровень угрозы", "уровень доступа", "осведомленность клиента"].includes(label)) return false;
+      if (label === "уровень угрозы") return false;
+      if (type === "client" && ["уровень доступа", "осведомленность клиента"].includes(label)) return false;
       return true;
     });
-    if (type === "client" && selectedThreat) fields.push(["Уровень угрозы", levelLabels.threat[selectedThreat]]);
+    if (selectedThreat) fields.push(["Уровень угрозы", levelLabels.threat[selectedThreat]]);
     if (type === "client" && selectedAccess) fields.push(["Уровень доступа", levelLabels.access[selectedAccess]]);
     if (relations.length) fields.push(["Связанные записи", relations.map((item) => item.id).join(", ")]);
     return fields;
@@ -566,8 +567,8 @@
     if (!record || editing) return;
     editing = true;
     draft = clone(record);
-    selectedThreat = levelFromFields(draft, "threat");
-    selectedAccess = levelFromFields(draft, "access");
+    selectedThreat = levelFromFields(draft, "threat") || Math.min(5, Math.max(1, Number(draft.threatLevel) || 1));
+    selectedAccess = levelFromFields(draft, "access") || Math.min(5, Math.max(1, Number(draft.accessLevel) || 1));
     renderSelectedLevel("threat", selectedThreat);
     renderSelectedLevel("access", selectedAccess);
     document.body.classList.add("is-record-inline-editing");
@@ -623,6 +624,8 @@
       alias: text(document.querySelector("#record-alias")),
       cardType,
       summary,
+      threatLevel: selectedThreat || 1,
+      accessLevel: type === "client" ? (selectedAccess || 1) : (Number(draft.accessLevel) || 1),
       fields,
       sections: collectSections(relations),
       editorRelations: relations,

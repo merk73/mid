@@ -82,8 +82,8 @@ function renderClearance(sourceRecord) {
   root.hidden = false;
   const threatOnly = type !== "client";
   root.classList.toggle("record-clearance--threat-only", threatOnly);
-  const threat = `T${Math.min(5, Math.max(1, Number(sourceRecord?.threatLevel) || levelFromValue(recordFieldValue(sourceRecord, ["Уровень угрозы"]), "threat") || 1))}`;
-  const access = `D${Math.min(5, Math.max(1, Number(sourceRecord?.accessLevel) || levelFromValue(recordFieldValue(sourceRecord, ["Уровень доступа", "Осведомленность клиента"]), "access") || 1))}`;
+  const threat = `T${Math.min(5, Math.max(1, levelFromValue(recordFieldValue(sourceRecord, ["Уровень угрозы"]), "threat") || Number(sourceRecord?.threatLevel) || 1))}`;
+  const access = `D${Math.min(5, Math.max(1, levelFromValue(recordFieldValue(sourceRecord, ["Уровень доступа", "Осведомленность клиента"]), "access") || Number(sourceRecord?.accessLevel) || 1))}`;
   renderLevel(root.querySelector("[data-record-threat]"), threat, "T", "threat");
   const accessRoot = root.querySelector("[data-record-access]");
   if (accessRoot) accessRoot.hidden = threatOnly;

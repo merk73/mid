@@ -6,7 +6,7 @@
   const RELATIONSHIPS_TABLE = "relationships";
   const MEMBERS_TABLE = "account_members";
   const STORAGE_BUCKET = "record-covers";
-  const CACHE_KEY = "midgas_supabase_records_v3";
+  const CACHE_KEY = "midgas_supabase_records_v4";
   const CACHE_MAX_AGE = 2 * 60 * 1000;
   const SYNC_EVENT = "midgas:sync-status";
   const READY_EVENT = "midgas:records-ready";
@@ -203,6 +203,51 @@
     return `${config.url}/storage/v1/object/public/${encodeURIComponent(STORAGE_BUCKET)}/${encoded}`;
   }
 
+  function normalizedLevelText(value) {
+    return String(value || "").trim().toLocaleLowerCase("ru").replaceAll("ё", "е");
+  }
+
+  function levelFromValue(value, kind) {
+    const source = String(value || "").trim();
+    const prefix = kind === "threat" ? "T" : "D";
+    const code = source.match(new RegExp(`\\b${prefix}([1-5])\\b`, "i"));
+    if (code) return Number(code[1]);
+    const normalized = normalizedLevelText(source);
+    if (kind === "threat") {
+      if (normalized.includes("критич")) return 5;
+      if (normalized.includes("высок")) return 4;
+      if (normalized.includes("значитель")) return 3;
+      if (normalized.includes("умерен")) return 2;
+      if (normalized.includes("низк")) return 1;
+    } else {
+      if (normalized.includes("полн") || normalized.includes("высш") || normalized.includes("макс")) return 5;
+      if (normalized.includes("высок")) return 4;
+      if (normalized.includes("средн")) return 3;
+      if (normalized.includes("очень низк")) return 1;
+      if (normalized.includes("низк")) return 2;
+    }
+    return 0;
+  }
+
+  function levelFromFields(record, kind) {
+    const labels = kind === "threat"
+      ? ["уровень угрозы"]
+      : ["уровень доступа", "осведомленность клиента"];
+    const pair = (Array.isArray(record?.fields) ? record.fields : []).find((field) => {
+      if (!Array.isArray(field)) return false;
+      return labels.includes(normalizedLevelText(field[0]));
+    });
+    return levelFromValue(pair?.[1], kind);
+  }
+
+  function resolvedLevel(record, kind) {
+    const fieldLevel = levelFromFields(record, kind);
+    const property = kind === "threat" ? "threatLevel" : "accessLevel";
+    const directLevel = Number(record?.[property]);
+    const level = fieldLevel || (Number.isInteger(directLevel) ? directLevel : 0) || 1;
+    return Math.min(5, Math.max(1, level));
+  }
+
   function rowToRecord(row) {
     const type = RECORD_TYPES.includes(row?.record_type) ? row.record_type : typeFromCode(row?.record_code);
     const record = row?.content && typeof row.content === "object" && !Array.isArray(row.content)
@@ -213,8 +258,8 @@
     record.id = code;
     record.caption = String(record.caption || record.alias || record.cardType || "").trim();
     record.isPublished = record.isPublished !== false;
-    record.threatLevel = Math.min(5, Math.max(1, Number(record.threatLevel) || 1));
-    record.accessLevel = Math.min(5, Math.max(1, Number(record.accessLevel) || 1));
+    record.threatLevel = resolvedLevel(record, "threat");
+    record.accessLevel = resolvedLevel(record, "access");
     delete record.alias;
     delete record.cardType;
     Object.defineProperties(record, {
@@ -660,8 +705,8 @@
     delete content._supabase;
     content.caption = String(content.caption || content.alias || content.cardType || "").trim();
     content.isPublished = content.isPublished !== false;
-    content.threatLevel = Math.min(5, Math.max(1, Number(content.threatLevel) || 1));
-    content.accessLevel = Math.min(5, Math.max(1, Number(content.accessLevel) || 1));
+    content.threatLevel = resolvedLevel(content, "threat");
+    content.accessLevel = resolvedLevel(content, "access");
     delete content.alias;
     delete content.cardType;
     delete content.type;
