@@ -31,7 +31,7 @@
     <nav class="main-navigation" id="main-navigation" aria-label="Главная навигация">
       <a class="wordmark" href="${homeHref}" aria-label="THE MIDGAS — главная"><span><strong>THE MIDGAS</strong></span></a>
       <div class="nav-group nav-group-primary">${links.map(renderLink).join("")}</div>
-      <a class="header-account-link" href="account.html" aria-label="Открыть профиль"><span data-header-account-initial>•</span><b data-header-account-name>Профиль</b></a>
+      <a class="header-account-link" href="account.html" aria-label="Открыть профиль"><b data-header-account-name>Профиль</b><span data-header-account-initial>•</span></a>
     </nav>`;
 
   const initials = [...header.querySelectorAll("[data-header-account-initial]")];
