@@ -9,31 +9,45 @@
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <script src="site-access.js?v=6"></script>
     <link rel="stylesheet" href="styles.css?v=103" />
-    <link rel="stylesheet" href="design-system.css?v=24" />
+    <link rel="stylesheet" href="design-system.css?v=26" />
   </head>
   <body class="account-page">
     <div class="site-shell">
       <header class="site-header"></header>
       <main class="account-shell" id="main-content">
         <header class="account-heading">
-          <div><span class="ui-eyebrow">MIDGAS / ACCOUNT</span><h1>Личный кабинет</h1></div>
-          <p>Профиль и рабочие инструменты, доступные вашей роли.</p>
+          <div><span class="ui-eyebrow">MIDGAS / CONTROL PROFILE</span><h1>Центр<br />управления</h1></div>
+          <div class="account-heading-note"><span>Персональный доступ</span><p>Профиль, права и основные инструменты публикации в одном рабочем экране.</p></div>
         </header>
         <section class="account-profile" aria-labelledby="account-profile-title">
-          <div class="account-profile-avatar" aria-hidden="true" data-account-avatar>•</div>
-          <div class="account-profile-copy">
-            <span data-account-role>ПРОВЕРКА ДОСТУПА</span>
-            <h2 id="account-profile-title" data-account-name>Загрузка…</h2>
-            <p data-account-login></p>
+          <div class="account-profile-identity">
+            <div class="account-profile-avatar" aria-hidden="true" data-account-avatar>•</div>
+            <div class="account-profile-copy">
+              <span>АВТОРИЗОВАННЫЙ ПРОФИЛЬ</span>
+              <h2 id="account-profile-title" data-account-name>Загрузка…</h2>
+              <p data-account-login></p>
+            </div>
           </div>
-          <button class="ui-button ui-button--quiet account-logout" type="button" data-account-logout>Выйти</button>
+          <aside class="account-access-card" aria-label="Состояние доступа">
+            <div class="account-access-icon" aria-hidden="true">
+              <svg viewBox="0 0 48 48"><path d="M24 5 39 11v11c0 10-6 17-15 21C15 39 9 32 9 22V11L24 5Z"/><path d="m17 24 5 5 10-12"/></svg>
+            </div>
+            <div><span data-account-session-state>ПРОВЕРКА СЕАНСА</span><strong data-account-role>ПРОВЕРКА ДОСТУПА</strong><p data-account-permission-copy>Определяем доступные действия.</p></div>
+            <button class="account-logout" type="button" data-account-logout>ЗАВЕРШИТЬ СЕАНС <b>↗</b></button>
+          </aside>
         </section>
         <section class="account-tools" data-account-tools hidden aria-labelledby="account-tools-title">
-          <header><span class="ui-eyebrow">WORKSPACE</span><h2 id="account-tools-title">Работа с сайтом</h2></header>
+          <header><div><span class="ui-eyebrow">WORKSPACE / 03 MODULES</span><h2 id="account-tools-title">Работа с сайтом</h2></div><p>Выберите задачу. Каждый модуль открывается в отдельном рабочем режиме.</p></header>
           <nav class="account-actions" aria-label="Инструменты аккаунта">
-            <a class="account-action account-action--primary" href="editor.html"><span>01</span><strong>Редактировать сайт</strong><small>Добавление и изменение материалов</small><b>→</b></a>
-            <a class="account-action" href="journal.html"><span>02</span><strong>Журнал изменений</strong><small>История действий с контентом</small><b>→</b></a>
-            <a class="account-action" href="changelog.html"><span>03</span><strong>Журнал обновлений</strong><small>Изменения версий сайта</small><b>→</b></a>
+            <a class="account-action account-action--primary" href="editor.html">
+              <span>01 / EDITOR</span><i aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M9 35.5V40h4.5L36 17.5 30.5 12 8 34.5Z"/><path d="m27.5 15 5.5 5.5M8 8h14M8 16h10"/></svg></i><strong>Редактировать сайт</strong><small>Карточки, публикации, фотографии и связи</small><b>→</b>
+            </a>
+            <a class="account-action" href="journal.html">
+              <span>02 / ACTIVITY</span><i aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M11 7h26v34H11z"/><path d="M17 16h14M17 24h14M17 32h9"/></svg></i><strong>Журнал изменений</strong><small>История действий редакторов и откат версий</small><b>→</b>
+            </a>
+            <a class="account-action" href="changelog.html">
+              <span>03 / RELEASES</span><i aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="17"/><path d="M24 14v11l7 5M8 24h5M35 24h5"/></svg></i><strong>Журнал обновлений</strong><small>Выпуски, исправления и состояние сайта</small><b>→</b>
+            </a>
           </nav>
         </section>
         <p class="account-status" data-account-status role="status"></p>
@@ -43,8 +57,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
     <script src="supabase-config.js?v=1"></script>
     <script src="editor-session.js?v=15"></script>
-    <script src="site-header.js?v=9"></script>
-    <script src="account.js?v=4"></script>
+    <script src="site-header.js?v=10"></script>
+    <script src="account.js?v=5"></script>
     <script src="site-motion.js?v=4"></script>
     <script src="app.js?v=37"></script>
   </body>

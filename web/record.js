@@ -132,8 +132,99 @@ function createMediaGrid(items, context = {}) {
   return gallery;
 }
 
+function createSymbolSvg(symbol) {
+  const namespace = "http://www.w3.org/2000/svg";
+  const svg = document.createElementNS(namespace, "svg");
+  svg.setAttribute("viewBox", "0 0 160 160");
+  svg.setAttribute("aria-hidden", "true");
+  svg.classList.add("symbol-atlas-glyph");
+  const group = document.createElementNS(namespace, "g");
+  group.setAttribute("fill", "none");
+  group.setAttribute("stroke", "currentColor");
+  group.setAttribute("stroke-width", "5");
+  group.setAttribute("stroke-linecap", "square");
+  group.setAttribute("stroke-linejoin", "miter");
+  const shape = (tag, attributes) => {
+    const node = document.createElementNS(namespace, tag);
+    Object.entries(attributes).forEach(([name, value]) => node.setAttribute(name, value));
+    group.append(node);
+    return node;
+  };
+
+  if (symbol.key === "her-ksi") {
+    shape("path", { d: "M22 42 L64 118 M64 42 L22 118" });
+    shape("path", { d: "M92 38 C119 38 127 50 127 62 C127 73 117 80 92 80 C117 80 127 88 127 100 C127 112 118 122 92 122" });
+    shape("path", { d: "M86 80 H132" });
+  } else if (symbol.key === "kolovrat-right" || symbol.key === "kolovrat-left") {
+    const direction = symbol.key === "kolovrat-right" ? 1 : -1;
+    for (let index = 0; index < 8; index += 1) {
+      shape("path", {
+        d: `M80 80 L80 30 L${80 + (25 * direction)} 30`,
+        transform: `rotate(${index * 45} 80 80)`,
+      });
+    }
+    shape("circle", { cx: "80", cy: "80", r: "6", fill: "currentColor", stroke: "none" });
+  } else if (symbol.key === "fita") {
+    shape("ellipse", { cx: "80", cy: "80", rx: "42", ry: "54" });
+    shape("path", { d: "M26 80 H134" });
+  } else if (symbol.key === "ksi") {
+    shape("path", { d: "M45 38 C92 34 116 41 116 58 C116 72 97 78 63 78" });
+    shape("path", { d: "M44 122 C91 126 116 119 116 102 C116 88 97 82 63 82" });
+    shape("path", { d: "M54 80 H124" });
+  } else if (symbol.key === "othala-inverted") {
+    shape("path", { d: "M80 43 L116 80 L80 117 L44 80 Z" });
+    shape("path", { d: "M57 57 L35 27 M103 57 L125 27" });
+  } else {
+    shape("circle", { cx: "80", cy: "80", r: "45" });
+  }
+  svg.append(group);
+  return svg;
+}
+
+function createSectionParagraph(value, className = "") {
+  const paragraph = document.createElement("p");
+  paragraph.textContent = value;
+  paragraph.dataset.recordSectionParagraph = "";
+  if (className) paragraph.className = className;
+  return paragraph;
+}
+
+function renderSymbolAtlas(section, body) {
+  const paragraphs = Array.isArray(section.paragraphs) ? section.paragraphs : [];
+  if (paragraphs[0]) body.append(createSectionParagraph(paragraphs[0], "symbol-atlas-intro"));
+  const grid = document.createElement("div");
+  grid.className = "symbol-atlas-grid";
+  (section.symbols || []).forEach((symbol, index) => {
+    const card = document.createElement("article");
+    card.className = "symbol-atlas-card";
+    const visual = document.createElement("div");
+    visual.className = "symbol-atlas-visual";
+    const marker = document.createElement("span");
+    marker.textContent = String(index + 1).padStart(2, "0");
+    const code = document.createElement("strong");
+    code.textContent = symbol.code || "—";
+    visual.append(marker, createSymbolSvg(symbol), code);
+    const copy = document.createElement("div");
+    copy.className = "symbol-atlas-copy";
+    const family = document.createElement("small");
+    family.textContent = symbol.family || "ЗНАК";
+    const heading = document.createElement("h4");
+    heading.textContent = symbol.name || "БЕЗ НАЗВАНИЯ";
+    const note = createSectionParagraph(paragraphs[index + 1] || "Описание не подготовлено.", "symbol-atlas-note");
+    copy.append(family, heading, note);
+    card.append(visual, copy);
+    grid.append(card);
+  });
+  body.append(grid);
+  paragraphs.slice((section.symbols?.length || 0) + 1).forEach((paragraph) => {
+    body.append(createSectionParagraph(paragraph));
+  });
+}
+
 function renderRecord(nextRecord) {
   record = nextRecord;
+  if (record?.id) document.body.dataset.recordId = record.id;
+  else delete document.body.dataset.recordId;
   content.hidden = true;
   overview.hidden = true;
   lore.hidden = true;
@@ -224,6 +315,7 @@ if (!record) {
     record.sections.forEach((section, index) => {
       const article = document.createElement("article");
       article.className = "lore-section";
+      article.classList.toggle("lore-section--symbol-atlas", section.layout === "symbol-atlas");
       article.dataset.recordSection = String(index);
 
       const number = document.createElement("span");
@@ -236,31 +328,33 @@ if (!record) {
       heading.dataset.recordSectionTitle = "";
       body.append(heading);
 
-      const sectionImage = typeof section.image === "string" ? { src: section.image } : section.image;
-      if (sectionImage?.src) {
-        const sectionImageGrid = createMediaGrid([{
-          ...sectionImage,
-          alt: sectionImage.alt || section.title || "Фотография раздела MIDGAS",
-          caption: sectionImage.caption || "ФОТОМАТЕРИАЛ MIDGAS",
-          aspect: sectionImage.aspect || "wide",
-        }], { sectionIndex: index, kind: "image" });
-        sectionImageGrid.classList.add("lore-section-image");
-        body.append(sectionImageGrid);
-      }
+      if (section.layout === "symbol-atlas" && Array.isArray(section.symbols)) {
+        renderSymbolAtlas(section, body);
+      } else {
+        const sectionImage = typeof section.image === "string" ? { src: section.image } : section.image;
+        if (sectionImage?.src) {
+          const sectionImageGrid = createMediaGrid([{
+            ...sectionImage,
+            alt: sectionImage.alt || section.title || "Фотография раздела MIDGAS",
+            caption: sectionImage.caption || "ФОТОМАТЕРИАЛ MIDGAS",
+            aspect: sectionImage.aspect || "wide",
+          }], { sectionIndex: index, kind: "image" });
+          sectionImageGrid.classList.add("lore-section-image");
+          body.append(sectionImageGrid);
+        }
 
-      section.paragraphs.forEach((paragraph, paragraphIndex) => {
-        const element = document.createElement("p");
-        element.textContent = paragraph;
-        element.dataset.recordSectionParagraph = "";
-        body.append(element);
+        section.paragraphs.forEach((paragraph, paragraphIndex) => {
+          const element = createSectionParagraph(paragraph);
+          body.append(element);
 
-        const inlineMedia = section.media?.map((item, mediaIndex) => ({ ...item, _mediaIndex: mediaIndex })).filter((item) => item.afterParagraph === paragraphIndex) || [];
-        if (inlineMedia.length) body.append(createMediaGrid(inlineMedia, { sectionIndex: index, kind: "media" }));
-      });
+          const inlineMedia = section.media?.map((item, mediaIndex) => ({ ...item, _mediaIndex: mediaIndex })).filter((item) => item.afterParagraph === paragraphIndex) || [];
+          if (inlineMedia.length) body.append(createMediaGrid(inlineMedia, { sectionIndex: index, kind: "media" }));
+        });
 
-      if (section.media?.length) {
-        const trailingMedia = section.media.map((item, mediaIndex) => ({ ...item, _mediaIndex: mediaIndex })).filter((item) => !Number.isInteger(item.afterParagraph));
-        if (trailingMedia.length) body.append(createMediaGrid(trailingMedia, { sectionIndex: index, kind: "media" }));
+        if (section.media?.length) {
+          const trailingMedia = section.media.map((item, mediaIndex) => ({ ...item, _mediaIndex: mediaIndex })).filter((item) => !Number.isInteger(item.afterParagraph));
+          if (trailingMedia.length) body.append(createMediaGrid(trailingMedia, { sectionIndex: index, kind: "media" }));
+        }
       }
 
       article.append(number, body);
