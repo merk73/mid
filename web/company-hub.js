@@ -1301,13 +1301,13 @@
   function updateParallax() {
     parallaxFrame = 0;
     const viewportHeight = window.innerHeight;
-    const mobileFactor = window.innerWidth <= 760 ? 0.24 : 1;
+    const mobileFactor = window.innerWidth <= 760 ? 0.5 : 1.18;
     parallaxElements.forEach((element) => {
       const rect = element.getBoundingClientRect();
       if (rect.bottom < -100 || rect.top > viewportHeight + 100) return;
       const centerOffset = rect.top + rect.height / 2 - viewportHeight / 2;
       const speed = Number(element.dataset.companyParallax || 0);
-      const value = Math.max(-90, Math.min(90, centerOffset * speed * mobileFactor));
+      const value = Math.max(-112, Math.min(112, centerOffset * speed * mobileFactor));
       element.style.setProperty("--company-parallax-y", `${value.toFixed(2)}px`);
     });
   }

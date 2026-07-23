@@ -38,10 +38,6 @@
   const updateAccount = (account) => {
     const login = String(account?.login || "").trim();
     if (initial) initial.textContent = login ? login.charAt(0).toUpperCase() : "•";
-    if (initial) {
-      initial.style.backgroundImage = account?.avatarUrl ? `url("${account.avatarUrl}")` : "";
-      initial.classList.toggle("has-image", Boolean(account?.avatarUrl));
-    }
     const avatar = header.querySelector(".header-account-avatar");
     if (avatar && login) avatar.setAttribute("aria-label", `Аккаунт ${login}`);
   };

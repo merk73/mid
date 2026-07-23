@@ -10,38 +10,28 @@
   function primeImage(image) {
     if (!(image instanceof HTMLImageElement)) return;
     image.decoding = "async";
-    if (homePage) {
-      image.loading = "eager";
-      if (!image.closest(".hero-cover")) image.fetchPriority = "low";
-    }
+    image.loading = "eager";
+    if (!image.closest(".hero-cover, .record-portrait, .history-hero")) image.fetchPriority = "low";
   }
 
   const images = [...document.images];
   images.forEach(primeImage);
 
+  const imageObserver = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => mutation.addedNodes.forEach((node) => {
+      if (node instanceof HTMLImageElement) primeImage(node);
+      node.querySelectorAll?.("img").forEach(primeImage);
+    }));
+  });
+  imageObserver.observe(document.body, { childList: true, subtree: true });
+  window.setTimeout(() => imageObserver.disconnect(), 30000);
+
   if (homePage) {
     root.classList.add("home-preload-all");
-    const imageObserver = new MutationObserver((mutations) => {
-      mutations.forEach((mutation) => mutation.addedNodes.forEach((node) => {
-        if (node instanceof HTMLImageElement) primeImage(node);
-        node.querySelectorAll?.("img").forEach(primeImage);
-      }));
-    });
-    imageObserver.observe(document.body, { childList: true, subtree: true });
-    window.setTimeout(() => imageObserver.disconnect(), 20000);
     Promise.allSettled(images.filter((image) => image.src).map((image) => image.decode?.())).then(() => {
       root.classList.add("home-assets-ready");
       window.dispatchEvent(new CustomEvent("midgas:home-assets-ready"));
     });
-  } else if (images.length && "IntersectionObserver" in window) {
-    const preloadObserver = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        entry.target.loading = "eager";
-        preloadObserver.unobserve(entry.target);
-      });
-    }, { rootMargin: "180% 0px", threshold: 0.01 });
-    images.filter((image) => image.loading === "lazy").forEach((image) => preloadObserver.observe(image));
   }
 
   const revealTargets = recordPage || reduceMotion
@@ -88,12 +78,12 @@
   function renderParallax() {
     motionFrame = 0;
     const viewport = window.innerHeight || 1;
-    const mobileFactor = window.innerWidth <= 760 ? 0.22 : 0.46;
+    const mobileFactor = window.innerWidth <= 760 ? 0.42 : 0.72;
     parallaxTargets.forEach((element) => {
       const rect = element.parentElement?.getBoundingClientRect?.() || element.getBoundingClientRect();
       if (rect.bottom < -viewport * .25 || rect.top > viewport * 1.25) return;
       const progress = (rect.top + rect.height / 2 - viewport / 2) / viewport;
-      const travel = Math.max(-22, Math.min(22, progress * -38 * mobileFactor));
+      const travel = Math.max(-42, Math.min(42, progress * -52 * mobileFactor));
       element.style.translate = `0 ${travel.toFixed(2)}px`;
     });
   }

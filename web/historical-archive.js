@@ -8,6 +8,7 @@ const historyRailLinks = [...document.querySelectorAll(".timeline-rail a")];
 const historyDossiers = [...document.querySelectorAll(".timeline-dossier")];
 const historyHero = document.querySelector(".history-hero");
 const historyHeroLayers = [...document.querySelectorAll("[data-hero-parallax]")];
+document.querySelectorAll('img[loading="lazy"]').forEach((image) => { image.loading = "eager"; });
 
 const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
 const coarsePointer = window.matchMedia("(pointer: coarse)");

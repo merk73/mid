@@ -62,7 +62,7 @@
   async function requestAccount(userId) {
     const { data, error } = await client
       .from("account_members")
-      .select("user_id,login,role,display_name,avatar_path,approved_at,created_at")
+      .select("user_id,login,role,display_name,approved_at,created_at")
       .eq("user_id", userId)
       .maybeSingle();
     if (error) throw error;
@@ -86,16 +86,12 @@
       const membership = await requestAccount(authSession.user.id);
       if (!membership) throw new Error("Аккаунт отключён.");
       if (sequence !== hydrationSequence) return cachedAccount;
-      const avatarPath = membership.avatar_path || "";
-      const avatarUrl = avatarPath ? client.storage.from("account-avatars").getPublicUrl(avatarPath).data.publicUrl : "";
       cachedAccount = Object.freeze({
         userId: membership.user_id,
         login: membership.login,
         role: normalizeRole(membership.role),
         roleLabel: ROLE_LABELS[normalizeRole(membership.role)],
         displayName: membership.display_name || membership.login,
-        avatarPath,
-        avatarUrl,
         approvedAt: membership.approved_at,
         memberSince: membership.created_at,
         authenticated: true,
