@@ -1449,7 +1449,10 @@ body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type
   z-index: 3;
   margin: 0 !important;
   color: rgba(255, 255, 255, .68);
-  font: 500 clamp(.58rem, .64vw, .7rem)/1 var(--ui-font-mono) !important;
+  font-family: var(--ui-font-mono);
+  font-size: clamp(.58rem, .64vw, .7rem) !important;
+  font-weight: 500;
+  line-height: 1;
   letter-spacing: .08em;
 }
 .hero-portal-scenes {
@@ -1488,7 +1491,10 @@ body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type
   align-items: center;
   justify-content: center;
   gap: .02em .18em;
-  font: 700 clamp(3.1rem, 6.9vw, 7.6rem)/.88 var(--ui-font-display);
+  font-family: var(--ui-font-display);
+  font-size: clamp(3.1rem, 6.9vw, 7.6rem);
+  font-weight: 700;
+  line-height: .88;
   letter-spacing: -.055em;
   text-align: center;
 }
@@ -1516,11 +1522,17 @@ body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type
 .hero-portal-scene--detail > span {
   margin-bottom: clamp(12px, 1.8vh, 22px);
   color: rgba(255, 255, 255, .66);
-  font: 500 clamp(.6rem, .68vw, .74rem)/1 var(--ui-font-mono);
+  font-family: var(--ui-font-mono);
+  font-size: clamp(.6rem, .68vw, .74rem);
+  font-weight: 500;
+  line-height: 1;
   letter-spacing: .08em;
 }
 .hero-portal-title {
-  font: 700 clamp(4.8rem, 11.4vw, 12.5rem)/.76 var(--ui-font-display);
+  font-family: var(--ui-font-display);
+  font-size: clamp(4.8rem, 11.4vw, 12.5rem);
+  font-weight: 700;
+  line-height: .76;
   letter-spacing: -.07em;
   text-decoration-line: underline;
 }
@@ -1528,7 +1540,10 @@ body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type
   max-width: 720px;
   margin: clamp(24px, 3.6vh, 44px) 0 0;
   color: rgba(255, 255, 255, .86);
-  font: 400 clamp(.92rem, 1.22vw, 1.24rem)/1.45 var(--ui-font-sans);
+  font-family: var(--ui-font-sans);
+  font-size: clamp(.92rem, 1.22vw, 1.24rem);
+  font-weight: 400;
+  line-height: 1.45;
   text-wrap: balance;
 }
 .hero-portal-progress {
@@ -1548,7 +1563,10 @@ body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type
   border: 0;
   border-top: 1px solid rgba(255, 255, 255, .32);
   background: transparent;
-  font: 500 .58rem/1 var(--ui-font-mono);
+  font-family: var(--ui-font-mono);
+  font-size: .58rem;
+  font-weight: 500;
+  line-height: 1;
   text-align: left;
   cursor: pointer;
   transition: color 220ms ease, border-color 220ms ease;
