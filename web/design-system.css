@@ -400,33 +400,28 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
   text-align: left;
 }
 .unified-site-header .wordmark > span {
-  display: grid;
-  align-content: center;
+  display: flex;
+  align-items: center;
   min-height: 67px;
 }
-.unified-site-header .wordmark strong,
-.unified-site-header .wordmark small {
+.unified-site-header .wordmark strong {
   display: block;
   color: inherit;
   font-family: var(--ui-font-display);
   font-weight: 700;
   white-space: nowrap;
 }
-.unified-site-header .wordmark small {
-  margin: 0;
-  font-size: clamp(.86rem, 1.05vw, 1.02rem);
-  line-height: .78;
-  letter-spacing: .025em;
-}
 .unified-site-header .wordmark strong {
-  margin-top: 3px;
-  font-size: clamp(1.55rem, 2vw, 1.98rem);
-  line-height: .78;
-  letter-spacing: -.045em;
+  font-size: clamp(1.2rem, 1.55vw, 1.55rem);
+  line-height: 1;
+  letter-spacing: -.025em;
 }
 
-.unified-site-header .nav-group a:is(:hover, :focus-visible),
 .unified-site-header .nav-group a[aria-current="page"] { color: var(--ui-accent); }
+.unified-site-header .nav-group a:is(:hover, :focus-visible),
+.unified-site-header .wordmark:is(:hover, :focus-visible) { color: var(--ui-paper); background: var(--ui-ink); }
+body.home-page .unified-site-header:not(.is-scrolled):not(.menu-open) .nav-group a:is(:hover, :focus-visible),
+body.home-page .unified-site-header:not(.is-scrolled):not(.menu-open) .wordmark:is(:hover, :focus-visible) { color: var(--ui-ink); background: var(--ui-paper); }
 .unified-site-header .header-account-link {
   display: flex;
   min-width: 0;
@@ -456,7 +451,7 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
 .unified-site-header .header-account-link b {
   min-width: 0;
   overflow: hidden;
-  font: 500 .72rem/1 var(--ui-font-mono);
+  font: 500 clamp(.66rem, .68vw, .76rem)/1 var(--ui-font-mono);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
@@ -472,9 +467,9 @@ body.home-page .unified-site-header:not(.is-scrolled):not(.menu-open) .header-ac
   .unified-site-header .main-navigation { grid-template-columns: 170px minmax(0, 1fr) 142px; }
   .unified-site-header .nav-group a { padding-inline: .25rem; font-size: .6rem; letter-spacing: .025em; }
   .unified-site-header .wordmark { padding-inline: 1rem; }
-  .unified-site-header .wordmark small { font-size: .78rem; }
-  .unified-site-header .wordmark strong { font-size: 1.4rem; }
+  .unified-site-header .wordmark strong { font-size: 1.2rem; }
   .unified-site-header .header-account-link { gap: .5rem; padding-inline: .7rem; }
+  .unified-site-header .header-account-link b { font-size: .6rem; }
 }
 
 @media (max-width: 760px) {
