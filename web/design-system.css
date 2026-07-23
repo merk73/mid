@@ -402,6 +402,32 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
 
 .unified-site-header .nav-group a:is(:hover, :focus-visible),
 .unified-site-header .nav-group a[aria-current="page"] { color: var(--ui-accent); }
+.unified-site-header .nav-group .header-account-link {
+  justify-content: flex-start;
+  gap: .65rem;
+  min-width: 0;
+  padding-inline: clamp(.65rem, 1vw, 1rem);
+}
+.unified-site-header .header-account-link span {
+  display: grid;
+  flex: 0 0 29px;
+  width: 29px;
+  height: 29px;
+  place-items: center;
+  color: inherit;
+  border: 1px solid currentColor;
+  font: 600 .68rem/1 var(--ui-font-mono);
+  transition: color 240ms var(--ui-ease), background-color 240ms var(--ui-ease), transform 320ms var(--ui-ease);
+}
+.unified-site-header .header-account-link b {
+  min-width: 0;
+  overflow: hidden;
+  font: 500 .72rem/1 var(--ui-font-mono);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.unified-site-header .header-account-link:is(:hover, :focus-visible) span { color: var(--ui-paper); background: var(--ui-ink); transform: translateY(-1px); }
+body.home-page .unified-site-header:not(.is-scrolled):not(.menu-open) .header-account-link:is(:hover, :focus-visible) span { color: var(--ui-ink); background: var(--ui-paper); }
 .unified-site-header .menu-toggle,
 .unified-site-header .mobile-wordmark,
 .unified-site-header .header-account-avatar,
@@ -507,6 +533,9 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
     font-size: .78rem;
   }
   .unified-site-header .header-account-link { margin-top: .5rem; border: 1px solid var(--ui-ink) !important; }
+  .unified-site-header .header-account-link span,
+  .unified-site-header .header-account-link b { display: none; }
+  .unified-site-header .header-account-link::after { content: "Аккаунт"; }
 
   /* Keep dossier clearance scales readable and side-by-side. */
   body .record-clearance { grid-template-columns: repeat(2, minmax(0, 1fr)); }

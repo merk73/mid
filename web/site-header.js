@@ -31,15 +31,20 @@
     <nav class="main-navigation" id="main-navigation" aria-label="Главная навигация">
       <div class="nav-group nav-group-left">${links.slice(0, 4).map(renderLink).join("")}</div>
       <a class="wordmark" href="${homeHref}" aria-label="THE MIDGAS — главная">THE MIDGAS</a>
-      <div class="nav-group nav-group-right">${links.slice(4).map(renderLink).join("")}<a class="header-account-link" href="account.html">Аккаунт</a></div>
+      <div class="nav-group nav-group-right">${links.slice(4).map(renderLink).join("")}<a class="header-account-link" href="account.html" aria-label="Открыть профиль"><span data-header-account-initial>•</span><b data-header-account-name>Профиль</b></a></div>
     </nav>`;
 
-  const initial = header.querySelector("[data-header-account-initial]");
+  const initials = [...header.querySelectorAll("[data-header-account-initial]")];
+  const profileName = header.querySelector("[data-header-account-name]");
   const updateAccount = (account) => {
     const login = String(account?.login || "").trim();
-    if (initial) initial.textContent = login ? login.charAt(0).toUpperCase() : "•";
+    const displayName = String(account?.displayName || login || "Профиль").trim();
+    initials.forEach((initial) => { initial.textContent = login ? login.charAt(0).toUpperCase() : "•"; });
+    if (profileName) profileName.textContent = displayName;
     const avatar = header.querySelector(".header-account-avatar");
     if (avatar && login) avatar.setAttribute("aria-label", `Аккаунт ${login}`);
+    const profile = header.querySelector(".header-account-link");
+    if (profile && login) profile.setAttribute("aria-label", `Профиль ${displayName}`);
   };
   window.addEventListener("midgas:account-access-granted", (event) => updateAccount(event.detail?.account));
   window.addEventListener("midgas:account-session", (event) => updateAccount(event.detail?.account));
