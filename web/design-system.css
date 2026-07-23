@@ -1326,8 +1326,8 @@ body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type
 }
 
 /* Home portal: one continuous film, six calm navigation scenes. */
-.unified-site-header .header-account-link { justify-content: flex-end; }
-.unified-site-header .header-account-link b { text-align: right; }
+.unified-site-header .header-account-link { justify-content: center; }
+.unified-site-header .header-account-link b { text-align: center; }
 
 .home-page .hero-cover.hero-portal {
   position: relative;
@@ -1349,41 +1349,26 @@ body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type
   --hero-x: 34%;
   --hero-scale: 1.12;
   --hero-shift: -1.5%;
-  --hero-brightness: .62;
-  --hero-contrast: 1.18;
-  --hero-wash: rgba(63, 6, 6, .1);
 }
 .home-page .hero-portal[data-hero-scene="anomalies"] {
   --hero-x: 68%;
   --hero-scale: 1.18;
   --hero-shift: 1.25%;
-  --hero-brightness: .58;
-  --hero-contrast: 1.3;
-  --hero-wash: rgba(2, 11, 14, .2);
 }
 .home-page .hero-portal[data-hero-scene="incidents"] {
   --hero-x: 50%;
   --hero-scale: 1.26;
   --hero-shift: 0%;
-  --hero-brightness: .56;
-  --hero-contrast: 1.36;
-  --hero-wash: rgba(74, 0, 0, .14);
 }
 .home-page .hero-portal[data-hero-scene="relations"] {
   --hero-x: 22%;
   --hero-scale: 1.15;
   --hero-shift: -1%;
-  --hero-brightness: .6;
-  --hero-contrast: 1.22;
-  --hero-wash: rgba(14, 8, 4, .18);
 }
 .home-page .hero-portal[data-hero-scene="locations"] {
   --hero-x: 82%;
   --hero-scale: 1.1;
   --hero-shift: 1%;
-  --hero-brightness: .64;
-  --hero-contrast: 1.16;
-  --hero-wash: rgba(2, 9, 7, .18);
 }
 
 .home-page .hero-cover .hero-video-stage {
@@ -1487,10 +1472,10 @@ body.is-record-inline-editing:is([data-record-type="anomaly"], [data-record-type
   display: flex;
   max-width: 1540px;
   margin: 0;
-  flex-wrap: wrap;
+  flex-flow: column nowrap;
   align-items: center;
   justify-content: center;
-  gap: .02em .18em;
+  gap: .03em;
   font-family: var(--ui-font-display);
   font-size: clamp(3.1rem, 6.9vw, 7.6rem);
   font-weight: 700;
