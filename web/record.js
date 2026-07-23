@@ -168,12 +168,13 @@ function createSymbolSvg(symbol) {
     shape("ellipse", { cx: "80", cy: "80", rx: "42", ry: "54" });
     shape("path", { d: "M26 80 H134" });
   } else if (symbol.key === "ksi") {
-    shape("path", { d: "M45 38 C92 34 116 41 116 58 C116 72 97 78 63 78" });
-    shape("path", { d: "M44 122 C91 126 116 119 116 102 C116 88 97 82 63 82" });
-    shape("path", { d: "M54 80 H124" });
+    const ksi = shape("path", { d: "M122 29 C75 21 36 31 32 58 C29 80 52 91 79 82 C98 76 109 84 102 95 C95 105 86 94 71 94 C47 94 36 111 43 130 C52 154 88 162 113 145 C96 165 59 173 29 153" });
+    ksi.setAttribute("stroke-width", "13");
+    ksi.setAttribute("stroke-linecap", "round");
+    ksi.setAttribute("stroke-linejoin", "round");
   } else if (symbol.key === "othala-inverted") {
-    shape("path", { d: "M80 43 L116 80 L80 117 L44 80 Z" });
-    shape("path", { d: "M57 57 L35 27 M103 57 L125 27" });
+    const othala = shape("path", { d: "M80 18 L130 68 L80 118 L30 68 Z M80 118 L26 146 M80 118 L134 146" });
+    othala.setAttribute("stroke-width", "10");
   } else {
     shape("circle", { cx: "80", cy: "80", r: "45" });
   }
@@ -210,8 +211,15 @@ function renderSymbolAtlas(section, body) {
     family.textContent = symbol.family || "ЗНАК";
     const heading = document.createElement("h4");
     heading.textContent = symbol.name || "БЕЗ НАЗВАНИЯ";
+    const meaning = document.createElement("dl");
+    meaning.className = "symbol-atlas-meaning";
+    const meaningLabel = document.createElement("dt");
+    meaningLabel.textContent = "ЗНАЧЕНИЕ";
+    const meaningText = document.createElement("dd");
+    meaningText.textContent = symbol.meaning || "Историческое значение не установлено.";
+    meaning.append(meaningLabel, meaningText);
     const note = createSectionParagraph(paragraphs[index + 1] || "Описание не подготовлено.", "symbol-atlas-note");
-    copy.append(family, heading, note);
+    copy.append(family, heading, meaning, note);
     card.append(visual, copy);
     grid.append(card);
   });

@@ -333,21 +333,19 @@ body {
 }
 
 /* Kolovrat dossier: a factual symbol atlas, kept separate from editable prose. */
-body[data-record-id="MID-C-0040"] .record-shell .record-heading {
-  color: #f2efe7;
-  background: #191816;
-  border-color: #191816;
-}
-body[data-record-id="MID-C-0040"] .record-shell .record-heading :is(h1, .record-code, .record-kind, .record-alias, .record-clearance) { color: inherit; }
 body[data-record-id="MID-C-0040"] .record-shell .record-portrait img { object-position: center 22%; }
-.record-shell .lore-section--symbol-atlas {
-  color: #f2efe7;
-  background: #191816;
-  border-color: rgba(242, 239, 231, .26);
+body[data-record-id="MID-C-0040"] .record-shell :is(.record-alias, .record-summary p, .lore-section:not(.lore-section--symbol-atlas) p, .record-fields dd) { color: #181817; }
+body[data-record-id="MID-C-0040"] .record-shell .record-code,
+body[data-record-id="MID-C-0040"] .record-shell .record-fields dt { color: #3f3e3a; }
+body[data-record-id="MID-C-0040"] .record-shell .lore-section--symbol-atlas {
+  color: #fff;
+  background: #191816 !important;
+  border-color: rgba(255, 255, 255, .42);
 }
-.record-shell .lore-section--symbol-atlas > header { border-color: rgba(242, 239, 231, .26); }
+body[data-record-id="MID-C-0040"] .record-shell .lore-section--symbol-atlas :is(h3, .lore-number) { color: #fff; }
+.record-shell .lore-section--symbol-atlas > header { border-color: rgba(255, 255, 255, .42); }
 .record-shell .lore-section--symbol-atlas > div { width: min(100%, 1280px); }
-.symbol-atlas-intro { max-width: 72ch; color: rgba(242, 239, 231, .72); }
+.symbol-atlas-intro { max-width: 72ch; color: rgba(255, 255, 255, .92) !important; }
 .symbol-atlas-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -367,9 +365,12 @@ body[data-record-id="MID-C-0040"] .record-shell .record-portrait img { object-po
 .symbol-atlas-visual > strong { align-self: end; justify-self: end; padding: 1rem; font: 500 .74rem/1 var(--ui-font-mono); }
 .symbol-atlas-visual svg { width: min(72%, 150px); height: auto; overflow: visible; }
 .symbol-atlas-copy { display: flex; flex-direction: column; padding: clamp(1.2rem, 2.5vw, 2rem); }
-.symbol-atlas-copy > small { color: rgba(242, 239, 231, .54); font: 600 .64rem/1.2 var(--ui-font-mono); letter-spacing: .12em; }
+.symbol-atlas-copy > small { color: rgba(255, 255, 255, .78); font: 600 .64rem/1.2 var(--ui-font-mono); letter-spacing: .12em; }
 .symbol-atlas-copy h4 { margin: auto 0 .7rem; font: 500 clamp(1.6rem, 3vw, 2.65rem)/.93 var(--ui-font-display); text-transform: uppercase; }
-.symbol-atlas-copy p { margin: 0; color: rgba(242, 239, 231, .72); font-size: clamp(.82rem, 1.3vw, .96rem); line-height: 1.48; }
+.symbol-atlas-meaning { display: grid; gap: .45rem; margin: .15rem 0 1.25rem; padding: .8rem 0; border-block: 1px solid rgba(255, 255, 255, .3); }
+.symbol-atlas-meaning dt { color: rgba(255, 255, 255, .68); font: 600 .58rem/1 var(--ui-font-mono); letter-spacing: .12em; }
+.symbol-atlas-meaning dd { margin: 0; color: #fff; font-size: .78rem; line-height: 1.45; }
+.symbol-atlas-copy p { margin: 0; color: rgba(255, 255, 255, .92) !important; font-size: clamp(.82rem, 1.3vw, .96rem); line-height: 1.48; }
 body.is-record-inline-editing .symbol-atlas-copy [data-inline-editable]:focus { color: #191816; background: #f2efe7; }
 
 /* Account: stronger information hierarchy without leaving the minimal system. */
