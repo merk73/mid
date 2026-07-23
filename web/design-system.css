@@ -451,7 +451,10 @@ body.home-page .unified-site-header:not(.is-scrolled):not(.menu-open) .wordmark:
 .unified-site-header .header-account-link b {
   min-width: 0;
   overflow: hidden;
-  font: 500 clamp(.66rem, .68vw, .76rem)/1 var(--ui-font-mono);
+  font-family: var(--ui-font-mono);
+  font-size: clamp(.66rem, .68vw, .76rem);
+  font-weight: 500;
+  line-height: 1;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
