@@ -77,7 +77,7 @@
   });
   const ensureSearchData = async () => {
     if (!window.MIDGAS_RECORDS?.client || Object.keys(window.MIDGAS_RECORDS.client).length <= 10) {
-      for (const src of ["data.js", "featured-data.js?v=8", "client-updates.js?v=7", "incident-updates.js?v=1", "site-completion.js?v=1", "latest-covers.js?v=1"]) await loadScript(src);
+      for (const src of ["data.js", "featured-data.js?v=8", "client-updates.js?v=8", "incident-updates.js?v=1", "site-completion.js?v=1", "latest-covers.js?v=1"]) await loadScript(src);
     }
     if (!window.MIDGAS_SUPABASE_DATA && window.supabase && window.MIDGAS_SUPABASE_CONFIG) await loadScript("supabase-data.js?v=14");
     await window.MIDGAS_SUPABASE_DATA?.ready?.catch?.(() => null);
