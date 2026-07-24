@@ -147,7 +147,7 @@
 
   function popupFor(item) {
     const media = item.image ? `<img src="${escapeHtml(item.image)}" alt="" />` : "";
-    const href = `record.html?type=${encodeURIComponent(item.type)}&id=${encodeURIComponent(item.id)}`;
+    const href = window.MIDGAS_RECORD_URL?.(item.type, item.id) || `record.html?type=${encodeURIComponent(item.type)}&id=${encodeURIComponent(item.id)}`;
     return `<article class="world-map-popup">${media}<div><small>${TYPE_LABELS[item.type]} / ${escapeHtml(item.id)}</small><strong>${escapeHtml(item.name)}</strong><p>${escapeHtml(item.location)}</p><a href="${href}">ОТКРЫТЬ ДОСЬЕ →</a></div></article>`;
   }
 

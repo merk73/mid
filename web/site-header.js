@@ -2,7 +2,7 @@
   const header = document.querySelector(".site-header");
   if (!header) return;
 
-  const path = window.location.pathname.split("/").pop() || "index.html";
+  const path = window.location.pathname.split("/").filter(Boolean).pop() || "index.html";
   const homeHref = path === "index.html" ? "#top" : "index.html";
   const links = [
     ["Клиенты", "registry.html?type=client", "registry.html", "client"],
@@ -93,7 +93,7 @@
     const records = Object.entries(window.MIDGAS_RECORDS || {}).flatMap(([type, group]) => Object.values(group || {}).map((record) => ({
       title: record.name || record.id,
       eyebrow: `${labels[type] || type.toUpperCase()} / ${record.id}`,
-      href: `record.html?type=${encodeURIComponent(type)}&id=${encodeURIComponent(record.id)}`,
+      href: window.MIDGAS_RECORD_URL?.(type, record.id) || `record.html?type=${encodeURIComponent(type)}&id=${encodeURIComponent(record.id)}`,
       description: record.summary || record.alias || "Карточка архива MIDGAS",
       image: record.image || "",
       text: collectText(record),

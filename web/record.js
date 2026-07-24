@@ -1,7 +1,11 @@
 const params = new URLSearchParams(window.location.search);
-const type = params.get("type") || "client";
-const id = params.get("id") || "";
+const pathId = window.MIDGAS_RECORD_ID_FROM_PATH?.() || "";
+const id = String(params.get("id") || pathId || "").toUpperCase();
+const type = params.get("type") || window.MIDGAS_RECORD_TYPE_FROM_ID?.(id) || "client";
 const source = params.get("from") || "";
+if (!pathId && id && window.MIDGAS_RECORD_URL) {
+  window.history.replaceState(null, "", window.MIDGAS_RECORD_URL(type, id, { from: source, hash: window.location.hash }));
+}
 const records = window.MIDGAS_RECORDS?.[type] || {};
 let record = records[id];
 const waitsForRemoteRecord = Boolean(window.MIDGAS_SUPABASE_CONFIG?.url);
@@ -398,7 +402,7 @@ if (!record) {
   relationItems.forEach((item) => {
     const target = window.MIDGAS_RECORDS?.[item.type]?.[item.id];
     const link = document.createElement("a");
-    link.href = `record.html?type=${encodeURIComponent(item.type)}&id=${encodeURIComponent(item.id)}`;
+    link.href = window.MIDGAS_RECORD_URL?.(item.type, item.id) || `record.html?type=${encodeURIComponent(item.type)}&id=${encodeURIComponent(item.id)}`;
     const meta = document.createElement("span");
     meta.textContent = `${String(item.type || "").toUpperCase()} / ${item.id}`;
     const title = document.createElement("strong");

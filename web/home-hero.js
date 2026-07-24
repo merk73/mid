@@ -22,7 +22,7 @@
       root.querySelector("[data-hero-code]").textContent = topic.id;
       root.querySelector("[data-hero-name]").textContent = topic.name;
       root.querySelector("[data-hero-caption]").textContent = topic.caption;
-      card.href = `record.html?type=${topic.type}&id=${topic.id}&from=topics`;
+      card.href = window.MIDGAS_RECORD_URL?.(topic.type, topic.id, { from: "topics" }) || `record.html?type=${topic.type}&id=${topic.id}&from=topics`;
       image.src = topic.image; image.alt = topic.name;
       controls.forEach((button, itemIndex) => button.setAttribute("aria-current", String(itemIndex === index)));
       root.classList.remove("is-changing");

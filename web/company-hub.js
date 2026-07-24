@@ -402,7 +402,7 @@
   });
 
   function recordLink(type, record) {
-    return `record.html?type=${encodeURIComponent(type)}&id=${encodeURIComponent(record.id)}`;
+    return window.MIDGAS_RECORD_URL?.(type, record.id) || `record.html?type=${encodeURIComponent(type)}&id=${encodeURIComponent(record.id)}`;
   }
 
   function journalDateKey(value) {
@@ -1237,7 +1237,7 @@
       });
       if (!created) throw new Error("Модуль локального сохранения недоступен.");
 
-      const recordUrl = `record.html?type=${encodeURIComponent(created.type)}&id=${encodeURIComponent(created.record.id)}`;
+      const recordUrl = window.MIDGAS_RECORD_URL?.(created.type, created.record.id) || `record.html?type=${encodeURIComponent(created.type)}&id=${encodeURIComponent(created.record.id)}`;
       const registryUrl = `registry.html?type=${encodeURIComponent(created.type)}`;
       const createdId = document.querySelector("[data-editor-created-id]");
       const status = document.querySelector("[data-editor-status]");

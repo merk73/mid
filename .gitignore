@@ -19,3 +19,9 @@ Thumbs.db
 *.log
 *.zip
 *.inspect.ndjson
+
+# Deployment-only short dossier routes
+/web/mid-c-*/
+/web/mid-a-*/
+/web/mid-i-*/
+/web/404.html

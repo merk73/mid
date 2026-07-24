@@ -30,6 +30,9 @@ jobs:
       - name: Build public deployment history
         run: node scripts/build-deploy-history.mjs
 
+      - name: Build short dossier routes
+        run: node scripts/build-short-routes.mjs
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 

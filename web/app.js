@@ -141,7 +141,7 @@ function renderPreviewGrid(grid, records, recordType, limit) {
     const card = document.createElement("a");
     card.className = "client-card";
     card.dataset.status = record.sections?.length ? "lore" : "missing";
-    card.href = `record.html?type=${encodeURIComponent(recordType)}&id=${encodeURIComponent(record.id)}`;
+    card.href = window.MIDGAS_RECORD_URL?.(recordType, record.id) || `record.html?type=${encodeURIComponent(recordType)}&id=${encodeURIComponent(record.id)}`;
 
     const image = document.createElement("img");
     image.src = record.cardImage || record.image;

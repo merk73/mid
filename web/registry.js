@@ -95,7 +95,7 @@ function createRegistryCard(record) {
   const card = document.createElement("a");
   card.className = "client-card registry-card";
   card.dataset.search = searchText(record);
-  card.href = `record.html?type=${encodeURIComponent(registryType)}&id=${encodeURIComponent(record.id)}`;
+  card.href = window.MIDGAS_RECORD_URL?.(registryType, record.id) || `record.html?type=${encodeURIComponent(registryType)}&id=${encodeURIComponent(record.id)}`;
 
   const image = document.createElement("img");
   image.src = record.cardImage || record.image;

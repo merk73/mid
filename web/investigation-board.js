@@ -316,7 +316,7 @@
     if (inspector.id) inspector.id.textContent = node.id;
     if (inspector.link) {
       inspector.link.hidden = !typeOrder.includes(node.kind);
-      if (typeOrder.includes(node.kind)) inspector.link.href = `record.html?type=${node.kind}&id=${encodeURIComponent(node.id)}`;
+      if (typeOrder.includes(node.kind)) inspector.link.href = window.MIDGAS_RECORD_URL?.(node.kind, node.id) || `record.html?type=${node.kind}&id=${encodeURIComponent(node.id)}`;
     }
     if (inspector.actions) inspector.actions.hidden = !(editorMode && node.remote);
     if (inspectorDelete) inspectorDelete.hidden = !sessionApi?.hasAccess?.("full");
