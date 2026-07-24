@@ -175,6 +175,7 @@ function createSymbolSvg(symbol) {
   } else if (symbol.key === "othala-inverted") {
     const othala = shape("path", { d: "M80 18 L130 68 L80 118 L30 68 Z M80 118 L26 146 M80 118 L134 146" });
     othala.setAttribute("stroke-width", "10");
+    othala.setAttribute("transform", "rotate(180 80 80)");
   } else {
     shape("circle", { cx: "80", cy: "80", r: "45" });
   }
