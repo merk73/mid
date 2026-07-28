@@ -15,6 +15,9 @@
     permissionCopy: document.querySelector("[data-account-permission-copy]"),
   };
   function render(account) {
+    const body = document.body;
+    const requiredElements = [elements.avatar, elements.role, elements.name, elements.login, elements.tools, elements.status];
+    if (!body?.isConnected || requiredElements.some((element) => !element?.isConnected)) return;
     if (!account) {
       elements.avatar.textContent = "•";
       elements.role.textContent = "СЕАНС НЕ НАЙДЕН";
@@ -23,7 +26,7 @@
       elements.tools.hidden = true;
       if (elements.sessionState) elements.sessionState.textContent = "СЕАНС ЗАКРЫТ";
       if (elements.permissionCopy) elements.permissionCopy.textContent = "Повторите вход, чтобы открыть рабочие инструменты.";
-      delete document.body.dataset.role;
+      delete body.dataset.role;
       return;
     }
     const displayName = String(account.displayName || account.login || "Аккаунт");
@@ -34,7 +37,7 @@
     elements.tools.hidden = account.role === "viewer";
     if (elements.sessionState) elements.sessionState.textContent = "СЕАНС АКТИВЕН";
     if (elements.permissionCopy) elements.permissionCopy.textContent = roleDescriptions[account.role] || roleDescriptions.viewer;
-    document.body.dataset.role = account.role;
+    body.dataset.role = account.role;
     elements.status.textContent = "";
   }
   elements.logout?.addEventListener("click", async () => {

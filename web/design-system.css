@@ -2249,6 +2249,38 @@ body .record-shell .lore-media { border-color: var(--ui-line); }
   .home-page .registry-row :is(.registry-description, .registry-count) { display: none; }
   .registry-title { font-size: 1.25rem; }
   .client-grid, .home-page .client-grid, .registry-page .registry-grid { gap: .65rem; padding-bottom: 3rem; }
+  /* Mobile card grids keep a consistent two-column rhythm. Legacy nth-child
+     rules used a black divider on the left column and removed the right edge. */
+  .home-page .client-grid,
+  .registry-page .registry-grid:not(.is-list-view) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .home-page .client-grid .client-card,
+  .home-page .client-grid .client-card:nth-child(2n),
+  .home-page .client-grid .client-card:nth-child(3n),
+  .home-page .client-grid .client-card:nth-child(4n),
+  .registry-page .registry-grid:not(.is-list-view) .registry-card,
+  .registry-page .registry-grid:not(.is-list-view) .registry-card:nth-child(2n),
+  .registry-page .registry-grid:not(.is-list-view) .registry-card:nth-child(3n) {
+    border: 1px solid var(--ui-line) !important;
+  }
+  .home-page .client-grid .client-card h3,
+  .registry-page .registry-grid:not(.is-list-view) .registry-card h3 {
+    margin-inline: .7rem;
+    font-size: clamp(.92rem, 4.5vw, 1.15rem);
+    line-height: 1;
+    overflow-wrap: anywhere;
+  }
+  .home-page .client-grid .client-card > p,
+  .registry-page .registry-grid:not(.is-list-view) .registry-card > p {
+    margin-inline: .7rem;
+    font-size: .56rem;
+    line-height: 1.35;
+  }
+  .home-page .client-grid .client-card-data,
+  .registry-page .registry-grid:not(.is-list-view) .client-card-data,
+  .home-page .client-grid .client-card-levels,
+  .registry-page .registry-grid:not(.is-list-view) .client-card-levels {
+    margin-inline: .7rem;
+  }
   .catalog-hero { grid-template-columns: 1fr; min-height: 300px; padding-block: 3rem; }
   .catalog-hero h1 { margin-top: 2rem; font-size: clamp(3.25rem, 15vw, 5.5rem); }
   .catalog-controls { padding-block: .9rem; }
@@ -2287,12 +2319,19 @@ body .record-shell .lore-media { border-color: var(--ui-line); }
 }
 
 @media (max-width: 560px) {
-  .client-grid, .home-page .client-grid, .registry-page .registry-grid { grid-template-columns: 1fr; }
-  .client-card img, .home-page .client-card img, .registry-page .registry-card img { aspect-ratio: 16 / 11; }
+  .client-grid, .home-page .client-grid, .registry-page .registry-grid:not(.is-list-view) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .client-card img, .home-page .client-card img, .registry-page .registry-card img { aspect-ratio: 1; }
   .registry-grid.is-list-view .registry-card { grid-template-columns: 104px minmax(0, 1fr); }
   .site-footer:not(.history-footer) { grid-template-columns: 1fr; }
   .home-page .registry-more-card { min-height: 300px; }
   .home-page .registry-more-card > strong { font-size: clamp(2.15rem, 10vw, 3.2rem); }
+}
+
+/* Empty level segments stay neutral when the card is hovered or focused. */
+@media (hover: hover) {
+  :is(.client-card, .registry-card):is(:hover, :focus-visible) .client-card-level-scale > span:not(.is-active) {
+    background: #d0cec6;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
