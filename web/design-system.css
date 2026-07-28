@@ -2350,7 +2350,7 @@ body:not(.is-record-inline-editing) .record-editor-actions button:is([data-recor
   place-items: center;
   color: var(--ui-muted) !important;
   background: transparent !important;
-  border: 1px solid var(--ui-line-strong) !important;
+  border: 1px solid var(--ui-line) !important;
 }
 body:not(.is-record-inline-editing) .record-editor-actions button:is([data-record-edit], [data-record-delete]) svg {
   width: 15px;
