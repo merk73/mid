@@ -14,7 +14,7 @@
     <script src="site-access.js?v=6"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
     <link rel="stylesheet" href="styles.css?v=103" />
-    <link rel="stylesheet" href="design-system.css?v=30" />
+    <link rel="stylesheet" href="design-system.css?v=31" />
   </head>
   <body>
     <div class="site-shell record-shell">
@@ -48,8 +48,8 @@
             <h1 id="record-name"></h1>
             <p class="record-alias" id="record-alias"></p>
             <div class="record-editor-actions" data-record-editor-actions hidden>
-              <button type="button" data-record-edit>РЕДАКТИРОВАТЬ</button>
-              <button type="button" data-record-delete>УДАЛИТЬ КАРТОЧКУ</button>
+              <button type="button" data-record-edit aria-label="Редактировать карточку" title="Редактировать карточку"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4Z" /><path d="m13.5 6.5 4 4" /></svg></button>
+              <button type="button" data-record-delete aria-label="Удалить карточку" title="Удалить карточку"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 7h14M9 7V4h6v3M7 7l1 13h8l1-13M10 11v5M14 11v5" /></svg></button>
               <button type="button" data-record-save hidden>СОХРАНИТЬ ИЗМЕНЕНИЯ</button>
               <button type="button" data-record-cancel hidden>ОТМЕНИТЬ</button>
             </div>
@@ -176,6 +176,6 @@
     <script src="geo-seeds.js?v=1"></script>
     <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="anonymous"></script>
     <script src="record-map.js?v=5"></script>
-    <script src="record-inline-editor.js?v=8"></script>
+    <script src="record-inline-editor.js?v=9"></script>
   </body>
 </html>

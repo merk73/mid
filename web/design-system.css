@@ -2334,6 +2334,58 @@ body .record-shell .lore-media { border-color: var(--ui-line); }
   }
 }
 
+/* Dossier actions: quiet icon controls in view mode; full text controls while editing. */
+body:not(.is-record-inline-editing) .record-editor-actions:not([hidden]) {
+  display: flex !important;
+  width: max-content;
+  margin-top: 1.25rem;
+  gap: .35rem;
+}
+body:not(.is-record-inline-editing) .record-editor-actions button:is([data-record-edit], [data-record-delete]) {
+  display: grid;
+  width: 36px !important;
+  min-width: 36px;
+  min-height: 36px;
+  padding: 0 !important;
+  place-items: center;
+  color: var(--ui-muted) !important;
+  background: transparent !important;
+  border: 1px solid var(--ui-line-strong) !important;
+}
+body:not(.is-record-inline-editing) .record-editor-actions button:is([data-record-edit], [data-record-delete]) svg {
+  width: 15px;
+  height: 15px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: square;
+  stroke-linejoin: miter;
+}
+body:not(.is-record-inline-editing) .record-editor-actions button[data-record-edit]:is(:hover, :focus-visible) {
+  color: var(--ui-ink) !important;
+  background: var(--ui-surface) !important;
+  border-color: var(--ui-ink) !important;
+}
+body:not(.is-record-inline-editing) .record-editor-actions button[data-record-delete]:is(:hover, :focus-visible) {
+  color: var(--ui-accent) !important;
+  background: color-mix(in srgb, var(--ui-accent) 7%, transparent) !important;
+  border-color: color-mix(in srgb, var(--ui-accent) 55%, var(--ui-line)) !important;
+}
+body:not(.is-record-inline-editing):is([data-record-type="anomaly"], [data-record-type="incident"]) .record-editor-actions button:is([data-record-edit], [data-record-delete]) {
+  color: rgba(255, 255, 255, .58) !important;
+  border-color: rgba(255, 255, 255, .28) !important;
+}
+body:not(.is-record-inline-editing):is([data-record-type="anomaly"], [data-record-type="incident"]) .record-editor-actions button[data-record-edit]:is(:hover, :focus-visible) {
+  color: #fff !important;
+  background: rgba(255, 255, 255, .08) !important;
+  border-color: rgba(255, 255, 255, .72) !important;
+}
+body:not(.is-record-inline-editing):is([data-record-type="anomaly"], [data-record-type="incident"]) .record-editor-actions button[data-record-delete]:is(:hover, :focus-visible) {
+  color: #ff8b83 !important;
+  background: rgba(197, 45, 34, .12) !important;
+  border-color: rgba(255, 139, 131, .58) !important;
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }

@@ -2,8 +2,9 @@
   "use strict";
 
   const params = new URLSearchParams(window.location.search);
-  const type = params.get("type") || "client";
-  const id = params.get("id") || "";
+  const pathId = window.MIDGAS_RECORD_ID_FROM_PATH?.() || "";
+  const id = String(params.get("id") || pathId || "").toUpperCase();
+  const type = params.get("type") || window.MIDGAS_RECORD_TYPE_FROM_ID?.(id) || "client";
   const store = window.MIDGAS_EDITOR_STORE;
   const session = window.MIDGAS_EDITOR_SESSION;
   const actions = document.querySelector("[data-record-editor-actions]");
