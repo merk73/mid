@@ -2040,6 +2040,7 @@ body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) {
 .catalog-results, .catalog-results-meta { background: var(--ui-surface); }
 .catalog-results-meta { border-bottom-color: var(--ui-line); }
 .registry-grid.is-list-view { padding-bottom: 0; }
+.registry-page .registry-grid.is-list-view { grid-template-columns: minmax(0, 1fr); }
 .registry-grid.is-list-view .registry-card { margin-bottom: .7rem; border: 1px solid var(--ui-line) !important; }
 .registry-grid.is-list-view .registry-card img { border-right-color: var(--ui-line); }
 
@@ -2319,8 +2320,22 @@ body .record-shell .lore-media { border-color: var(--ui-line); }
 }
 
 @media (max-width: 560px) {
-  .client-grid, .home-page .client-grid, .registry-page .registry-grid:not(.is-list-view) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .client-card img, .home-page .client-card img, .registry-page .registry-card img { aspect-ratio: 1; }
+  .home-page .client-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .registry-page .registry-grid:not(.is-list-view) { grid-template-columns: minmax(0, 1fr); }
+  .home-page .client-card img { aspect-ratio: 1; }
+  .registry-page .registry-grid:not(.is-list-view) .registry-card img { aspect-ratio: 16 / 11; }
+  .registry-page .registry-grid:not(.is-list-view) .registry-card h3 {
+    margin-inline: 1rem;
+    font-size: clamp(1.15rem, 7vw, 1.75rem);
+    line-height: 1.08;
+  }
+  .registry-page .registry-grid:not(.is-list-view) .registry-card > p {
+    margin-inline: 1rem;
+    font-size: .72rem;
+    line-height: 1.55;
+  }
+  .registry-page .registry-grid:not(.is-list-view) .client-card-data { margin-inline: 0; }
+  .registry-page .registry-grid:not(.is-list-view) .client-card-levels { margin: 0 0 0 .6rem; }
   .registry-grid.is-list-view .registry-card { grid-template-columns: 104px minmax(0, 1fr); }
   .site-footer:not(.history-footer) { grid-template-columns: 1fr; }
   .home-page .registry-more-card { min-height: 300px; }
