@@ -178,7 +178,7 @@ function renderPreviewGrid(grid, records, recordType, limit) {
     const label = document.createElement("span");
     label.textContent = "ПОЛНЫЙ КАТАЛОГ";
     const title = document.createElement("strong");
-    title.textContent = recordType === "client" ? "ПОСМОТРЕТЬ ВСЕХ" : "ПОСМОТРЕТЬ ВСЕ";
+    title.append("ПОСМОТРЕТЬ", document.createElement("br"), recordType === "client" ? "ВСЕХ" : "ВСЕ");
     const count = document.createElement("span");
     count.textContent = `${String(records.length).padStart(4, "0")} →`;
     allCard.append(label, title, count);
