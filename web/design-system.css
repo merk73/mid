@@ -2229,6 +2229,10 @@ body .record-shell .lore-media { border-color: var(--ui-line); }
   html { scroll-padding-top: 60px; }
   body .site-header.unified-site-header,
   body.home-page .site-header.unified-site-header { min-height: calc(56px + env(safe-area-inset-top)); }
+  body .site-header.unified-site-header :is(.menu-toggle, .mobile-wordmark, .header-back-button, .header-account-avatar),
+  body.home-page .site-header.unified-site-header:is(.is-scrolled, .menu-open) :is(.menu-toggle, .mobile-wordmark, .header-back-button, .header-account-avatar) {
+    background: transparent !important;
+  }
   .unified-site-header .main-navigation {
     padding: .55rem;
     background: color-mix(in srgb, var(--ui-paper) 97%, transparent);
@@ -2282,6 +2286,28 @@ body .record-shell .lore-media { border-color: var(--ui-line); }
   .registry-page .registry-grid:not(.is-list-view) .client-card-levels {
     margin-inline: .7rem;
   }
+  /* List mode is a single edge-to-edge archive stream, never a card grid. */
+  .registry-page .registry-grid.is-list-view {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+    padding: 0;
+    background: transparent;
+    border-top: 1px solid var(--ui-ink);
+  }
+  .registry-page .registry-grid.is-list-view .registry-card,
+  .registry-page .registry-grid.is-list-view .registry-card:nth-child(2n),
+  .registry-page .registry-grid.is-list-view .registry-card:nth-child(3n) {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0 !important;
+    border-bottom: 1px solid var(--ui-ink) !important;
+    box-shadow: none;
+  }
+  .registry-page .registry-grid.is-list-view .registry-card img {
+    border-right: 1px solid var(--ui-line);
+    border-bottom: 0;
+  }
   .catalog-hero { grid-template-columns: 1fr; min-height: 300px; padding-block: 3rem; }
   .catalog-hero h1 { margin-top: 2rem; font-size: clamp(3.25rem, 15vw, 5.5rem); }
   .catalog-controls { padding-block: .9rem; }
@@ -2320,26 +2346,85 @@ body .record-shell .lore-media { border-color: var(--ui-line); }
 }
 
 @media (max-width: 560px) {
-  .home-page .client-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .registry-page .registry-grid:not(.is-list-view) { grid-template-columns: minmax(0, 1fr); }
-  .home-page .client-card img { aspect-ratio: 1; }
-  .registry-page .registry-grid:not(.is-list-view) .registry-card img { aspect-ratio: 16 / 11; }
+  /* Restore the pre-redesign mobile card language while keeping two columns. */
+  .home-page .client-grid,
+  .registry-page .registry-grid:not(.is-list-view) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0;
+    padding: 0;
+    background: transparent;
+    border-top: 1px solid var(--ui-ink);
+  }
+  .home-page .client-grid .client-card,
+  .home-page .client-grid .client-card:nth-child(3n),
+  .home-page .client-grid .client-card:nth-child(4n),
+  .registry-page .registry-grid:not(.is-list-view) .registry-card,
+  .registry-page .registry-grid:not(.is-list-view) .registry-card:nth-child(3n),
+  .registry-page .registry-grid:not(.is-list-view) .registry-card:nth-child(4n) {
+    padding-bottom: 18px;
+    border: 0 !important;
+    border-right: 1px solid var(--ui-ink) !important;
+    border-bottom: 1px solid var(--ui-ink) !important;
+    box-shadow: none;
+  }
+  .home-page .client-grid .client-card:nth-child(2n),
+  .registry-page .registry-grid:not(.is-list-view) .registry-card:nth-child(2n) {
+    border-right: 0 !important;
+  }
+  .home-page .client-grid .client-card img,
+  .registry-page .registry-grid:not(.is-list-view) .registry-card img { aspect-ratio: 1; }
+  .home-page .client-grid .client-card h3,
   .registry-page .registry-grid:not(.is-list-view) .registry-card h3 {
-    margin-inline: 1rem;
-    font-size: clamp(1.15rem, 7vw, 1.75rem);
-    line-height: 1.08;
+    max-width: none;
+    min-height: 2em;
+    margin: 14px 10px 6px;
+    font-size: clamp(18px, 5.8vw, 24px);
+    line-height: 1;
+    overflow-wrap: anywhere;
   }
+  .home-page .client-grid .client-card > p,
   .registry-page .registry-grid:not(.is-list-view) .registry-card > p {
-    margin-inline: 1rem;
-    font-size: .72rem;
-    line-height: 1.55;
+    margin: 0 10px;
+    font-size: 9px;
+    line-height: 1.4;
   }
-  .registry-page .registry-grid:not(.is-list-view) .client-card-data { margin-inline: 0; }
-  .registry-page .registry-grid:not(.is-list-view) .client-card-levels { margin: 0 0 0 .6rem; }
-  .registry-grid.is-list-view .registry-card { grid-template-columns: 104px minmax(0, 1fr); }
+  .home-page .client-grid .client-card-data,
+  .registry-page .registry-grid:not(.is-list-view) .client-card-data {
+    min-height: 42px;
+    margin: 0;
+    padding: 10px;
+    font-size: 9px;
+  }
+  .home-page .client-grid .client-card-data--levels,
+  .registry-page .registry-grid:not(.is-list-view) .client-card-data--levels {
+    display: grid;
+    grid-template-columns: 1fr;
+    min-height: 72px;
+    padding: 0;
+  }
+  .home-page .client-grid .client-card-levels,
+  .registry-page .registry-grid:not(.is-list-view) .client-card-levels {
+    width: 100%;
+    min-height: 72px;
+    margin: 0;
+    border-left: 0;
+  }
+  .home-page .client-grid .client-card-level,
+  .registry-page .registry-grid:not(.is-list-view) .client-card-level { min-width: 0; padding: 9px 7px 8px; }
+  .home-page .client-grid .client-card-level small,
+  .registry-page .registry-grid:not(.is-list-view) .client-card-level small { font-size: 7px; }
+  .home-page .client-grid .client-card-level strong,
+  .registry-page .registry-grid:not(.is-list-view) .client-card-level strong { font-size: 18px; }
+  .home-page .client-grid .client-card-level-scale,
+  .registry-page .registry-grid:not(.is-list-view) .client-card-level-scale { gap: 2px; margin-top: 8px; }
+  .home-page .client-grid .client-card-level-scale > span,
+  .registry-page .registry-grid:not(.is-list-view) .client-card-level-scale > span { min-width: 0; height: 5px; }
+  .registry-page .registry-grid.is-list-view .registry-card {
+    grid-template-columns: 112px minmax(0, 1fr);
+  }
   .site-footer:not(.history-footer) { grid-template-columns: 1fr; }
-  .home-page .registry-more-card { min-height: 300px; }
-  .home-page .registry-more-card > strong { font-size: clamp(2.15rem, 10vw, 3.2rem); }
+  .home-page .registry-more-card { min-height: 250px; padding: 18px 14px; }
+  .home-page .registry-more-card > strong { font-size: clamp(23px, 7vw, 32px); }
 }
 
 /* Empty level segments stay neutral when the card is hovered or focused. */
