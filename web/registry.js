@@ -130,7 +130,7 @@ function createRegistryCard(record) {
 function createRegistryAddCard() {
   const link = document.createElement("a");
   link.className = "registry-create-card";
-  link.href = `editor.html?create=${encodeURIComponent(registryType)}&rev=9`;
+  link.href = `editor.html?create=${encodeURIComponent(registryType)}&rev=10`;
   const icon = document.createElement("span");
   icon.textContent = "+";
   const title = document.createElement("strong");

@@ -578,7 +578,7 @@
   }
 
   function startEditing() {
-    if (!isEditor()) { window.location.href = "editor.html?rev=9"; return; }
+    if (!isEditor()) { window.location.href = "editor.html?rev=10"; return; }
     const record = currentRecord();
     if (!record || editing) return;
     editing = true;

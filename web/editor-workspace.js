@@ -349,22 +349,35 @@
   });
 
   async function waitForAccount() {
-    const immediate = await session.ready;
-    if (immediate) return immediate;
+    if (status) status.textContent = "ПРОВЕРЯЕМ СЕССИЮ РЕДАКТОРА…";
+    const immediate = await session.ready.catch(() => null);
+    if (immediate && session.hasAccess("editor")) return immediate;
+    const refreshed = await session.refresh?.().catch(() => null);
+    if (refreshed && session.hasAccess("editor")) return refreshed;
     return new Promise((resolve) => {
-      const timeout = window.setTimeout(() => resolve(session.read()), 4000);
-      window.addEventListener(session.eventName, function onSession(event) {
-        if (!event.detail?.account) return;
+      const timeout = window.setTimeout(() => {
+        window.removeEventListener(session.eventName, onSession);
+        resolve(session.read());
+      }, 15000);
+      function onSession(event) {
+        if (!event.detail?.account || !session.hasAccess("editor")) return;
         window.clearTimeout(timeout);
         window.removeEventListener(session.eventName, onSession);
         resolve(event.detail.account);
-      });
+      }
+      window.addEventListener(session.eventName, onSession);
     });
   }
 
   waitForAccount().then(async (current) => {
     account = current || session.read();
-    if (!account || !session.hasAccess("editor")) { window.location.replace("account.html?rev=8"); return; }
+    if (!account || !session.hasAccess("editor")) {
+      document.querySelector("[data-workspace-role]").textContent = "ДОСТУП НЕ ПОДТВЕРЖДЁН";
+      document.querySelector("[data-workspace-login]").textContent = "СЕССИЯ НЕ ЗАГРУЖЕНА";
+      document.querySelectorAll("[data-editor-kind]").forEach((button) => { button.disabled = true; });
+      if (status) status.innerHTML = 'Не удалось подтвердить роль редактора. <a href="account.html?rev=8">Откройте аккаунт</a> и повторите вход.';
+      return;
+    }
     document.querySelector("[data-workspace-role]").textContent = account.role === "admin" ? "АДМИНИСТРАТОР" : "РЕДАКТОР";
     document.querySelector("[data-workspace-login]").textContent = account.login;
     try { await window.MIDGAS_SUPABASE_DATA?.ready; await bootstrapGlossaryEntries(); await loadEntries(); }

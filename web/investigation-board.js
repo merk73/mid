@@ -837,7 +837,7 @@
       if (!editingKey && typeOrder.includes(selectedType)) {
         closeNodeDialog();
         closeBoard();
-        window.location.href = `editor.html?create=${encodeURIComponent(selectedType)}&rev=9`;
+        window.location.href = `editor.html?create=${encodeURIComponent(selectedType)}&rev=10`;
         return;
       }
       const center = worldPoint(viewport.getBoundingClientRect().left + viewport.clientWidth / 2, viewport.getBoundingClientRect().top + viewport.clientHeight / 2);
