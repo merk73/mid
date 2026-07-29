@@ -25,7 +25,7 @@
   });
 
   session.ready.then(async (account) => {
-    if (!account || !session.hasAccess("editor")) { window.location.replace("account.html"); return; }
+    if (!account || !session.hasAccess("editor")) { window.location.replace("account.html?rev=8"); return; }
     try { await window.MIDGAS_SUPABASE_DATA.ready; await load(); }
     catch (error) { status.textContent = error?.message || "Не удалось загрузить журнал."; }
   });

@@ -364,7 +364,7 @@
 
   waitForAccount().then(async (current) => {
     account = current || session.read();
-    if (!account || !session.hasAccess("editor")) { window.location.replace("account.html"); return; }
+    if (!account || !session.hasAccess("editor")) { window.location.replace("account.html?rev=8"); return; }
     document.querySelector("[data-workspace-role]").textContent = account.role === "admin" ? "АДМИНИСТРАТОР" : "РЕДАКТОР";
     document.querySelector("[data-workspace-login]").textContent = account.login;
     try { await window.MIDGAS_SUPABASE_DATA?.ready; await bootstrapGlossaryEntries(); await loadEntries(); }
