@@ -3,6 +3,7 @@
 
   const root = document.documentElement;
   const homePage = document.body.classList.contains("home-page");
+  const functionalPage = document.body.matches(".workspace-page, .account-page");
   const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const saveData = Boolean(navigator.connection?.saveData);
   const recordPage = document.querySelector("main.record-page");
@@ -34,7 +35,8 @@
     });
   }
 
-  const revealTargets = recordPage || reduceMotion
+  // Functional controls must not depend on an observer callback to become visible.
+  const revealTargets = recordPage || functionalPage || reduceMotion
     ? []
     : [...document.querySelectorAll("main > section:not(.hero-cover), .account-profile, .account-tools, .workspace-actions, .workspace-content, .workspace-journal")];
 
