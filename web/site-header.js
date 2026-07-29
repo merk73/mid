@@ -25,11 +25,11 @@
       <span class="menu-icon" aria-hidden="true"><span></span><span></span><span></span></span>
     </button>
     <a class="mobile-wordmark" href="${homeHref}" aria-label="THE MIDGAS — главная">THE MIDGAS</a>
-    <a class="header-account-avatar" href="account.html?rev=8" aria-label="Открыть аккаунт"><span data-header-account-initial>•</span></a>
+    <a class="header-account-avatar" href="account.html?rev=9" aria-label="Открыть аккаунт"><span data-header-account-initial>•</span></a>
     <nav class="main-navigation" id="main-navigation" aria-label="Главная навигация">
       <a class="wordmark" href="${homeHref}" aria-label="THE MIDGAS — главная"><span><strong>THE MIDGAS</strong></span></a>
       <div class="nav-group nav-group-primary">${links.map(renderLink).join("")}<button class="header-search-trigger" type="button" data-global-search-open aria-haspopup="dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.8" cy="10.8" r="6.8"></circle><path d="m16 16 5 5"></path></svg><span>Поиск</span><kbd>⌘ K</kbd></button></div>
-      <a class="header-account-link" href="account.html?rev=8" aria-label="Открыть профиль"><b data-header-account-name>Профиль</b><span data-header-account-initial>•</span></a>
+      <a class="header-account-link" href="account.html?rev=9" aria-label="Открыть профиль"><b data-header-account-name>Профиль</b><span data-header-account-initial>•</span></a>
     </nav>
     <section class="global-search" data-global-search hidden role="dialog" aria-modal="true" aria-labelledby="global-search-title">
       <div class="global-search-panel">

@@ -375,7 +375,7 @@
       document.querySelector("[data-workspace-role]").textContent = "ДОСТУП НЕ ПОДТВЕРЖДЁН";
       document.querySelector("[data-workspace-login]").textContent = "СЕССИЯ НЕ ЗАГРУЖЕНА";
       document.querySelectorAll("[data-editor-kind]").forEach((button) => { button.disabled = true; });
-      if (status) status.innerHTML = 'Не удалось подтвердить роль редактора. <a href="account.html?rev=8">Откройте аккаунт</a> и повторите вход.';
+      if (status) status.innerHTML = 'Не удалось подтвердить роль редактора. <a href="account.html?rev=9">Откройте аккаунт</a> и повторите вход.';
       return;
     }
     document.querySelector("[data-workspace-role]").textContent = account.role === "admin" ? "АДМИНИСТРАТОР" : "РЕДАКТОР";
