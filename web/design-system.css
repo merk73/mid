@@ -2486,6 +2486,102 @@ body:not(.is-record-inline-editing):is([data-record-type="anomaly"], [data-recor
   border-color: rgba(255, 139, 131, .58) !important;
 }
 
+/* Interaction polish: restrained movement, clearer feedback and no layout jumps. */
+html { scroll-behavior: smooth; }
+
+:where(
+  .filter-button,
+  .catalog-view button,
+  .catalog-search-clear,
+  .catalog-reset,
+  .account-action,
+  .workspace-action-grid button,
+  .record-editor-actions button,
+  .company-process-toggle
+) {
+  transition:
+    color 220ms var(--ui-ease),
+    background-color 220ms var(--ui-ease),
+    border-color 220ms var(--ui-ease),
+    opacity 220ms var(--ui-ease),
+    transform 340ms var(--ui-ease);
+}
+
+.motion-enabled .motion-reveal {
+  transition-duration: 620ms;
+  transition-timing-function: cubic-bezier(.22, 1, .36, 1);
+}
+.motion-enabled .motion-reveal:not(.is-visible) { transform: translateY(12px); }
+
+@media (hover: hover) and (pointer: fine) {
+  :where(.filter-button, .catalog-view button, .catalog-reset, .account-action, .workspace-action-grid button):is(:hover, :focus-visible) {
+    transform: translateY(-1px);
+  }
+  :where(.registry-card, .client-card):hover { transform: translateY(-2px); }
+}
+
+@media (max-width: 760px) {
+  /* Every header control owns its complete grid cell, including the menu key. */
+  body .site-header.unified-site-header .menu-toggle { width: 100% !important; }
+
+  /* Keep the menu in the document as a composited layer so opening it is smooth. */
+  body .site-header.unified-site-header .main-navigation,
+  body .site-header.unified-site-header .main-navigation.is-open {
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: .25rem;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateY(-8px);
+    transform-origin: top center;
+    transition:
+      opacity 220ms var(--ui-ease),
+      transform 320ms cubic-bezier(.22, 1, .36, 1),
+      visibility 0s linear 320ms;
+  }
+  body .site-header.unified-site-header .main-navigation.is-open {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+    transition-delay: 0s;
+  }
+  body .site-header.unified-site-header .main-navigation .nav-group {
+    display: grid;
+    width: 100%;
+    min-width: 0;
+    grid-template-columns: minmax(0, 1fr);
+    gap: .25rem;
+  }
+  body .site-header.unified-site-header .main-navigation .header-account-link {
+    position: static;
+    display: flex;
+    width: 100%;
+    min-width: 0;
+    min-height: 46px;
+    margin: 0;
+    padding: 0 1rem;
+    align-items: center;
+    justify-content: flex-start;
+    color: var(--ui-ink);
+    background: var(--ui-surface);
+    border: 0 !important;
+  }
+  body .site-header.unified-site-header .main-navigation .header-account-link :is(span, b) {
+    display: none !important;
+  }
+
+  /* Eager card images must also be paintable before they enter the viewport. */
+  .registry-page .registry-grid .registry-card img {
+    content-visibility: visible;
+    contain-intrinsic-size: none;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
 }

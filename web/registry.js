@@ -31,6 +31,7 @@ const visibleCount = document.querySelector("#catalog-visible-count");
 const viewButtons = [...document.querySelectorAll("[data-catalog-view]")];
 const state = { query: "", filter: "all", sort: "id", view: "grid" };
 let records = [];
+const eagerRegistryImages = window.matchMedia("(max-width: 760px)").matches;
 
 document.body.dataset.registryType = registryType;
 document.title = `${registryConfig[registryType].title} — THE MIDGAS`;
@@ -100,7 +101,9 @@ function createRegistryCard(record) {
   const image = document.createElement("img");
   image.src = record.cardImage || record.image;
   image.alt = record.name;
-  image.loading = "lazy";
+  // On phones the complete two-column catalog should already be downloading
+  // while the user scans its first rows. Desktop keeps the lighter lazy path.
+  image.loading = eagerRegistryImages ? "eager" : "lazy";
   image.decoding = "async";
   if (record.imageFit) image.dataset.fit = record.imageFit;
 
