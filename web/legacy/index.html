@@ -1,0 +1,911 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <base href="../" />
+    <link rel="stylesheet" href="version-settings.css?v=1">
+    <script src="version-settings.js?v=1"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <script src="legacy/record-url.js?v=1"></script>
+    <meta name="description" content="THE MIDGAS — исследовательский архив клиентов, аномалий и инцидентов." />
+    <title>THE MIDGAS — Research Archive</title>
+    <link rel="preload" as="image" href="assets/video/midgas-hero-poster.webp?v=2" fetchpriority="high" />
+    <link rel="preconnect" href="https://skvwaovkkoxqfwkcpuvh.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="preconnect" href="https://tile.openstreetmap.org" crossorigin />
+    <link rel="preconnect" href="https://nominatim.openstreetmap.org" crossorigin />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="anonymous" />
+    <script src="legacy/site-access.js?v=6"></script>
+    <link rel="stylesheet" href="legacy/styles.css?v=103" />
+    <link rel="stylesheet" href="legacy/design-system.css?v=35" />
+  </head>
+  <body class="home-page">
+    <div class="site-shell">
+      <header class="site-header">
+        <button class="menu-toggle" type="button" aria-label="Открыть меню" aria-expanded="false" aria-controls="main-navigation">
+          <span class="menu-icon" aria-hidden="true"><span></span><span></span><span></span></span>
+        </button>
+        <a class="mobile-wordmark" href="#top">THE MIDGAS</a>
+        <nav class="main-navigation" id="main-navigation" aria-label="Главная навигация">
+          <div class="nav-group nav-group-left">
+            <a href="registry.html?type=client">Клиенты</a>
+            <a href="registry.html?type=anomaly">Аномалии</a>
+            <a href="registry.html?type=incident">Инциденты</a>
+            <a href="historical-archive.html">Архив</a>
+          </div>
+          <a class="wordmark" href="#top" aria-label="THE MIDGAS — на главную">THE MIDGAS</a>
+          <div class="nav-group nav-group-right">
+            <a href="#locations">Локации</a>
+            <a href="#company-materials">Материалы</a>
+            <a href="board.html?board=open">Связи</a>
+            <a href="editor.html?rev=10">Редактор</a>
+          </div>
+        </nav>
+      </header>
+
+      <main id="top">
+        <section class="hero hero-cover hero-portal" aria-labelledby="hero-title" data-hero-rotator data-hero-scene="all">
+          <figure class="hero-media hero-group-photo hero-video-stage" aria-hidden="true">
+            <video autoplay muted loop playsinline preload="auto" poster="assets/video/midgas-hero-poster.webp?v=2" disablepictureinpicture tabindex="-1">
+              <source src="assets/video/midgas-hero-loop.mp4?v=2" type="video/mp4" />
+            </video>
+          </figure>
+          <div class="hero-cover-copy hero-portal-copy">
+            <p class="hero-portal-label">THE MIDGAS / INTERNAL RESEARCH ARCHIVE</p>
+            <div class="hero-portal-scenes">
+              <section class="hero-portal-scene hero-portal-scene--all is-active" data-hero-slide="all" aria-hidden="false">
+                <h1 id="hero-title" class="hero-portal-all-links">
+                  <a href="registry.html?type=client">КЛИЕНТЫ</a>
+                  <a href="registry.html?type=anomaly">АНОМАЛИИ</a>
+                  <a href="registry.html?type=incident">ИНЦИДЕНТЫ</a>
+                  <a href="board.html?board=open">СВЯЗИ</a>
+                  <a href="#locations">ЛОКАЦИИ</a>
+                </h1>
+              </section>
+              <section class="hero-portal-scene hero-portal-scene--detail" data-hero-slide="clients" aria-hidden="true">
+                <span>01 / РЕЕСТР СУБЪЕКТОВ</span>
+                <a class="hero-portal-title" href="registry.html?type=client">КЛИЕНТЫ</a>
+                <p>Досье на людей, существ и наблюдаемые субъекты, вокруг которых сходятся события архива.</p>
+              </section>
+              <section class="hero-portal-scene hero-portal-scene--detail" data-hero-slide="anomalies" aria-hidden="true">
+                <span>02 / ПОЛЕВЫЕ ЯВЛЕНИЯ</span>
+                <a class="hero-portal-title" href="registry.html?type=anomaly">АНОМАЛИИ</a>
+                <p>Зоны и явления, где привычные законы перестают работать предсказуемо.</p>
+              </section>
+              <section class="hero-portal-scene hero-portal-scene--detail" data-hero-slide="incidents" aria-hidden="true">
+                <span>03 / ХРОНОЛОГИЯ СОБЫТИЙ</span>
+                <a class="hero-portal-title" href="registry.html?type=incident">ИНЦИДЕНТЫ</a>
+                <p>Зафиксированные события, связывающие клиентов, места и последствия.</p>
+              </section>
+              <section class="hero-portal-scene hero-portal-scene--detail" data-hero-slide="relations" aria-hidden="true">
+                <span>04 / СТРУКТУРА АРХИВА</span>
+                <a class="hero-portal-title" href="board.html?board=open">СВЯЗИ</a>
+                <p>Интерактивная доска показывает, кто, где и каким образом связан внутри архива.</p>
+              </section>
+              <section class="hero-portal-scene hero-portal-scene--detail" data-hero-slide="locations" aria-hidden="true">
+                <span>05 / ГЕОГРАФИЯ НАБЛЮДЕНИЙ</span>
+                <a class="hero-portal-title" href="#locations">ЛОКАЦИИ</a>
+                <p>Карта точек наблюдения, маршрутов и территорий с привязкой к досье.</p>
+              </section>
+            </div>
+            <nav class="hero-portal-progress" aria-label="Сцены первого экрана">
+              <button class="is-active" type="button" data-hero-go="0" aria-label="Все направления" aria-current="true"><span>00</span></button>
+              <button type="button" data-hero-go="1" aria-label="Клиенты"><span>01</span></button>
+              <button type="button" data-hero-go="2" aria-label="Аномалии"><span>02</span></button>
+              <button type="button" data-hero-go="3" aria-label="Инциденты"><span>03</span></button>
+              <button type="button" data-hero-go="4" aria-label="Связи"><span>04</span></button>
+              <button type="button" data-hero-go="5" aria-label="Локации"><span>05</span></button>
+            </nav>
+          </div>
+        </section>
+
+        <section class="intro-section" id="company">
+          <div class="section-index">00 / ИНСТИТУТ</div>
+          <h2>АРХИВ, В КОТОРОМ<br />ВСЕ СВЯЗАНО.</h2>
+          <div class="intro-copy">
+            <p>THE MIDGAS систематизирует сведения о клиентах, аномальных местах и событиях, которые соединяют их в единую структуру.</p>
+            <p>Штаб-квартира: Нью-Йорк, США.<br />Исследовательская база: Андреевка, Приморский край.</p>
+          </div>
+        </section>
+
+        <section class="support-section" aria-labelledby="support-title">
+          <p id="support-title">СОЗДАНО ПРИ ПОДДЕРЖКЕ:</p>
+          <div class="support-partners">
+            <article class="support-partner">
+              <div class="support-logo">
+                <img src="assets/partners/interstellar-union.svg" alt="Логотип Правительства Межзвёздного союза" width="1254" height="1254" loading="lazy" decoding="async" />
+              </div>
+              <h2>Правительство Межзвёздного союза</h2>
+            </article>
+            <article class="support-partner">
+              <div class="support-logo">
+                <img src="assets/partners/us-government.svg" alt="Логотип Правительства США" width="1254" height="1254" loading="lazy" decoding="async" />
+              </div>
+              <h2>Правительство США</h2>
+            </article>
+            <article class="support-partner">
+              <div class="support-logo support-logo-wide">
+                <img src="assets/partners/grani.svg" alt="Логотип ТСЖ Грань" width="1470" height="704" loading="lazy" decoding="async" />
+              </div>
+              <h2>ТСЖ «Грань»</h2>
+            </article>
+          </div>
+        </section>
+
+        <section class="current-topics" id="current-topics" aria-label="Актуальные темы">
+          <a class="topic-strip" href="record.html?type=anomaly&amp;id=MID-A-0001&amp;from=topics">
+            <img src="assets/topics/andreevka-anomaly.webp" alt="Андреевка ночью" loading="lazy" decoding="async" />
+            <div class="topic-strip-copy">
+              <h3>АНДРЕЕВСКАЯ АНОМАЛИЯ</h3>
+              <p>Зона устойчивых мутаций и необъяснимых событий в районе исследовательской базы MIDGAS.</p>
+            </div>
+          </a>
+          <a class="topic-strip" href="record.html?type=incident&amp;id=MID-I-0001&amp;from=topics">
+            <img src="assets/topics/strakhomakha-exe.webp" alt="Инцидент СТРАХОМАХА.EXE" loading="lazy" decoding="async" />
+            <div class="topic-strip-copy">
+              <h3>ИНЦИДЕНТ СТРАХОМАХА.EXE</h3>
+              <p>Деструктивный вирус без требования выкупа. Более миллиона поражённых компьютеров.</p>
+            </div>
+          </a>
+          <a class="topic-strip" href="record.html?type=client&amp;id=MID-C-0024&amp;from=topics">
+            <img src="assets/topics/anna-matskevich-topic.webp" alt="Анна Мацкевич" loading="lazy" decoding="async" />
+            <div class="topic-strip-copy">
+              <h3>КЛИЕНТ АННА МАЦКЕВИЧ</h3>
+              <p>Сверхопасный клиент, подвергшийся облучению в Андреевке.</p>
+            </div>
+          </a>
+        </section>
+
+        <section class="registry" id="registry" aria-labelledby="registry-title">
+          <div class="section-heading">
+            <span class="section-index">02 / РЕЕСТР</span>
+            <h2 id="registry-title">ТРИ ОСНОВНЫХ МАССИВА</h2>
+          </div>
+
+          <a class="registry-row" id="clients" href="registry.html?type=client">
+            <span class="registry-number">01</span>
+            <span class="registry-title">Клиенты</span>
+            <span class="registry-description">Люди, существа и наблюдаемые субъекты</span>
+            <span class="registry-count">0026</span>
+            <span class="registry-arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="registry-row" id="anomalies" href="registry.html?type=anomaly">
+            <span class="registry-number">02</span>
+            <span class="registry-title">Аномалии</span>
+            <span class="registry-description">Места, зоны и территориальные объекты</span>
+            <span class="registry-count">0001</span>
+            <span class="registry-arrow" aria-hidden="true">→</span>
+          </a>
+          <a class="registry-row" id="incidents" href="registry.html?type=incident">
+            <span class="registry-number">03</span>
+            <span class="registry-title">Инциденты</span>
+            <span class="registry-description">События, объединяющие клиентов и места</span>
+            <span class="registry-count">0002</span>
+            <span class="registry-arrow" aria-hidden="true">→</span>
+          </a>
+        </section>
+
+        <section class="historical-archive-cover" id="historical-archive" aria-labelledby="historical-archive-title">
+          <img src="assets/images/historical-archive-cover.webp" alt="Каменные монолиты и фигуры у огня — обложка исторического архива" loading="lazy" decoding="async" />
+          <div class="historical-archive-shade" aria-hidden="true"></div>
+          <div class="historical-archive-heading">
+            <span>THE MIDGAS / CHRONOLOGY UNIT</span>
+            <h2 id="historical-archive-title">ИСТОРИЧЕСКИЙ АРХИВ</h2>
+          </div>
+          <div class="historical-archive-footer">
+            <p>Архивная реконструкция истории сотворения мира, ранних цивилизаций и утраченных эпох человечества.</p>
+            <a href="historical-archive.html">ИЗУЧИТЬ АРХИВ <span aria-hidden="true">→</span></a>
+          </div>
+        </section>
+
+        <section class="client-preview" id="client-preview" aria-labelledby="clients-title">
+          <div class="section-heading section-heading-inline">
+            <div>
+              <span class="section-index">03 / КЛИЕНТСКАЯ БАЗА / ВЫБОРКА</span>
+              <h2 id="clients-title">КЛИЕНТЫ</h2>
+            </div>
+          </div>
+
+          <div class="client-grid" id="client-grid" aria-live="polite"></div>
+        </section>
+
+        <section class="client-preview record-preview" id="anomaly-preview" aria-labelledby="anomalies-preview-title">
+          <div class="section-heading section-heading-inline">
+            <div>
+              <span class="section-index">04 / БАЗА АНОМАЛИЙ / ВЫБОРКА</span>
+              <h2 id="anomalies-preview-title">АНОМАЛИИ</h2>
+            </div>
+          </div>
+          <div class="client-grid" id="anomaly-grid" aria-live="polite"></div>
+        </section>
+
+        <section class="client-preview record-preview" id="incident-preview" aria-labelledby="incidents-preview-title">
+          <div class="section-heading section-heading-inline">
+            <div>
+              <span class="section-index">05 / БАЗА ИНЦИДЕНТОВ / ВЫБОРКА</span>
+              <h2 id="incidents-preview-title">ИНЦИДЕНТЫ</h2>
+            </div>
+          </div>
+          <div class="client-grid" id="incident-grid" aria-live="polite"></div>
+        </section>
+
+        <section class="world-locations" id="locations" aria-labelledby="world-locations-title">
+          <header class="world-locations-heading company-reveal">
+            <div><span>ГЕОГРАФИЯ / LIVE</span><h2 id="world-locations-title">КАРТА ЛОКАЦИЙ</h2></div>
+            <p>Клиенты и аномалии с координатами из досье. Приблизьте карту, чтобы увидеть фотографию и название каждой записи.</p>
+          </header>
+          <div class="world-map-shell company-reveal">
+            <div class="world-map" data-world-map aria-label="Мировая карта локаций клиентов и аномалий"></div>
+            <div class="world-map-toolbar"><span data-world-map-count>00 ЛОКАЦИЙ</span><div><button type="button" data-world-map-list-toggle aria-expanded="false">СПИСОК</button><button type="button" data-world-map-reset>ПОКАЗАТЬ ВСЕ</button></div></div>
+            <aside class="world-map-list" data-world-map-list hidden aria-label="Список локаций">
+              <header><strong>ЛОКАЦИИ АРХИВА</strong><button type="button" data-world-map-list-close aria-label="Закрыть список">×</button></header>
+              <label><span>НАЙТИ ЛОКАЦИЮ</span><input type="search" data-world-map-search autocomplete="off" placeholder="Название, место или номер" /></label>
+              <div data-world-map-list-items></div>
+            </aside>
+            <span class="world-map-state" data-world-map-state>КАРТА ЗАГРУЗИТСЯ ПРИ ПРИБЛИЖЕНИИ К РАЗДЕЛУ</span>
+          </div>
+          <footer class="world-map-legend"><span><i class="is-client"></i> КЛИЕНТЫ</span><span><i class="is-anomaly"></i> АНОМАЛИИ</span><p>Точка назначается в режиме редактирования досье и сохраняется вместе с карточкой.</p></footer>
+        </section>
+
+        <section class="glossary-section glossary-expanded" id="glossary" aria-labelledby="glossary-title">
+          <header class="glossary-header">
+            <span class="section-index">07 / ГЛОССАРИЙ / 39 ТЕРМИНОВ</span>
+            <div>
+              <h2 id="glossary-title">ГЛОССАРИЙ</h2>
+              <p>Термины внутреннего архива THE MIDGAS. Нажмите на слово, чтобы открыть полное определение.</p>
+            </div>
+          </header>
+
+          <div class="glossary-tools">
+            <label>
+              <span>ПОИСК</span>
+              <input id="glossary-search" type="search" placeholder="Найти термин" autocomplete="off" />
+            </label>
+            <div class="glossary-filters" aria-label="Фильтр категорий">
+              <button class="is-active" type="button" data-glossary-filter="all">ВСЕ / 39</button>
+              <button type="button" data-glossary-filter="registry">ПРОТОКОЛ / 13</button>
+              <button type="button" data-glossary-filter="field">ЯВЛЕНИЯ / 13</button>
+              <button type="button" data-glossary-filter="cosmos">КОСМОЛОГИЯ / 13</button>
+            </div>
+          </div>
+
+          <div class="glossary-groups" id="glossary-groups" aria-live="polite">
+            <section class="glossary-group" data-glossary-group="registry">
+              <div class="glossary-group-heading"><span>01</span><h3>ПРОТОКОЛ РЕЕСТРА</h3><p>Классификация записей, допуска и оперативного риска.</p></div>
+              <div class="glossary-grid">
+                <article class="glossary-entry" id="term-client" data-glossary-entry data-group="registry">
+                  <div><span>01 / MID-C</span><h4>КЛИЕНТ</h4><em>ПРОТОКОЛ</em></div>
+                  <p>Человек, существо или иной устойчиво наблюдаемый субъект, которому присвоена запись серии MID-C. Статус клиента означает наличие досье, а не согласие субъекта на наблюдение и не установленную опасность.</p>
+                  <a href="registry.html?type=client">РЕЕСТР КЛИЕНТОВ →</a>
+                </article>
+                <article class="glossary-entry" id="term-anomaly" data-glossary-entry data-group="registry">
+                  <div><span>02 / MID-A</span><h4>АНОМАЛИЯ</h4><em>ПРОТОКОЛ</em></div>
+                  <p>Пространственно закреплённая зона, в которой отклонения повторяются и сохраняются за пределами отдельного события. Основным признаком является связь с территорией; записи получают код серии MID-A.</p>
+                  <a href="registry.html?type=anomaly">РЕЕСТР АНОМАЛИЙ →</a>
+                </article>
+                <article class="glossary-entry" id="term-incident" data-glossary-entry data-group="registry">
+                  <div><span>03 / MID-I</span><h4>ИНЦИДЕНТ</h4><em>ПРОТОКОЛ</em></div>
+                  <p>Ограниченное во времени либо циклически повторяющееся событие, связывающее субъектов, территории и технические системы. В отличие от аномалии определяется прежде всего ходом и периодом активности.</p>
+                  <a href="registry.html?type=incident">РЕЕСТР ИНЦИДЕНТОВ →</a>
+                </article>
+                <article class="glossary-entry" id="term-related" data-glossary-entry data-group="registry">
+                  <div><span>04 / LINK</span><h4>СВЯЗАННАЯ ЗАПИСЬ</h4><em>МЕТАДАННЫЕ</em></div>
+                  <p>Перекрёстная ссылка между досье, указывающая на совпадение места, времени, материала или участников. Наличие ссылки помогает навигации, но само по себе не доказывает причинную связь.</p>
+                  <a href="#registry">ТРИ МАССИВА →</a>
+                </article>
+                <article class="glossary-entry" id="term-threat" data-glossary-entry data-group="registry">
+                  <div><span>05 / T0–T5</span><h4>УРОВЕНЬ УГРОЗЫ</h4><em>ОПЕРАТИВНАЯ ОЦЕНКА</em></div>
+                  <p>Оценка возможного ущерба при контакте или развитии явления. Код определяет режим наблюдения и реагирования, но не характеризует вину или намерения клиента. T5 означает критический уровень.</p>
+                  <a href="record.html?type=incident&amp;id=MID-I-0001">ПРИМЕР T5 →</a>
+                </article>
+                <article class="glossary-entry" id="term-access" data-glossary-entry data-group="registry">
+                  <div><span>06 / D1–D5</span><h4>УРОВЕНЬ ДОСТУПА</h4><em>ЛИЧНЫЙ ДОПУСК КЛИЕНТА</em></div>
+                  <p>Личный уровень доступа самого клиента к сведениям и возможностям общей системы MIDGAS. D1 — очень низкий; D2 — низкий; D3 — средний; D4 — высокий; D5 — полный доступ. Шкала не обозначает публичность карточки и не ограничивает читателя сайта.</p>
+                  <a href="editor.html?rev=10">РЕДАКТОР КАРТОЧЕК →</a>
+                </article>
+                <article class="glossary-entry" id="term-archive-revision" data-glossary-entry data-group="registry">
+                  <div><span>19 / REV</span><h4>АРХИВНАЯ РЕВИЗИЯ</h4><em>ПРОТОКОЛ</em></div>
+                  <p>Зафиксированная версия реестра, объединяющая состав записей, время сборки и контрольную подпись. Ревизия позволяет точно восстановить состояние архива до внесения последующих изменений.</p>
+                  <a href="editor.html?rev=10#company-journal">ЖУРНАЛ ИЗМЕНЕНИЙ →</a>
+                </article>
+                <article class="glossary-entry" id="term-control-snapshot" data-glossary-entry data-group="registry">
+                  <div><span>20 / SNAP</span><h4>КОНТРОЛЬНЫЙ СНИМОК</h4><em>ФИКСАЦИЯ</em></div>
+                  <p>Полное состояние реестра на заданный момент: карточки, связи, медиафайлы и служебные отметки. Используется для сравнения редакций и поиска утраченных фрагментов.</p>
+                  <a href="#company-method">ПРОТОКОЛ СБОРКИ →</a>
+                </article>
+                <article class="glossary-entry" id="term-primary-registration" data-glossary-entry data-group="registry">
+                  <div><span>21 / REG-01</span><h4>ПЕРВИЧНАЯ РЕГИСТРАЦИЯ</h4><em>РЕЕСТР</em></div>
+                  <p>Создание первой карточки после получения минимального набора идентификаторов, дат и исходных материалов. После регистрации запись получает постоянный код своего массива.</p>
+                  <a href="#registry">ТРИ МАССИВА →</a>
+                </article>
+                <article class="glossary-entry" id="term-provenance-chain" data-glossary-entry data-group="registry">
+                  <div><span>22 / SOURCE</span><h4>ЦЕПОЧКА ПРОИСХОЖДЕНИЯ</h4><em>МЕТАДАННЫЕ</em></div>
+                  <p>Последовательность источников, копирований и редакционных преобразований конкретного файла или свидетельства. Каждая операция добавляется в историю материала без удаления предыдущего состояния.</p>
+                  <a href="#company-method">МЕТОД РАБОТЫ →</a>
+                </article>
+                <article class="glossary-entry" id="term-testimony" data-glossary-entry data-group="registry">
+                  <div><span>23 / WITNESS</span><h4>СВИДЕТЕЛЬСТВО</h4><em>ИСТОЧНИК</em></div>
+                  <p>Зафиксированное сообщение наблюдателя с указанием времени, места, обстоятельств и способа получения. В карточке хранится отдельно от редакционного пересказа и выводов группы.</p>
+                  <a href="#company-method">ПРОТОКОЛ ПРОВЕРКИ →</a>
+                </article>
+                <article class="glossary-entry" id="term-field-material" data-glossary-entry data-group="registry">
+                  <div><span>24 / FIELD</span><h4>ПОЛЕВОЙ МАТЕРИАЛ</h4><em>ПЕРВИЧНЫЙ ДОКУМЕНТ</em></div>
+                  <p>Фотография, видеозапись, показание прибора, проба или журнал, полученные непосредственно на маршруте исследования. Материал сопровождается датой, сектором и автором фиксации.</p>
+                  <a href="#company-files">КАРТОТЕКА →</a>
+                </article>
+                <article class="glossary-entry" id="term-editorial-reconstruction" data-glossary-entry data-group="registry">
+                  <div><span>25 / RECON</span><h4>РЕДАКЦИОННАЯ РЕКОНСТРУКЦИЯ</h4><em>ВИЗУАЛИЗАЦИЯ</em></div>
+                  <p>Визуальное или текстовое восстановление эпизода по материалам архива. Всегда маркируется отдельно от первичного документа и не подменяет исходную запись.</p>
+                  <a href="historical-archive.html">ИСТОРИЧЕСКИЙ АРХИВ →</a>
+                </article>
+              </div>
+            </section>
+
+            <section class="glossary-group" data-glossary-group="field">
+              <div class="glossary-group-heading"><span>02</span><h3>ПОЛЕВЫЕ И ТЕХНИЧЕСКИЕ ЯВЛЕНИЯ</h3><p>Территории, процессы и рабочие измерительные модели.</p></div>
+              <div class="glossary-grid">
+                <article class="glossary-entry" id="term-andreevka" data-glossary-entry data-group="field">
+                  <div><span>07 / MID-A-0001</span><h4>АНДРЕЕВСКАЯ АНОМАЛИЯ</h4><em>ТЕРРИТОРИАЛЬНЫЙ КОМПЛЕКС</em></div>
+                  <p>Зона на полуострове Витязь, где совместно фиксируются остаточное радиационное загрязнение, биологические изменения, электромагнитные помехи и активность подземной инфраструктуры.</p>
+                  <a href="record.html?type=anomaly&amp;id=MID-A-0001">ОТКРЫТЬ ДОСЬЕ →</a>
+                </article>
+                <article class="glossary-entry" id="term-resonance" data-glossary-entry data-group="field">
+                  <div><span>08 / MODEL-R</span><h4>РЕЗОНАНСНЫЙ КОНТУР</h4><em>РАБОЧАЯ МОДЕЛЬ</em></div>
+                  <p>Модель самоподдерживающейся связи между источником, организмом и средой. Применяется, когда воздействие сохраняется после выхода субъекта из исходной зоны или способно повторно активироваться.</p>
+                  <a href="record.html?type=anomaly&amp;id=MID-A-0001">АНДРЕЕВСКИЙ СЕКТОР →</a>
+                </article>
+                <article class="glossary-entry" id="term-mutation" data-glossary-entry data-group="field">
+                  <div><span>09 / BIO</span><h4>ПОСТЛУЧЕВАЯ МУТАЦИЯ</h4><em>НАБЛЮДАЕМОЕ СОСТОЯНИЕ</em></div>
+                  <p>Устойчивая биологическая перестройка, зарегистрированная после продолжительного лучевого или аномального воздействия. Категория не устанавливает единственную причину и не подразумевает наследуемость.</p>
+                  <a href="record.html?type=client&amp;id=MID-C-0024">СВЯЗАННЫЙ КЛИЕНТ →</a>
+                </article>
+                <article class="glossary-entry" id="term-krovolunanie" data-glossary-entry data-group="field">
+                  <div><span>10 / MID-I-0002</span><h4>КРОВОЛУНАНИЕ</h4><em>ЦИКЛИЧЕСКИЙ ИНЦИДЕНТ</em></div>
+                  <p>Ритмическое явление отдельных полнолуний, которое внутренний архив связывает с геомагнитными и литосферными колебаниями, раскрытием глубинных полостей и выходом организмов.</p>
+                  <a href="record.html?type=incident&amp;id=MID-I-0002">ОТКРЫТЬ ИССЛЕДОВАНИЕ →</a>
+                </article>
+                <article class="glossary-entry" id="term-kvk" data-glossary-entry data-group="field">
+                  <div><span>11 / КВК</span><h4>КОЭФФИЦИЕНТ ВЕРОЯТНОСТИ КРОВОЛУНАНИЯ</h4><em>ВНУТРЕННИЙ ИНДЕКС</em></div>
+                  <p>Расчётный показатель внутреннего календаря наблюдений и полевых признаков. Используется для планирования экспедиций; не является астрономическим прогнозом или физической константой.</p>
+                  <a href="record.html?type=incident&amp;id=MID-I-0002#incident-research">МАТРИЦА КВК →</a>
+                </article>
+                <article class="glossary-entry" id="term-strakhomakha" data-glossary-entry data-group="field">
+                  <div><span>12 / MID-I-0001</span><h4>СТРАХОМАХА.EXE</h4><em>ЦИФРОВОЙ ИНЦИДЕНТ</em></div>
+                  <p>Комплекс заражения, при котором устройство блокируется, данные шифруются без требования выкупа, а на экран выводятся повторяющиеся изображения неизвестных субъектов.</p>
+                  <a href="record.html?type=incident&amp;id=MID-I-0001">ОТКРЫТЬ ДОСЬЕ →</a>
+                </article>
+                <article class="glossary-entry" id="term-observation-sector" data-glossary-entry data-group="field">
+                  <div><span>26 / SECTOR</span><h4>СЕКТОР НАБЛЮДЕНИЯ</h4><em>ТЕРРИТОРИЯ</em></div>
+                  <p>Ограниченный участок зоны с собственными координатами, маршрутом обхода и журналом измерений. Границы сектора задаются по устойчивым наземным ориентирам.</p>
+                  <a href="record.html?type=anomaly&amp;id=MID-A-0001">КАРТА АНДРЕЕВКИ →</a>
+                </article>
+                <article class="glossary-entry" id="term-active-phase" data-glossary-entry data-group="field">
+                  <div><span>27 / ACTIVE</span><h4>АКТИВНАЯ ФАЗА</h4><em>СОСТОЯНИЕ</em></div>
+                  <p>Интервал, в котором показатели события устойчиво превышают фоновый уровень и требуют усиленного наблюдения. Начало и завершение фазы отмечаются отдельными контрольными замерами.</p>
+                  <a href="record.html?type=incident&amp;id=MID-I-0002">КРОВОЛУНАНИЕ →</a>
+                </article>
+                <article class="glossary-entry" id="term-trace-material" data-glossary-entry data-group="field">
+                  <div><span>28 / TRACE</span><h4>СЛЕДОВОЙ МАТЕРИАЛ</h4><em>ОСТАТОЧНЫЙ МАРКЕР</em></div>
+                  <p>Физический или цифровой остаток события, сохраняющийся после завершения активной фазы: деформация, проба, журнал системы, фрагмент сигнала либо изменённый объект.</p>
+                  <a href="#company-files">КАРТОТЕКА →</a>
+                </article>
+                <article class="glossary-entry" id="term-biocontour" data-glossary-entry data-group="field">
+                  <div><span>29 / BIO-C</span><h4>БИОКОНТУР</h4><em>РАБОЧАЯ МОДЕЛЬ</em></div>
+                  <p>Связанная система наблюдений за организмами, средой обитания и передачей воздействия по пищевой цепи. Применяется для сопоставления изменений разных видов внутри одной зоны.</p>
+                  <a href="record.html?type=anomaly&amp;id=MID-A-0001">БИОЛОГИЧЕСКИЙ БЛОК →</a>
+                </article>
+                <article class="glossary-entry" id="term-infrasound-pulse" data-glossary-entry data-group="field">
+                  <div><span>30 / INFRA</span><h4>ИНФРАЗВУКОВОЙ ИМПУЛЬС</h4><em>ИЗМЕРЕНИЕ</em></div>
+                  <p>Низкочастотное колебание давления, регистрируемое приборами во время отдельных инцидентов. В протоколе фиксируются амплитуда, длительность, направление и синхронные события.</p>
+                  <a href="record.html?type=incident&amp;id=MID-I-0002#incident-research">ИССЛЕДОВАТЕЛЬСКИЕ ДАННЫЕ →</a>
+                </article>
+                <article class="glossary-entry" id="term-lithosphere-resonance" data-glossary-entry data-group="field">
+                  <div><span>31 / LITHO-R</span><h4>ЛИТОСФЕРНЫЙ РЕЗОНАНС</h4><em>ГЕОФИЗИЧЕСКАЯ МОДЕЛЬ</em></div>
+                  <p>Синхронные колебания пород и подземных полостей, используемые в модели Кроволунания для описания передачи импульса между удалёнными участками наблюдения.</p>
+                  <a href="record.html?type=incident&amp;id=MID-I-0002#incident-research">МАТРИЦА ИЗМЕРЕНИЙ →</a>
+                </article>
+                <article class="glossary-entry" id="term-radiation-profile" data-glossary-entry data-group="field">
+                  <div><span>32 / RAD-P</span><h4>РАДИАЦИОННЫЙ ПРОФИЛЬ</h4><em>ИЗМЕРИТЕЛЬНАЯ СЕРИЯ</em></div>
+                  <p>Серия измерений мощности дозы и состава радионуклидов, сопоставленная по маршруту, глубине и времени. Позволяет отделить устойчивый фон от локальных выбросов.</p>
+                  <a href="record.html?type=anomaly&amp;id=MID-A-0001">ДАННЫЕ АНОМАЛИИ →</a>
+                </article>
+              </div>
+            </section>
+
+            <section class="glossary-group" data-glossary-group="cosmos">
+              <div class="glossary-group-heading"><span>03</span><h3>КОСМОЛОГИЧЕСКИЙ И ИСТОЧНИКОВЫЙ КОНТУР</h3><p>Термины контактных, эзотерических и историко-архивных материалов.</p></div>
+              <div class="glossary-grid">
+                <article class="glossary-entry" id="term-union" data-glossary-entry data-group="cosmos">
+                  <div><span>13 / MS</span><h4>МЕЖЗВЁЗДНЫЙ СОЮЗ</h4><em>КОНТАКТНАЯ ВЕРСИЯ</em></div>
+                  <p>Надпланетарное координационное объединение, описываемое в материалах проекта «Кассиопея». В MIDGAS фиксируется как субъект источника, а не как подтверждённая земными данными организация.</p>
+                  <a href="record.html?type=client&amp;id=MID-C-0002">СВЯЗАННЫЙ КЛИЕНТ →</a>
+                </article>
+                <article class="glossary-entry" id="term-transition" data-glossary-entry data-group="cosmos">
+                  <div><span>14 / Q-TRANSIT</span><h4>КВАНТОВЫЙ ПЕРЕХОД</h4><em>ВНУТРЕННИЙ ТЕРМИН</em></div>
+                  <p>Обозначение добровольного выхода сознания из физического тела и перехода в энергетическое состояние в отдельных клиентских досье. К квантовой физике в научном смысле термин не относится.</p>
+                  <a href="record.html?type=client&amp;id=MID-C-0008">СВЯЗАННОЕ ДОСЬЕ →</a>
+                </article>
+                <article class="glossary-entry" id="term-subtle" data-glossary-entry data-group="cosmos">
+                  <div><span>15 / LAYER-S</span><h4>ТОНКИЙ МИР</h4><em>ИСТОЧНИКОВОЕ ПОНЯТИЕ</em></div>
+                  <p>Обозначение нефизического слоя существования в свидетельствах клиентов и эзотерическом корпусе. Инструментальное подтверждение такой среды в открытой части архива отсутствует.</p>
+                  <a href="historical-archive.html#era-union">КОСМОГОНИЧЕСКИЙ КОНТЕКСТ →</a>
+                </article>
+                <article class="glossary-entry" id="term-rhythm" data-glossary-entry data-group="cosmos">
+                  <div><span>16 / RHYTHM</span><h4>РИТМОМЕТОД</h4><em>АВТОРСКАЯ СИСТЕМА</em></div>
+                  <p>Приписываемая Евдокии Марченко система словесных последовательностей и временных ритмов, предназначенных для изменения состояния человека или хода событий. Не относится к признанным научным методикам.</p>
+                  <a href="record.html?type=client&amp;id=MID-C-0008">ОТКРЫТЬ ДОСЬЕ →</a>
+                </article>
+                <article class="glossary-entry" id="term-hyperborea" data-glossary-entry data-group="cosmos">
+                  <div><span>17 / H-CONTUR</span><h4>ГИПЕРБОРЕЙСКИЙ КОНТУР</h4><em>РЕДАКЦИОННЫЙ СИНТЕЗ</em></div>
+                  <p>Термин MIDGAS для северной культурной матрицы, собранной из теософских и альтернативно-исторических источников. Он не означает доказанное государство и не делает Гиперборею прямым предком Тартарии.</p>
+                  <a href="historical-archive.html#era-hyperborea">ИСТОРИЧЕСКИЙ АРХИВ →</a>
+                </article>
+                <article class="glossary-entry" id="term-reptilian" data-glossary-entry data-group="cosmos">
+                  <div><span>18 / R-CONTUR</span><h4>РЕПТИЛОИДНЫЙ КОНТУР</h4><em>НЕПОДТВЕРЖДЁННАЯ ВЕРСИЯ</em></div>
+                  <p>Служебное обозначение предполагаемой сети нечеловеческих акторов и земных посредников в сюжетной реконструкции. Открытый архив не располагает независимыми доказательствами её существования.</p>
+                  <a href="historical-archive.html#era-hidden-war">АРХИВНАЯ ГИПОТЕЗА →</a>
+                </article>
+                <article class="glossary-entry" id="term-atlantis" data-glossary-entry data-group="cosmos">
+                  <div><span>33 / ATL</span><h4>АТЛАНТИДА</h4><em>ЗАПАДНЫЙ ПОЯС</em></div>
+                  <p>Западный морской центр, унаследовавший после распада единого порядка навигацию, контактные базы и технические школы. Его узлы обеспечивали океанские маршруты и обмен между континентами.</p>
+                  <a href="historical-archive.html#era-three-belts">ИСТОРИЧЕСКИЙ АРХИВ →</a>
+                </article>
+                <article class="glossary-entry" id="term-lemuria" data-glossary-entry data-group="cosmos">
+                  <div><span>34 / LEM</span><h4>ЛЕМУРИЯ</h4><em>ЮЖНЫЙ ПОЯС</em></div>
+                  <p>Южный культурный пояс, специализировавшийся на биологических садах, медицине и генетических архивах. Его сеть связывала островные и прибрежные исследовательские центры.</p>
+                  <a href="historical-archive.html#era-three-belts">ИСТОРИЧЕСКИЙ АРХИВ →</a>
+                </article>
+                <article class="glossary-entry" id="term-tartaria" data-glossary-entry data-group="cosmos">
+                  <div><span>35 / TAR</span><h4>ТАРТАРИЯ</h4><em>КОНТИНЕНТАЛЬНАЯ СИСТЕМА</em></div>
+                  <p>Евразийская система городов, дорог и распределённых архивов, сформированная после распада древнего порядка. Управление строилось вокруг транспортных узлов и региональных хранилищ.</p>
+                  <a href="historical-archive.html#era-tartaria">ИСТОРИЧЕСКИЙ АРХИВ →</a>
+                </article>
+                <article class="glossary-entry" id="term-phaeton" data-glossary-entry data-group="cosmos">
+                  <div><span>36 / PHAE</span><h4>ФАЭТОН</h4><em>ПЛАНЕТАРНЫЙ АРХИВ</em></div>
+                  <p>Бывшая планета внутреннего контура Солнечной системы, упоминаемая в архивной хронологии межпланетного расселения. Её утрата стала одной из причин переноса исследовательских программ на Землю.</p>
+                  <a href="historical-archive.html#era-interplanetary">СОЛНЕЧНАЯ СИСТЕМА →</a>
+                </article>
+                <article class="glossary-entry" id="term-council-three-belts" data-glossary-entry data-group="cosmos">
+                  <div><span>37 / C-3</span><h4>СОВЕТ ТРЁХ ПОЯСОВ</h4><em>КООРДИНАЦИЯ</em></div>
+                  <p>Координационный орган Атлантиды, Гипербореи и Лемурии в период общего управления. Совет согласовывал календарь, маршруты и распределение архивных копий.</p>
+                  <a href="historical-archive.html#era-three-belts">ТРИ КОНТИНЕНТА →</a>
+                </article>
+                <article class="glossary-entry" id="term-continental-network" data-glossary-entry data-group="cosmos">
+                  <div><span>38 / NET-C</span><h4>КОНТИНЕНТАЛЬНАЯ СЕТЬ</h4><em>ИНФРАСТРУКТУРА</em></div>
+                  <p>Связанная система дорог, городских узлов, календарей и хранилищ, обеспечивавшая управление Тартарией. Каждый узел одновременно выполнял транспортную и архивную функцию.</p>
+                  <a href="historical-archive.html#era-tartaria">КАРТА ТАРТАРИИ →</a>
+                </article>
+                <article class="glossary-entry" id="term-memory-rupture" data-glossary-entry data-group="cosmos">
+                  <div><span>39 / GAP</span><h4>РАЗРЫВ ПАМЯТИ</h4><em>АРХИВНЫЙ ПРОЦЕСС</em></div>
+                  <p>Утрата непрерывности знаний после катастроф, переселений и последующего переустройства архивов. Проявляется в несовпадении календарей, терминов и копий одного документа.</p>
+                  <a href="historical-archive.html#era-reset">ПОСЛЕДСТВИЯ ВОЙНЫ →</a>
+                </article>
+              </div>
+            </section>
+            <p class="glossary-empty" id="glossary-empty" hidden>ТЕРМИНЫ ПО ЗАДАННОМУ ЗАПРОСУ НЕ НАЙДЕНЫ.</p>
+          </div>
+        </section>
+
+        <section class="company-hub" id="company-hub" aria-labelledby="company-hub-title">
+          <header class="company-hero" id="company-materials">
+            <div class="company-hero-media" aria-hidden="true">
+              <img class="company-hero-back" src="assets/historical-archive/bg-11.webp" alt="" loading="lazy" decoding="async" data-company-parallax="-0.085" />
+              <div class="company-hero-frame company-hero-frame--one" data-company-parallax="0.12">
+                <img src="assets/anomalies/mid-a-0001/real-coastal-route.webp" alt="" loading="lazy" decoding="async" />
+              </div>
+              <div class="company-hero-frame company-hero-frame--two" data-company-parallax="0.18">
+                <img src="assets/historical-archive/bg-15.webp" alt="" loading="lazy" decoding="async" />
+              </div>
+              <span class="company-hero-cross company-hero-cross--a"></span>
+              <span class="company-hero-cross company-hero-cross--b"></span>
+            </div>
+            <div class="company-hero-copy company-reveal">
+              <span class="company-kicker">НЕЗАВИСИМАЯ АРХИВНО-ИССЛЕДОВАТЕЛЬСКАЯ ГРУППА</span>
+              <h2 id="company-hub-title">МЫ СОБИРАЕМ<br />ТО, ЧТО НЕ<br />ПОПАЛО В ОТЧЁТ.</h2>
+              <p>THE MIDGAS превращает полевые свидетельства, частные архивы и разрозненные цифровые следы в связную систему досье. Мы не стираем противоречия: фиксируем их, сопоставляем и оставляем читателю маршрут проверки.</p>
+              <a class="company-hero-link" href="#company-files">ОТКРЫТЬ МАТЕРИАЛЫ <span>↓</span></a>
+            </div>
+            <div class="company-hero-caption">
+              <span>ФОТОМОНТАЖ / ПОЛЕВЫЕ МАТЕРИАЛЫ И ХУДОЖЕСТВЕННАЯ РЕКОНСТРУКЦИЯ</span>
+              <span>ВЛАДИВОСТОК — НЬЮ-ЙОРК / 2026</span>
+            </div>
+          </header>
+
+          <section class="company-process" id="company-files" aria-labelledby="company-process-title">
+            <header class="company-process-heading company-reveal">
+              <div class="company-section-label"><span>02</span><p>ВНУТРИ ПРОЕКТА</p></div>
+              <h3 id="company-process-title">ПОЛЕ, КАРТОТЕКА,<br />МЕДИАФОНД.</h3>
+              <p>Проект собирается одновременно на местности и в редакции. Ниже — рабочая визуальная карта: реальные материалы экспедиций соседствуют с реконструкциями тех процессов, которые невозможно фотографировать напрямую.</p>
+            </header>
+            <div class="company-process-grid">
+              <figure class="company-process-shot company-process-shot--wide company-reveal" data-company-parallax="0.035">
+                <img src="assets/anomalies/mid-a-0001/andreevka-overview.webp" alt="Обзорная карта Андреевской аномалии" loading="lazy" />
+                <figcaption><span>01 / КАРТА ПОЛЯ</span><strong>АНДРЕЕВСКИЙ СЕКТОР</strong><em>РАБОЧИЙ МАТЕРИАЛ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-reveal" data-company-parallax="-0.04">
+                <img src="assets/anomalies/mid-a-0001/real-coastal-route.webp" alt="Полевой маршрут по побережью полуострова Витязь" loading="lazy" />
+                <figcaption><span>02 / МАРШРУТ</span><strong>ПРИБРЕЖНАЯ ЛИНИЯ</strong><em>ПОЛЕВОЙ МАТЕРИАЛ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-reveal" data-company-parallax="0.055">
+                <img src="assets/anomalies/mid-a-0001/real-entry-rain.webp" alt="Вход исследовательской группы в зону во время дождя" loading="lazy" />
+                <figcaption><span>03 / ВХОД В ЗОНУ</span><strong>ДОЖДЕВОЙ ПРОТОКОЛ</strong><em>ПОЛЕВОЙ МАТЕРИАЛ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-reveal" data-company-parallax="-0.025">
+                <img src="assets/anomalies/mid-a-0001/real-foodchain-cattle.webp" alt="Наблюдение биологического контура в полевых условиях" loading="lazy" />
+                <figcaption><span>04 / БИОКОНТУР</span><strong>ЦЕПЬ НАБЛЮДЕНИЙ</strong><em>ПОЛЕВОЙ МАТЕРИАЛ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-process-shot--tall company-reveal" data-company-parallax="0.045">
+                <img src="assets/historical-archive/bg-11.webp" alt="Художественная реконструкция архивной картотеки" loading="lazy" />
+                <figcaption><span>05 / КАРТОТЕКА</span><strong>СВЕРКА ДОСЬЕ</strong><em>ХУДОЖЕСТВЕННАЯ РЕКОНСТРУКЦИЯ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-process-shot--wide company-reveal" data-company-parallax="-0.035">
+                <img src="assets/historical-archive/bg-15.webp" alt="Художественная реконструкция хранилища медиаматериалов" loading="lazy" />
+                <figcaption><span>06 / МЕДИАФОНД</span><strong>КОНТРОЛЬНЫЕ КОПИИ</strong><em>ХУДОЖЕСТВЕННАЯ РЕКОНСТРУКЦИЯ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-reveal" data-company-parallax="0.03">
+                <img src="assets/anomalies/mid-a-0001/andreevka-market.webp" alt="Сезонная торговая линия Андреевского сектора" loading="lazy" />
+                <figcaption><span>07 / ОТКРЫТЫЙ СЛОЙ</span><strong>СЕЗОННАЯ ТОРГОВЛЯ</strong><em>МАТЕРИАЛ ДОСЬЕ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-reveal" data-company-parallax="-0.025">
+                <img src="assets/anomalies/mid-a-0001/andreevka-record-cover.webp" alt="Жилая линия и поверхностный сток в Андреевском секторе" loading="lazy" />
+                <figcaption><span>08 / ЖИЛАЯ ЛИНИЯ</span><strong>ПОВЕРХНОСТНЫЙ СТОК</strong><em>МАТЕРИАЛ ДОСЬЕ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-reveal" data-company-parallax="0.045">
+                <img src="assets/anomalies/mid-a-0001/real-coast-fog.webp" alt="Контрольный обход побережья в тумане" loading="lazy" />
+                <figcaption><span>09 / КОНТРОЛЬНЫЙ ОБХОД</span><strong>ПРИБРЕЖНЫЙ ТУМАН</strong><em>ПОЛЕВОЙ МАТЕРИАЛ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-process-shot--wide company-reveal" data-company-parallax="-0.03">
+                <img src="assets/anomalies/mid-a-0001/real-lower-settlement.webp" alt="Нижний жилой сектор исследуемой территории" loading="lazy" />
+                <figcaption><span>10 / НИЖНИЙ СЕКТОР</span><strong>ЖИЛАЯ ЛИНИЯ</strong><em>ПОЛЕВОЙ МАТЕРИАЛ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-reveal" data-company-parallax="0.025">
+                <img src="assets/anomalies/mid-a-0001/real-market-fog.webp" alt="Сезонный рынок во время туманной смены" loading="lazy" />
+                <figcaption><span>11 / СЕЗОННЫЙ РЫНОК</span><strong>ТУМАННАЯ СМЕНА</strong><em>ПОЛЕВОЙ МАТЕРИАЛ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-reveal" data-company-parallax="-0.04">
+                <img src="assets/anomalies/mid-a-0001/real-market-rain.webp" alt="Внутренний рынок во время дождевого маршрута" loading="lazy" />
+                <figcaption><span>12 / ВНУТРЕННИЙ РЫНОК</span><strong>ДОЖДЕВОЙ МАРШРУТ</strong><em>ПОЛЕВОЙ МАТЕРИАЛ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-process-shot--tall company-reveal" data-company-parallax="0.05">
+                <img src="assets/anomalies/mid-a-0001/real-radioactive-yard.webp" alt="Дозиметрический обход внутреннего двора" loading="lazy" />
+                <figcaption><span>13 / ВНУТРЕННИЙ ДВОР</span><strong>ДОЗИМЕТРИЧЕСКИЙ ОБХОД</strong><em>ПОЛЕВОЙ МАТЕРИАЛ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-reveal" data-company-parallax="-0.025">
+                <img src="assets/anomalies/mid-a-0001/real-street.webp" alt="Жилая улица глубинного сектора" loading="lazy" />
+                <figcaption><span>14 / ГЛУБИННЫЙ СЕКТОР</span><strong>ЖИЛАЯ УЛИЦА</strong><em>ПОЛЕВОЙ МАТЕРИАЛ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-reveal" data-company-parallax="0.035">
+                <img src="assets/anomalies/mid-a-0001/real-beach-sectants.webp" alt="Прибрежная община во время сезонного цикла" loading="lazy" />
+                <figcaption><span>15 / ПРИБРЕЖНАЯ ОБЩИНА</span><strong>СЕЗОННЫЙ ЦИКЛ</strong><em>ПОЛЕВОЙ МАТЕРИАЛ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-process-shot--wide company-reveal" data-company-parallax="-0.035">
+                <img src="assets/anomalies/mid-a-0001/vityaz-arch.webp" alt="Береговой ориентир полуострова Витязь" loading="lazy" />
+                <figcaption><span>16 / ПОЛУОСТРОВ ВИТЯЗЬ</span><strong>БЕРЕГОВОЙ ОРИЕНТИР</strong><em>МАТЕРИАЛ ДОСЬЕ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-reveal" data-company-parallax="0.03">
+                <img src="assets/anomalies/mid-a-0001/yankovsky-castle.webp" alt="Наземный маркер — замок Янковского" loading="lazy" />
+                <figcaption><span>17 / НАЗЕМНЫЙ МАРКЕР</span><strong>ЗАМОК ЯНКОВСКОГО</strong><em>МАТЕРИАЛ ДОСЬЕ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-reveal" data-company-parallax="-0.025">
+                <img src="assets/historical-archive/bg-00.webp" alt="Художественная реконструкция сводного заседания редакционного совета" loading="lazy" />
+                <figcaption><span>18 / РЕДАКЦИОННЫЙ СОВЕТ</span><strong>СВОДНОЕ ЗАСЕДАНИЕ</strong><em>ХУДОЖЕСТВЕННАЯ РЕКОНСТРУКЦИЯ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-process-shot--tall company-reveal" data-company-parallax="0.04">
+                <img src="assets/historical-archive/bg-02.webp" alt="Художественная реконструкция лабораторного биологического контура" loading="lazy" />
+                <figcaption><span>19 / БИОЛОГИЧЕСКИЙ КОНТУР</span><strong>ЛАБОРАТОРНЫЙ СЕКТОР</strong><em>ХУДОЖЕСТВЕННАЯ РЕКОНСТРУКЦИЯ</em></figcaption>
+              </figure>
+              <figure class="company-process-shot company-process-shot--wide company-reveal" data-company-parallax="-0.03">
+                <img src="assets/historical-archive/bg-06.webp" alt="Художественная реконструкция аналитического стенда" loading="lazy" />
+                <figcaption><span>20 / АНАЛИТИЧЕСКИЙ СТЕНД</span><strong>МОДЕЛЬ ЦИКЛОВ</strong><em>ХУДОЖЕСТВЕННАЯ РЕКОНСТРУКЦИЯ</em></figcaption>
+              </figure>
+            </div>
+            <button class="company-process-toggle" type="button" data-company-gallery-toggle aria-expanded="false"><span>ПОКАЗАТЬ ВЕСЬ МЕДИАФОНД</span><b>20 МАТЕРИАЛОВ ↓</b></button>
+          </section>
+
+          <section class="company-quotes" id="company-quotes" aria-labelledby="company-quotes-title">
+            <div class="company-quotes-image" data-company-parallax="-0.055" aria-hidden="true">
+              <img src="assets/anomalies/mid-a-0001/real-entry-rain.webp" alt="" loading="lazy" />
+            </div>
+            <div class="company-quotes-body company-reveal">
+              <div class="company-section-label"><span>04</span><p>СЛУЧАЙНЫЕ ЦИТАТЫ</p></div>
+              <span class="company-quote-mark" aria-hidden="true">“</span>
+              <h3 id="company-quotes-title" class="visually-hidden">Случайные цитаты</h3>
+              <blockquote aria-live="polite" aria-atomic="true">
+                <p data-quote-text>Я целый месяц жил на Урале. Там была строительная площадка. Волшебный город для сериала. Там и играл в пинг-понг. Ещё приезжал на КАМАЗе Баста.</p>
+                <footer data-quote-source>СЛУЧАЙНАЯ ЗАПИСЬ / 01</footer>
+              </blockquote>
+              <div class="company-quote-controls">
+                <span data-quote-index>01 / 06</span>
+                <button type="button" data-quote-prev aria-label="Предыдущая цитата">←</button>
+                <button type="button" data-quote-next aria-label="Следующая цитата">→</button>
+              </div>
+            </div>
+          </section>
+
+          <section class="company-board" id="company-board" aria-labelledby="company-board-title">
+            <div class="company-board-stage company-reveal" data-board-stage>
+              <div class="company-board-preview-cover" data-board-preview-cover>
+                <img class="company-board-preview-image" src="assets/images/relationships-archive-cover.webp" alt="Архивная доска связей MIDGAS с фотографиями субъектов" width="1680" height="945" loading="lazy" decoding="async" />
+                <span>MIDGAS / INTERACTIVE GRAPH</span>
+                <div class="company-board-preview-graph" aria-hidden="true">
+                  <svg viewBox="0 0 1000 520" preserveAspectRatio="none">
+                    <path d="M78 382 286 128 512 298 746 92 924 346" />
+                    <path d="M286 128 746 92M512 298 924 346M78 382 512 298" />
+                  </svg>
+                  <i style="--x:8%;--y:73%"><b>MID-C-0024</b><small>АННА МАЦКЕВИЧ</small></i><i style="--x:28%;--y:22%"><b>MID-A-0001</b><small>АНДРЕЕВКА</small></i><i style="--x:51%;--y:55%"><b>MID-I-0001</b><small>СТРАХОМАХА</small></i><i style="--x:74%;--y:15%"><b>MID-C-0031</b><small>СУБЪЕКТ</small></i><i style="--x:92%;--y:66%"><b>MID-C-0018</b><small>НАБЛЮДЕНИЕ</small></i>
+                </div>
+                <h3 id="company-board-title">ДОСКА<br />СВЯЗЕЙ</h3>
+                <p class="company-board-preview-copy">Интерактивная схема субъектов, аномалий и инцидентов. Откройте доску, чтобы проследить активные связи.</p>
+                <button type="button" data-board-open>ОТКРЫТЬ СВЯЗИ <span aria-hidden="true">→</span></button>
+              </div>
+
+              <nav class="company-board-fullscreen-controls" data-board-controls aria-label="Управление полноэкранной доской">
+                <button class="company-board-tool-icon" type="button" data-board-close aria-label="Назад" title="Назад"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 5 8 12l7 7M8 12h12" /></svg><span>НАЗАД</span></button>
+                <label class="company-board-search"><span>НАЙТИ УЗЕЛ</span><input type="search" data-board-search autocomplete="off" placeholder="Имя, номер или локация" /></label>
+                <button class="company-board-tool-icon" type="button" data-board-edit hidden aria-label="Редактировать доску" title="Редактировать"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 4.5-1 10-10a2.1 2.1 0 0 0-3-3l-10 10L4 20Z" /><path d="m14 7 3 3" /></svg><span>РЕДАКТИРОВАТЬ</span></button>
+                <div class="company-board-editor-tools" data-board-editor-tools hidden>
+                  <button class="company-board-tool-icon" type="button" data-board-add-edge aria-label="Новая связь" title="Новая связь"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9.5 14.5 14.5 9.5" /><path d="M7.2 16.8 5.5 18.5a2.8 2.8 0 0 1-4-4l3-3a2.8 2.8 0 0 1 4 0" /><path d="m16.8 7.2 1.7-1.7a2.8 2.8 0 0 1 4 4l-3 3a2.8 2.8 0 0 1-4 0" /></svg><span>НОВАЯ СВЯЗЬ</span></button>
+                  <button class="company-board-tool-icon" type="button" data-board-remove-edge aria-label="Удалить связь" title="Удалить связь"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 4 16 16" /><path d="m7.2 16.8-1.7 1.7a2.8 2.8 0 0 1-4-4l3-3a2.8 2.8 0 0 1 2.4-.8M16.8 7.2l1.7-1.7a2.8 2.8 0 0 1 4 4l-3 3a2.8 2.8 0 0 1-2.4.8" /></svg><span>УДАЛИТЬ СВЯЗЬ</span></button>
+                  <button class="company-board-tool-icon" type="button" data-board-move-nodes aria-label="Изменить положение карточек" title="Перемещение"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2v20M2 12h20M12 2 9 5m3-3 3 3M12 22l-3-3m3 3 3-3M2 12l3-3m-3 3 3 3M22 12l-3-3m3 3-3 3" /></svg><span>ПЕРЕМЕЩЕНИЕ</span></button>
+                  <button class="company-board-tool-icon" type="button" data-board-save aria-label="Сохранить все изменения" title="Сохранить"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12 4 4L19 6" /></svg><span>СОХРАНИТЬ</span></button>
+                  <button class="company-board-tool-icon" type="button" data-board-edit-close aria-label="Отменить все изменения" title="Отменить"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 5 14 14M19 5 5 19" /></svg><span>ОТМЕНИТЬ</span></button>
+                </div>
+                <span data-board-edit-status></span>
+              </nav>
+
+              <div class="company-board-workspace">
+                <div class="company-board-canvas company-board-viewport" id="company-board-canvas" tabindex="0" aria-label="Перемещаемая карта связей">
+                  <div class="company-board-world" id="company-board-world">
+                    <svg class="company-board-lines" viewBox="0 0 3600 2400" aria-hidden="true"></svg>
+                  </div>
+                </div>
+                <aside class="company-board-inspector" data-board-inspector aria-live="polite">
+                  <button class="company-board-inspector-toggle" type="button" data-board-inspector-toggle>
+                    <img data-board-mobile-image src="assets/anomalies/mid-a-0001/andreevka-overview.webp" alt="" width="1535" height="1024" loading="lazy" decoding="async" />
+                    <span><small data-board-mobile-id>MID-A-0001</small><strong data-board-mobile-title>АНДРЕЕВСКАЯ АНОМАЛИЯ</strong></span>
+                    <i aria-hidden="true">↑</i>
+                  </button>
+                  <img data-board-image src="assets/anomalies/mid-a-0001/andreevka-overview.webp" alt="" width="1535" height="1024" loading="lazy" decoding="async" />
+                  <div><em data-board-kind-label>АНОМАЛИЯ</em><strong data-board-title>АНДРЕЕВСКАЯ АНОМАЛИЯ</strong></div>
+                  <p data-board-summary>Загрузка текущего досье…</p>
+                  <dl><div><dt>ID</dt><dd data-board-id>MID-A-0001</dd></div></dl>
+                  <a data-board-link href="record.html?type=anomaly&amp;id=MID-A-0001">ОТКРЫТЬ ДОСЬЕ →</a>
+                </aside>
+              </div>
+
+
+              <div class="company-board-preview-meta"><span data-board-count>52 УЗЛА</span><span>КОЛЕСО / PINCH-TO-ZOOM</span></div>
+            </div>
+          </section>
+
+          <section class="company-account company-editor-hub" id="company-account" aria-labelledby="home-editor-portal-title">
+            <section class="home-editor-portal company-reveal" aria-labelledby="home-editor-portal-title">
+              <div class="home-editor-portal-copy">
+                <span>06 / EDITOR CENTER</span>
+                <h3 id="home-editor-portal-title">ЦЕНТР<br />РЕДАКТОРА</h3>
+                <p>Создание и обновление досье, восстановление версий и управление доской находятся в отдельном защищённом кабинете.</p>
+              </div>
+              <div class="home-editor-portal-action">
+                <span>SUPABASE AUTH / PROTECTED</span>
+                <a href="editor.html?rev=10">ПЕРЕЙТИ В РЕДАКТОР <b>→</b></a>
+                <small>Доступ разрешён только подтверждённым редакторам.</small>
+              </div>
+            </section>
+
+            <header class="company-module-heading company-reveal home-editor-legacy" hidden>
+              <div class="company-section-label"><span>06</span><p>РЕДАКЦИОННЫЙ ДОСТУП</p></div>
+              <div><span>EDITOR MODE / SUPABASE AUTH</span><h3 id="company-account-title">РЕЖИМ<br />РЕДАКТОРА</h3></div>
+              <p>Один защищённый кабинет для создания карточек, восстановления версий и управления доступом.</p>
+            </header>
+
+            <div class="editor-mode-card company-reveal home-editor-legacy" hidden>
+              <div class="editor-mode-topline"><span>MIDGAS / EDITOR</span><i data-account-indicator>ДОСТУП ЗАКРЫТ</i></div>
+              <section class="editor-mode-locked" data-editor-locked>
+                <span>ЗАЩИЩЁННЫЙ ДОСТУП</span>
+                <h4>РЕДАКТОР ЗАКРЫТ</h4>
+                <p>Войдите в аккаунт модератора. Инструменты появятся после проверки редакционной роли.</p>
+                <button type="button" data-editor-login-open>ВОЙТИ В АККАУНТ</button>
+              </section>
+              <section class="editor-mode-home" data-editor-home hidden aria-live="polite">
+                <div class="editor-mode-identity">
+                  <div><span data-account-session-label>ВХОД ВЫПОЛНЕН</span><strong data-account-email>editor@midgas.archive</strong></div>
+                  <p data-account-session-copy>Редакционные операции разрешены вашей ролью Supabase.</p>
+                </div>
+                <nav class="editor-mode-actions" data-editor-actions>
+                  <button type="button" data-editor-create-open><span>01</span><strong>СОЗДАТЬ КАРТОЧКУ</strong><small>Клиент, аномалия или инцидент</small></button>
+                  <button type="button" data-editor-recovery-open><span>02</span><strong>ВОССТАНОВИТЬ КАРТОЧКУ</strong><small>Удалённые и изменённые версии</small></button>
+                  <button type="button" data-editor-password-open><span>03</span><strong>ИЗМЕНИТЬ ПАРОЛЬ</strong><small>Защита аккаунта и завершение других входов</small></button>
+                  <button type="button" data-maintenance-toggle hidden><span>04</span><strong>ЗАКРЫТЬ САЙТ</strong><small>Режим технического обслуживания для посетителей</small></button>
+                </nav>
+                <p class="editor-maintenance-status" data-maintenance-status></p>
+                <div class="editor-mode-session-actions"><span>ТЕКУЩИЙ СЕАНС ЗАЩИЩЁН SUPABASE AUTH</span><button class="editor-mode-logout" type="button" data-account-logout>ВЫЙТИ</button></div>
+              </section>
+              <p class="company-account-status" data-account-status role="status" aria-live="polite"></p>
+            </div>
+
+            <section class="company-editor editor-work-panel" id="company-editor" data-editor-create-panel hidden aria-labelledby="company-editor-title">
+              <header class="editor-work-heading">
+                <div><span>СОЗДАНИЕ / НОВАЯ ЗАПИСЬ</span><h4 id="company-editor-title">НОВАЯ КАРТОЧКА</h4></div>
+                <button type="button" data-editor-panel-close aria-label="Закрыть создание карточки">×</button>
+              </header>
+              <form class="company-editor-form company-editor-form--live" id="company-editor-form" novalidate>
+                <fieldset class="company-editor-types">
+                  <legend>01 / ВЫБЕРИТЕ ТИП КАРТОЧКИ</legend>
+                  <label><input type="radio" name="type" value="client" required /><span><b>КЛИЕНТ</b><small>Лицо или наблюдаемый субъект</small></span></label>
+                  <label><input type="radio" name="type" value="incident" required /><span><b>ИНЦИДЕНТ</b><small>Событие или активный процесс</small></span></label>
+                  <label><input type="radio" name="type" value="anomaly" required /><span><b>АНОМАЛИЯ</b><small>Место, зона или явление</small></span></label>
+                </fieldset>
+
+                <div class="company-editor-fields" data-create-step="fields" hidden>
+                  <div class="company-editor-step"><span>02</span><strong>ЗАПОЛНИТЕ СВЕДЕНИЯ</strong></div>
+                  <label><span>НАЗВАНИЕ *</span><input name="name" required maxlength="120" autocomplete="off" placeholder="Полное название карточки" /></label>
+                  <label><span>ПСЕВДОНИМ / ПОДЗАГОЛОВОК</span><input name="alias" maxlength="160" autocomplete="off" placeholder="Краткая идентификация" /></label>
+                  <label><span>УРОВЕНЬ УГРОЗЫ</span><select name="threat"><option>T1 / низкий</option><option>T2 / умеренный</option><option>T3 / значительный</option><option>T4 / высокий</option><option>T5 / критический</option></select></label>
+                  <label data-client-access-field hidden><span>УРОВЕНЬ ДОСТУПА</span><select name="access" disabled><option>D1 / очень низкий</option><option>D2 / низкий</option><option>D3 / средний</option><option>D4 / высокий</option><option>D5 / полный доступ</option></select></label>
+                  <label class="company-editor-field-wide"><span>МЕСТОПОЛОЖЕНИЕ *</span><input name="location" required maxlength="180" autocomplete="off" placeholder="Город, район, сектор или координаты" /></label>
+                  <label class="company-editor-field-wide"><span>КРАТКОЕ РЕЗЮМЕ *</span><textarea name="summary" required maxlength="900" rows="4" placeholder="Короткое описание для карточки в реестре"></textarea></label>
+                  <label class="company-editor-field-wide"><span>ПЕРВИЧНАЯ РЕГИСТРАЦИЯ *</span><textarea name="description" required maxlength="5000" rows="8" placeholder="Подробное документальное описание записи"></textarea></label>
+                </div>
+
+                <aside class="company-editor-upload" data-create-step="fields" hidden>
+                  <div class="company-editor-step"><span>02</span><strong>ОБЛОЖКА</strong></div>
+                  <label class="company-editor-drop" data-editor-drop>
+                    <input type="file" name="image" accept="image/png,image/jpeg,image/webp" required />
+                    <img data-editor-preview alt="Предпросмотр загруженной обложки" hidden />
+                    <span data-editor-upload-copy><b>ЗАГРУЗИТЬ ФОТОГРАФИЮ</b><small>JPG, PNG или WEBP · до 15 МБ</small><i>ВЫБРАТЬ ФАЙЛ</i></span>
+                  </label>
+                  <p>Фото автоматически уменьшается до веб-размера перед публикацией.</p>
+                </aside>
+
+                <section class="company-editor-sections-builder" data-create-step="fields" hidden>
+                  <header><div><span>03 / СТРУКТУРА ДОСЬЕ</span><strong>РАЗДЕЛЫ КАРТОЧКИ</strong><p>Добавьте нужное количество разделов. Пустая строка внутри текста создаёт новый абзац.</p></div><button type="button" data-editor-add-section>+ ДОБАВИТЬ РАЗДЕЛ</button></header>
+                  <div class="company-editor-sections-list" data-editor-sections-list></div>
+                </section>
+
+                <div class="company-editor-next" data-create-step="fields" hidden>
+                  <p>Сначала заполните обязательные сведения и добавьте обложку.</p>
+                  <button type="button" data-create-next>ДАЛЕЕ: ВЫБРАТЬ СВЯЗИ</button>
+                </div>
+
+                <section class="company-editor-relations-picker company-editor-relations-stage" data-create-step="relations" hidden aria-labelledby="editor-relations-title">
+                  <header>
+                    <div><span>03 / СВЯЗИ НА ДОСКЕ</span><strong id="editor-relations-title">СВЯЗАТЬ С ДРУГИМИ ДОСЬЕ</strong><p>Можно выбрать любое число клиентов, аномалий и инцидентов либо опубликовать карточку без связей.</p></div>
+                    <button type="button" data-editor-relations-toggle aria-expanded="false">ОТКРЫТЬ СПИСОК</button>
+                  </header>
+                  <div class="company-editor-relations-panel" data-editor-relations-panel hidden>
+                    <label class="company-editor-relations-search"><span>ПОИСК ПО РЕЕСТРУ</span><input type="search" data-editor-relations-search autocomplete="off" placeholder="Имя, номер или тип карточки" /></label>
+                    <div class="company-editor-relations-summary"><span data-editor-relations-count>ВЫБРАНО: 0</span><button type="button" data-editor-relations-clear>СБРОСИТЬ</button></div>
+                    <div class="company-editor-relations-list" data-editor-relations-list></div>
+                  </div>
+                </section>
+
+                <div class="company-editor-submit" data-create-step="relations" hidden>
+                  <div><span>04 / ПУБЛИКАЦИЯ</span><p>Номер выдаётся один раз и останется закреплён за карточкой.</p></div>
+                  <button type="submit" data-editor-submit>ОПУБЛИКОВАТЬ</button>
+                </div>
+                <div class="company-editor-result" data-editor-result hidden>
+                  <div><span>КАРТОЧКА СОЗДАНА</span><strong data-editor-created-id>MID-C-0027</strong></div>
+                  <p data-editor-status role="status" aria-live="polite"></p>
+                  <nav><a data-editor-open href="record.html">ОТКРЫТЬ ДОСЬЕ →</a><a data-editor-registry href="registry.html">ОТКРЫТЬ РЕЕСТР →</a></nav>
+                </div>
+                <p class="company-editor-error" data-editor-error role="alert" hidden></p>
+              </form>
+            </section>
+
+            <section class="company-restore editor-work-panel" id="company-restore" data-editor-recovery-panel hidden aria-labelledby="company-restore-title">
+              <header class="editor-work-heading">
+                <div><span>ВОССТАНОВЛЕНИЕ / ИСТОРИЯ</span><h4 id="company-restore-title">ВЕРСИИ КАРТОЧЕК</h4></div>
+                <button type="button" data-editor-panel-close aria-label="Закрыть восстановление карточек">×</button>
+              </header>
+              <div class="editor-recovery-grid">
+                <section>
+                  <header><span>01</span><div><strong>УДАЛЁННЫЕ</strong><p>Вернуть скрытую карточку с тем же номером.</p></div></header>
+                  <div class="company-restore-list" data-restore-deleted-list><p data-restore-deleted-empty>УДАЛЁННЫХ КАРТОЧЕК НЕТ.</p></div>
+                </section>
+                <section>
+                  <header><span>02</span><div><strong>ОТРЕДАКТИРОВАННЫЕ</strong><p>Вернуть состояние, в котором карточка была впервые опубликована.</p></div></header>
+                  <div class="company-restore-list" data-restore-modified-list><p data-restore-modified-empty>ИЗМЕНЁННЫХ КАРТОЧЕК НЕТ.</p></div>
+                </section>
+              </div>
+            </section>
+
+            <section class="company-journal company-journal--editor home-editor-journal-legacy" id="company-journal" aria-labelledby="company-journal-title" hidden>
+              <header class="company-module-heading company-module-heading--compact company-reveal">
+                <div class="company-section-label"><span>05</span><p>ИСТОРИЯ РЕДАКТОРА</p></div>
+                <div><span>CHANGE LOG / LIVE</span><h3 id="company-journal-title">ЖУРНАЛ ИЗМЕНЕНИЙ</h3></div>
+                <p>Краткая хронология добавленных и изменённых карточек. Откройте дату, чтобы увидеть подробности.</p>
+              </header>
+              <div class="company-journal-list company-reveal" id="company-journal-list" aria-live="polite"></div>
+            </section>
+          </section>
+        </section>
+      </main>
+
+      <footer class="site-footer site-footer--company">
+        <div class="company-footer-wordmark"><strong>THE MIDGAS</strong><span>RESEARCH ARCHIVE / 2026</span></div>
+        <div class="company-footer-statement">
+          <span>АРХИВ ПРОДОЛЖАЕТСЯ</span>
+          <p>Независимая система наблюдений, досье и редакционных связей. Новые материалы публикуются после проверки и остаются частью истории ревизий.</p>
+          <a href="editor.html?rev=10#company-journal">СМОТРЕТЬ ПОСЛЕДНЮЮ РЕВИЗИЮ →</a>
+        </div>
+        <nav class="company-footer-nav" aria-label="Навигация в подвале">
+          <span>КАРТА САЙТА</span>
+          <a href="#registry">РЕЕСТРЫ</a>
+          <a href="#historical-archive">АРХИВ</a>
+          <a href="#glossary">ГЛОССАРИЙ</a>
+          <a href="#company-hub">КОМПАНИЯ</a>
+          <a href="changelog.html">ЖУРНАЛ ОБНОВЛЕНИЙ</a>
+        </nav>
+        <div class="company-footer-contact">
+          <span>КООРДИНАТЫ</span>
+          <p>43°07′ N / 131°54′ E<br />ВЛАДИВОСТОК / АНДРЕЕВКА</p>
+          <div><i></i> СИСТЕМА В СЕТИ</div>
+        </div>
+        <div class="company-footer-bottom">
+          <span>THE MIDGAS © 2026</span>
+          <span data-footer-revision>REV-00000000</span>
+          <span>ОТКРЫТАЯ РЕДАКЦИЯ / V1.0</span>
+          <a href="#top">НАВЕРХ ↑</a>
+        </div>
+      </footer>
+    </div>
+
+    <dialog class="editor-login-dialog" id="editor-login-dialog" aria-labelledby="editor-login-title">
+      <form id="company-account-form" novalidate>
+        <header><span>MIDGAS / MODERATOR ACCESS</span><button type="button" data-editor-login-close aria-label="Закрыть окно входа">×</button></header>
+        <div class="editor-login-copy">
+          <span data-auth-mode-label>ЗАЩИЩЁННЫЙ ВХОД SUPABASE</span>
+          <h2 id="editor-login-title" data-auth-title>ВХОД В РЕДАКТОР</h2>
+          <p data-auth-copy>Введите электронную почту и пароль Supabase. Доступ к редактору откроется только для аккаунта с одобренной ролью editor или admin.</p>
+        </div>
+        <label><span>ЭЛЕКТРОННАЯ ПОЧТА</span><input type="email" name="email" required autocomplete="email" placeholder="editor@midgas.archive" /></label>
+        <label><span>ПАРОЛЬ</span><input type="password" name="password" required minlength="6" autocomplete="current-password" placeholder="••••••••" /></label>
+        <p class="editor-auth-status" data-auth-status role="status" aria-live="polite"></p>
+        <button type="submit" data-auth-submit>ВОЙТИ</button>
+        <button class="editor-auth-toggle" type="button" data-auth-mode-toggle>НЕТ АККАУНТА? ЗАРЕГИСТРИРОВАТЬСЯ</button>
+      </form>
+    </dialog>
+
+    <dialog class="editor-login-dialog editor-password-dialog" id="editor-password-dialog" aria-labelledby="editor-password-title">
+      <form id="editor-password-form" novalidate>
+        <header><span>MIDGAS / ACCOUNT SECURITY</span><button type="button" data-editor-password-close aria-label="Закрыть смену пароля">×</button></header>
+        <div class="editor-login-copy">
+          <span>БЕЗ ПОДТВЕРЖДЕНИЯ ПОЧТЫ</span>
+          <h2 id="editor-password-title">ИЗМЕНИТЬ<br />ПАРОЛЬ</h2>
+          <p>Сначала Supabase проверит текущий пароль. После изменения остальные входы в аккаунт будут завершены, а этот редактор останется открыт.</p>
+        </div>
+        <label class="editor-password-current"><span>ТЕКУЩИЙ ПАРОЛЬ</span><input type="password" name="currentPassword" required autocomplete="current-password" placeholder="••••••••" /></label>
+        <label><span>НОВЫЙ ПАРОЛЬ</span><input type="password" name="newPassword" required minlength="8" maxlength="72" autocomplete="new-password" placeholder="НЕ МЕНЕЕ 8 СИМВОЛОВ" /></label>
+        <label><span>ПОВТОРИТЕ НОВЫЙ ПАРОЛЬ</span><input type="password" name="confirmation" required minlength="8" maxlength="72" autocomplete="new-password" placeholder="ПОВТОРИТЕ ПАРОЛЬ" /></label>
+        <p class="editor-auth-status" data-password-status role="status" aria-live="polite"></p>
+        <button type="submit" data-password-submit>ИЗМЕНИТЬ ПАРОЛЬ</button>
+      </form>
+    </dialog>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
+    <script src="legacy/supabase-config.js?v=1"></script>
+    <script src="legacy/data.js"></script>
+    <script src="legacy/featured-data.js?v=8"></script>
+    <script src="legacy/client-updates.js?v=8"></script>
+    <script src="legacy/incident-updates.js?v=1"></script>
+    <script src="legacy/site-completion.js?v=1"></script>
+    <script src="legacy/latest-covers.js?v=1"></script>
+    <script src="legacy/krovolunanie-research.js?v=1"></script>
+    <script src="legacy/editor-session.js?v=15"></script>
+    <script src="legacy/site-gate.js?v=2"></script>
+    <script src="legacy/supabase-data.js?v=14"></script>
+    <script src="legacy/editor-storage.js?v=12"></script>
+    <script src="legacy/relations-data.js?v=1"></script>
+    <script src="legacy/company-hub.js?v=31"></script>
+    <script src="legacy/investigation-board.js?v=29"></script>
+    <script src="legacy/geo-seeds.js?v=1"></script>
+    <script src="legacy/world-map.js?v=7"></script>
+    <script src="legacy/home-content.js?v=6"></script>
+    <script src="legacy/site-header.js?v=17"></script>
+    <script src="legacy/hero-rotator.js?v=1"></script>
+    <script src="legacy/site-motion.js?v=4"></script>
+    <script src="legacy/app.js?v=39"></script>
+    <script src="legacy/home-inline-editor.js?v=2"></script>
+  </body>
+</html>
