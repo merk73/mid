@@ -1,0 +1,149 @@
+{
+  "commit": "a986b0c092c8aa1f9f819f4804a8442d6301f589",
+  "files": {
+    "account.html": {
+      "source_sha": "13de1a7834b6ca1716eb4faa1aed2fd489ac2a35"
+    },
+    "account.js": {
+      "source_sha": "8bf18ead534859f1a88d27a30edf62a2f771167a"
+    },
+    "app.js": {
+      "source_sha": "65a051a2dac1704be6e7485a5623c82fadfabc2c"
+    },
+    "board.html": {
+      "source_sha": "43d5d729f2840fae1a92a21d3889b9d180659012"
+    },
+    "changelog.html": {
+      "source_sha": "198f86f401921ce87c67f4c1951ae29271b361c3"
+    },
+    "changelog.js": {
+      "source_sha": "79fc188daccb2f7106ed465c30e975eadc93941c"
+    },
+    "client-updates.js": {
+      "source_sha": "3bf73359c2339c4b5f35eff15a6e8b9b5f7c1f1e"
+    },
+    "company-hub.js": {
+      "source_sha": "86a2ba459bb71d9cbcac2fdc05b9eb176476c7a9"
+    },
+    "data.js": {
+      "source_sha": "818f29add12ccfe7d9b2d3c8fb7bd4a24bb52b23"
+    },
+    "deploy-history.js": {
+      "source_sha": "bfbc7f12f8ae181bfa48b07d0eb755b7ec47ef8a"
+    },
+    "design-system.css": {
+      "source_sha": "c5c193a8b697f27de3cfe449a47ef1a18723a99c"
+    },
+    "editor-session.js": {
+      "source_sha": "6d2a33d94b5f4844038b746be927f8bbb2c4a197"
+    },
+    "editor-storage.js": {
+      "source_sha": "31a0dd8d30da2ed74580d47135b4f1e10168b360"
+    },
+    "editor-workspace.js": {
+      "source_sha": "9e84dd9e18cfebd41ce8ef5f721307c68c281b4d"
+    },
+    "editor.html": {
+      "source_sha": "48a409991c98387a96cd003925a39843ed213877"
+    },
+    "featured-data.js": {
+      "source_sha": "73e4fd5db53d76f0c277f9f4400e25e209c84890"
+    },
+    "geo-seeds.js": {
+      "source_sha": "e5eb0dea5b0a7b207802892a81a6c383a9750517"
+    },
+    "hero-rotator.js": {
+      "source_sha": "3c41a11a35d0b5f15d7f6d955208534a7f95504b"
+    },
+    "historical-archive.html": {
+      "source_sha": "aef08c22155fdcd317254f962567ccbbf152ee1c"
+    },
+    "historical-archive.js": {
+      "source_sha": "b5498160ce771f52f7d2da60c045eaaab420ed79"
+    },
+    "home-content.js": {
+      "source_sha": "18f2a8e8ee4a4fdc062a6de3dcb484ba24c0ee08"
+    },
+    "home-hero.js": {
+      "source_sha": "a4820fe5a91198935b58792505fd18a35258a147"
+    },
+    "home-inline-editor.js": {
+      "source_sha": "17b54152e4d1266165bde76c603d11f30fcc164a"
+    },
+    "incident-updates.js": {
+      "source_sha": "1eb1c28f695214d837792f4c321c5c6b43b493a2"
+    },
+    "index.html": {
+      "source_sha": "6f5b1754dc20dc560166443028576d6e92103d79"
+    },
+    "investigation-board.js": {
+      "source_sha": "7ebc8178f2e7025495a2026af03a363defdf30d4"
+    },
+    "journal.html": {
+      "source_sha": "3566c048783ae1510bc6ac92fdad94b35ec0dc99"
+    },
+    "journal.js": {
+      "source_sha": "a119fc8de343c7c0ab65ad75cf4c79a6388ef7ac"
+    },
+    "krovolunanie-research.js": {
+      "source_sha": "8c6430892ce2d28b736d10c48ca1ffeb110207c7"
+    },
+    "latest-covers.js": {
+      "source_sha": "56c91d777871d298b83dd664c81c6f8cb02f940c"
+    },
+    "record-inline-editor.js": {
+      "source_sha": "399d28c1dccd4f1a90c154fe63e5bdb1ac022d31"
+    },
+    "record-map.js": {
+      "source_sha": "24895f538fd4fa007e9c9227279994b11be4c278"
+    },
+    "record-url.js": {
+      "source_sha": "3b566110a834996b1ca5871d4e86d640c2ca16f5"
+    },
+    "record.html": {
+      "source_sha": "cd6d85fa44826a01236c2ef323323add84dbbbcb"
+    },
+    "record.js": {
+      "source_sha": "931faf3d064c8e00689b056e5c82bbce8a03c25e"
+    },
+    "registry.html": {
+      "source_sha": "c608e9c5003e802d66dbab701832553a8141201c"
+    },
+    "registry.js": {
+      "source_sha": "3b51d10670d9ed1ff64d0c987813ef20ac6aeac0"
+    },
+    "relations-data.js": {
+      "source_sha": "5bf155c54e796c2ba16d031d4011a240f29ff4f9"
+    },
+    "research-charts.js": {
+      "source_sha": "2ebd6a04a50db89ee897eb1fdd46ee0b9f556878"
+    },
+    "site-access.js": {
+      "source_sha": "be4be0ab2f3a0900d058f514c5d3296e9aa28b9c"
+    },
+    "site-completion.js": {
+      "source_sha": "6609f9f4a38a9e0064433970218f77caf47789be"
+    },
+    "site-gate.js": {
+      "source_sha": "f5dc391b6fd588aafcec21a0c08d524414cecd81"
+    },
+    "site-header.js": {
+      "source_sha": "45725de953a029e80f2cc5b9985c0e0929e24420"
+    },
+    "site-motion.js": {
+      "source_sha": "35c9830763eed77ff21cf3a07be2d90fed2eb44b"
+    },
+    "styles.css": {
+      "source_sha": "bc7f91ce186cee2e19f23c7d4a25fbc12b172c8e"
+    },
+    "supabase-config.js": {
+      "source_sha": "2a8dc73527a9aaebbfab4051663e5717254d5273"
+    },
+    "supabase-data.js": {
+      "source_sha": "feb7852f74dba01f10e647159a1313d4a6d6be86"
+    },
+    "world-map.js": {
+      "source_sha": "a7afadcf1bcf3480e43a890a47c2e2207d935942"
+    }
+  }
+}
