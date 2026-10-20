@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <base href="../" />
+    <link rel="stylesheet" href="version-settings.css?v=1">
+    <script src="version-settings.js?v=1"></script>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="assets/favicon.svg" type="image/svg+xml" />
+    <script src="legacy/record-url.js?v=1"></script>
+    <meta name="description" content="Личный кабинет THE MIDGAS." />
+    <title>Аккаунт — THE MIDGAS</title>
+    <link rel="preconnect" href="https://skvwaovkkoxqfwkcpuvh.supabase.co" crossorigin />
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <script src="legacy/site-access.js?v=6"></script>
+    <link rel="stylesheet" href="legacy/styles.css?v=103" />
+    <link rel="stylesheet" href="legacy/design-system.css?v=35" />
+  </head>
+  <body class="account-page">
+    <div class="site-shell">
+      <header class="site-header"></header>
+      <main class="account-shell" id="main-content">
+        <header class="account-heading">
+          <div><span class="ui-eyebrow">MIDGAS / CONTROL PROFILE</span><h1>Центр<br />управления</h1></div>
+          <div class="account-heading-note"><span>Персональный доступ</span><p>Профиль, права и основные инструменты публикации в одном рабочем экране.</p></div>
+        </header>
+        <section class="account-profile" aria-labelledby="account-profile-title">
+          <div class="account-profile-identity">
+            <div class="account-profile-avatar" aria-hidden="true" data-account-avatar>•</div>
+            <div class="account-profile-copy">
+              <span>АВТОРИЗОВАННЫЙ ПРОФИЛЬ</span>
+              <h2 id="account-profile-title" data-account-name>Загрузка…</h2>
+              <p data-account-login></p>
+            </div>
+          </div>
+          <aside class="account-access-card" aria-label="Состояние доступа">
+            <div class="account-access-icon" aria-hidden="true">
+              <svg viewBox="0 0 48 48"><path d="M24 5 39 11v11c0 10-6 17-15 21C15 39 9 32 9 22V11L24 5Z"/><path d="m17 24 5 5 10-12"/></svg>
+            </div>
+            <div><span data-account-session-state>ПРОВЕРКА СЕАНСА</span><strong data-account-role>ПРОВЕРКА ДОСТУПА</strong><p data-account-permission-copy>Определяем доступные действия.</p></div>
+            <button class="account-logout" type="button" data-account-logout>ЗАВЕРШИТЬ СЕАНС <b>↗</b></button>
+          </aside>
+        </section>
+        <section class="account-tools" data-account-tools hidden aria-labelledby="account-tools-title">
+          <header><div><span class="ui-eyebrow">WORKSPACE / 03 MODULES</span><h2 id="account-tools-title">Работа с сайтом</h2></div><p>Выберите задачу. Каждый модуль открывается в отдельном рабочем режиме.</p></header>
+          <nav class="account-actions" aria-label="Инструменты аккаунта">
+            <a class="account-action account-action--primary" href="editor.html?rev=10">
+              <span>01 / EDITOR</span><i aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M9 35.5V40h4.5L36 17.5 30.5 12 8 34.5Z"/><path d="m27.5 15 5.5 5.5M8 8h14M8 16h10"/></svg></i><strong>Редактировать сайт</strong><small>Карточки, публикации, фотографии и связи</small><b>→</b>
+            </a>
+            <a class="account-action" href="journal.html">
+              <span>02 / ACTIVITY</span><i aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M11 7h26v34H11z"/><path d="M17 16h14M17 24h14M17 32h9"/></svg></i><strong>Журнал изменений</strong><small>История действий редакторов и откат версий</small><b>→</b>
+            </a>
+            <a class="account-action" href="changelog.html">
+              <span>03 / RELEASES</span><i aria-hidden="true"><svg viewBox="0 0 48 48"><circle cx="24" cy="24" r="17"/><path d="M24 14v11l7 5M8 24h5M35 24h5"/></svg></i><strong>Журнал обновлений</strong><small>Выпуски, исправления и состояние сайта</small><b>→</b>
+            </a>
+          </nav>
+        </section>
+        <p class="account-status" data-account-status role="status"></p>
+      </main>
+      <footer class="site-footer"><span>THE MIDGAS © 2026</span><span>ACCOUNT</span><a href="index.html">НА ГЛАВНУЮ</a></footer>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.110.2" integrity="sha384-sgcvElP/LlNRtORGYFLO/9K/bENcpJK19HgvqslWXog6d8f/Va4TpltGiBlGntCM" crossorigin="anonymous"></script>
+    <script src="legacy/supabase-config.js?v=1"></script>
+    <script src="legacy/editor-session.js?v=15"></script>
+    <script src="legacy/site-header.js?v=17"></script>
+    <script src="legacy/account.js?v=6"></script>
+    <script src="legacy/site-motion.js?v=5"></script>
+    <script src="legacy/app.js?v=39"></script>
+  </body>
+</html>

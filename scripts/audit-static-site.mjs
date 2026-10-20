@@ -7,9 +7,9 @@ const projectRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "
 const webRoot = path.join(projectRoot, "web");
 const errors = [];
 
-const webFiles = fs.readdirSync(webRoot, { withFileTypes: true })
+const webFiles = [webRoot, path.join(webRoot, "legacy")].flatMap((directory) => fs.readdirSync(directory, { withFileTypes: true })
   .filter((entry) => entry.isFile())
-  .map((entry) => path.join(webRoot, entry.name));
+  .map((entry) => path.join(directory, entry.name)));
 const htmlFiles = webFiles.filter((file) => file.endsWith(".html"));
 const cssFiles = webFiles.filter((file) => file.endsWith(".css"));
 const jsFiles = webFiles.filter((file) => file.endsWith(".js"));
@@ -36,9 +36,14 @@ function referenceExists(fromFile, rawValue) {
   const value = cleanReference(rawValue);
   if (!value) return true;
   if (/^\/?mid-[cai]-\d{4}\/?$/i.test(value)) return true;
+  const documentBase = fromFile.endsWith(".html") ? fs.readFileSync(fromFile, "utf8").match(/<base\s+href=["']([^"']+)["']/i)?.[1] : null;
+  const baseDirectory = documentBase
+    ? documentBase.startsWith("/") ? path.resolve(webRoot, `.${documentBase}`) : path.resolve(path.dirname(fromFile), documentBase)
+    : path.dirname(fromFile);
+  if (documentBase && rawValue === documentBase) return baseDirectory.startsWith(webRoot) && fs.existsSync(baseDirectory);
   const target = value.startsWith("/")
     ? path.resolve(webRoot, `.${value}`)
-    : path.resolve(path.dirname(fromFile), value);
+    : path.resolve(baseDirectory, value);
   return target.startsWith(webRoot) && fs.existsSync(target);
 }
 

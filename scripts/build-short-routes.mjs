@@ -26,4 +26,11 @@ for (const id of [...ids].sort()) {
 
 const fallbackTemplate = recordTemplate.replace("<head>", '<head>\n    <base href="/" />');
 await writeFile(path.join(webRoot, "404.html"), fallbackTemplate, "utf8");
+const legacyRoot = path.join(webRoot, "legacy");
+const legacyTemplate = await readFile(path.join(legacyRoot, "record.html"), "utf8");
+for (const id of [...ids].sort()) {
+  const route = path.join(legacyRoot, id.toLowerCase());
+  await mkdir(route, { recursive: true });
+  await writeFile(path.join(route, "index.html"), legacyTemplate.replace('<base href="../" />', '<base href="../../" />'), "utf8");
+}
 console.log(`Generated ${ids.size} short dossier routes and the fallback route.`);

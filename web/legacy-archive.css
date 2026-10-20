@@ -1,0 +1,12 @@
+/* Retained historical material: neutral presentation, no account portal. */
+:root{color-scheme:light;--bg:#fff;--paper:#fff;--ink:#19272d;--muted:#58686f;--line:#dde4e7}
+body,.site-shell,.history-page,.changelog-page{background:#fff!important;color:#19272d!important}
+.site-header,.main-navigation,.site-footer{background:#fff!important;color:#19272d!important;border-color:#dde4e7!important}
+.site-header a,.site-footer a,.mobile-wordmark,.wordmark{color:#19272d!important}
+.site-header .menu-icon span{background:#19272d!important}
+.history-hero{min-height:350px!important;background:#f2f5f7!important}
+.history-hero:after{background:#ffffffb0!important}
+.history-hero h1,.history-hero p,.history-hero span{color:#19272d!important}
+.timeline-entry,.timeline-dossier,.timeline-rail,.archive-scene,.change-log-item{background:#fff!important;color:#19272d!important;border-color:#dde4e7!important}
+.timeline-entry p,.timeline-entry li,.timeline-entry h2,.timeline-entry h3,.timeline-entry summary{color:#19272d!important}
+.site-gate,.account-page,.header-account-button{display:none!important}

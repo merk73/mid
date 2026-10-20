@@ -30,6 +30,9 @@ jobs:
       - name: Validate static site
         run: node scripts/audit-static-site.mjs
 
+      - name: Verify full static content migration
+        run: node scripts/verify-static-archive.mjs --require-live
+
       - name: Build public deployment history
         run: node scripts/build-deploy-history.mjs
 
